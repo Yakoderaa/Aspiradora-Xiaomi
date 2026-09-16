@@ -1,3 +1,5 @@
 git+https://github.com/rytilahti/python-miio.git
 micloud
 Pillow>=10,<13
+vacuum-map-parser-xiaomi==0.1.4
+vacuum-map-parser-base>=0.1.5
