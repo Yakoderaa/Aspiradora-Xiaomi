@@ -69,6 +69,9 @@ def unprotect_text(value: str) -> str:
 
 
 class SettingsStore:
+    # Datos que no deben quedar en texto plano en AppData.
+    PROTECTED_FIELDS = ("token", "cloud_session")
+
     def __init__(self):
         appdata = Path(os.environ.get("LOCALAPPDATA", Path.home()))
         self.folder = appdata / APP_NAME
@@ -80,6 +83,11 @@ class SettingsStore:
             "ip": "",
             "token": "",
             "device_name": "Xiaomi Robot Vacuum E10",
+            "device_did": "",
+            "device_region": "",
+            "cloud_session": "",
+            "mop_enabled": False,
+            "mop_water_level": 1,
             "auto_update": True,
             "poll_seconds": 5,
         }
@@ -88,14 +96,16 @@ class SettingsStore:
         try:
             data = json.loads(self.path.read_text(encoding="utf-8"))
             defaults.update(data)
-            if defaults.get("token"):
-                defaults["token"] = unprotect_text(defaults["token"])
+            for field in self.PROTECTED_FIELDS:
+                if defaults.get(field):
+                    defaults[field] = unprotect_text(defaults[field])
         except Exception:
             return defaults
         return defaults
 
     def save(self, settings: dict):
         data = dict(settings)
-        token = data.get("token", "")
-        data["token"] = protect_text(token) if token else ""
+        for field in self.PROTECTED_FIELDS:
+            value = data.get(field, "")
+            data[field] = protect_text(value) if value else ""
         self.path.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
