@@ -10,12 +10,23 @@ python -m pip install pyinstaller==6.22.3
 
 "VERSION = `"$($env:APP_VERSION)`"" | Set-Content -Encoding UTF8 src\_build_version.py
 
+# Helper independiente: sigue vivo cuando la app principal se cierra para
+# instalar la actualización y volver a abrir la versión nueva.
+pyinstaller --noconfirm --clean --windowed --onefile `
+    --name "Aspiradora Xiaomi Updater" `
+    src\update_helper.py
+
 pyinstaller --noconfirm --clean --windowed --onedir `
     --name "Aspiradora Xiaomi" `
     --collect-all miio `
     --collect-all micloud `
     --collect-all PIL `
-    src\app_v11.py
+    src\app_v12.py
+
+Copy-Item `
+    "dist\Aspiradora Xiaomi Updater.exe" `
+    "dist\Aspiradora Xiaomi\Aspiradora Xiaomi Updater.exe" `
+    -Force
 
 $pf86 = ${env:ProgramFiles(x86)}
 $inno = @(
