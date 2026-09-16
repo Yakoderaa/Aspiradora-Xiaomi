@@ -114,6 +114,12 @@ class XiaomiE10:
             raise ValueError("Modo inválido")
         return self.device.set_property_by(2, 4, mode)
 
+    def set_sweep_type(self, sweep_type: int):
+        # xiaomi.vacuum.b112: 0 global, 2 borde/perímetro, 4 punto, 5 remoto.
+        if int(sweep_type) not in (0, 2, 4, 5):
+            raise ValueError("Tipo de recorrido inválido")
+        return self.device.set_property_by(2, 8, int(sweep_type))
+
     def set_mop_enabled(self, enabled: bool, water_level: int = 1):
         if enabled:
             water_level = max(1, min(3, int(water_level)))
@@ -263,16 +269,30 @@ class XiaomiE10:
             "raw_path": values.get("path"),
         }
 
-    def start_mapping_run(self):
-        """Recorre la vivienda para que la PC genere su mapa local.
-
-        No borra ni descarga mapas de Xiaomi. Se apaga agua y succión, y se usa el
-        recorrido global del E10 mientras la PC registra su trayectoria por LAN.
-        """
+    def _start_mapping_sweep(self, sweep_type: int):
+        """Arranca un recorrido de mapeo usando un tipo de barrido real del E10."""
         self.set_water(0)
-        self.set_suction(0)
+        self.set_suction(1)
         self.set_mode(0)
-        return self.device.call_action_by(2, 3)
+        self.set_sweep_type(sweep_type)
+        # El perfil MIoT de b112 expone start en 2/1. Algunos firmwares también
+        # aceptan la acción histórica de aspirado 2/3; queda como fallback.
+        try:
+            return self.device.call_action_by(2, 1)
+        except Exception:
+            return self.device.call_action_by(2, 3)
+
+    def start_mapping_perimeter(self):
+        """Primera fase: sigue paredes/bordes con sweep-type=edge (2)."""
+        return self._start_mapping_sweep(2)
+
+    def start_mapping_interior(self):
+        """Segunda fase: recorrido global para completar el interior."""
+        return self._start_mapping_sweep(0)
+
+    def start_mapping_run(self):
+        """Compatibilidad: un recorrido global de mapeo."""
+        return self.start_mapping_interior()
 
     # --- Limpieza localizada ----------------------------------------------
 
