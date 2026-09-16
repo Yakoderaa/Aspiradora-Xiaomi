@@ -1,3 +1,4 @@
+import json
 from dataclasses import dataclass
 from typing import Any
 
@@ -76,6 +77,16 @@ class XiaomiE10:
                 values[item.get("did")] = item.get("value")
         return values
 
+    def _value(self, siid: int, piid: int):
+        result = self.device.get_property_by(siid, piid)
+        if isinstance(result, list) and result:
+            item = result[0]
+            if isinstance(item, dict):
+                if item.get("code", 0) != 0:
+                    raise RuntimeError(f"El robot rechazó la propiedad {siid}/{piid}: {item.get('code')}")
+                return item.get("value")
+        return None
+
     def status(self) -> VacuumStatus:
         defs = [
             ("status", 2, 1),
@@ -100,6 +111,19 @@ class XiaomiE10:
         if mode not in (0, 1, 2):
             raise ValueError("Modo inválido")
         return self.device.set_property_by(2, 4, mode)
+
+    def set_mop_enabled(self, enabled: bool, water_level: int = 1):
+        """Selecciona aspirado solo o aspirado con mopa.
+
+        La app no puede colocar físicamente la mopa: esta opción controla si el E10
+        usa agua y el modo de trapeado cuando el accesorio está instalado.
+        """
+        if enabled:
+            water_level = max(1, min(3, int(water_level)))
+            self.set_mode(1)
+            return self.set_water(water_level)
+        self.set_water(0)
+        return self.set_mode(0)
 
     def start(self, mode: int):
         self.set_mode(mode)
@@ -130,6 +154,86 @@ class XiaomiE10:
         if direction not in (1, 2, 3, 4, 5, 10):
             raise ValueError("Dirección inválida")
         return self.device.set_property_by(7, 16, direction)
+
+    # --- Mapa y limpieza localizada (MIoT del xiaomi.vacuum.b112) ---------
+
+    def current_map_reference(self):
+        """Devuelve la referencia del mapa actual (service 10, property 2)."""
+        return self._value(10, 2)
+
+    def current_map_name(self) -> str:
+        value = self.current_map_reference()
+        if value is None:
+            raise RuntimeError("El E10 no devolvió un mapa actual.")
+        if isinstance(value, (int, float)):
+            return str(int(value))
+        text = str(value).strip()
+        try:
+            parsed = json.loads(text)
+            if isinstance(parsed, dict):
+                obj_name = parsed.get("obj_name") or parsed.get("map_name")
+                if obj_name:
+                    return str(obj_name).rstrip("/").split("/")[-1]
+        except (TypeError, ValueError, json.JSONDecodeError):
+            pass
+        if "/" in text:
+            return text.rstrip("/").split("/")[-1]
+        return text
+
+    def map_positions(self) -> dict[str, Any]:
+        values = self._get_many([
+            ("map_id", 10, 2),
+            ("charger", 10, 22),
+            ("robot", 10, 24),
+            ("path", 10, 5),
+        ])
+        return values
+
+    def get_map_room_list(self):
+        map_id = self.current_map_reference()
+        if map_id is None:
+            raise RuntimeError("No hay un mapa activo para consultar habitaciones.")
+        return self.device.call_action_by(10, 13, [map_id])
+
+    @staticmethod
+    def _coord(value: float) -> str:
+        value = float(value)
+        if value.is_integer():
+            return str(int(value))
+        return f"{value:.2f}".rstrip("0").rstrip(".")
+
+    def clean_point(self, x: float, y: float):
+        """Inicia limpieza puntual alrededor de una coordenada del mapa."""
+        target = f"{self._coord(x)},{self._coord(y)}"
+        self.device.set_property_by(9, 5, target)
+        # point sweep type
+        self.device.set_property_by(2, 8, 4)
+        return self.device.call_action_by(9, 1)
+
+    def clean_zone(self, x0: float, y0: float, x1: float, y1: float):
+        """Limpia un rectángulo del mapa."""
+        left, right = sorted((float(x0), float(x1)))
+        bottom, top = sorted((float(y0), float(y1)))
+        points = [
+            (left, bottom),
+            (left, top),
+            (right, top),
+            (right, bottom),
+        ]
+        zone = ",".join(self._coord(v) for point in points for v in point)
+        # set-zone-point also validates/records the area on this model.
+        try:
+            self.device.call_action_by(9, 8, [zone])
+        except Exception:
+            self.device.set_property_by(9, 2, zone)
+        return self.device.call_action_by(9, 3)
+
+    def clean_rooms(self, room_ids: list[int]):
+        if not room_ids:
+            raise ValueError("Elegí al menos una habitación.")
+        value = ",".join(str(int(room_id)) for room_id in room_ids)
+        # clean-room-ids, clean-room-mode(Global), clean-room-oper(Start)
+        return self.device.call_action_by(7, 3, [value, 0, 1])
 
 
 def discover_from_xiaomi(username: str, password: str, locale: str = "all") -> list[dict[str, Any]]:
