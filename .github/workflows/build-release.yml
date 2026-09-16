@@ -1,0 +1,64 @@
+name: Build Windows installer and release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: windows-release
+  cancel-in-progress: false
+
+jobs:
+  build-release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Generate build version
+        shell: pwsh
+        run: |
+          $version = "0.1.${{ github.run_number }}"
+          "VERSION = `"$version`"" | Set-Content -Encoding UTF8 src\_build_version.py
+          "APP_VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "RELEASE_TAG=v$version" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup --no-progress -y
+
+      - name: Build application and installer
+        shell: pwsh
+        run: .\build.ps1
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Aspiradora-Xiaomi-Setup-${{ env.APP_VERSION }}
+          path: |
+            installer_output/Aspiradora-Xiaomi-Setup.exe
+            installer_output/Aspiradora-Xiaomi-Setup.exe.sha256
+
+      - name: Publish GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $notes = "Build automático para Windows 10/11 x64. La aplicación instalada detecta esta release, verifica el SHA-256 y actualiza silenciosamente."
+          gh release create $env:RELEASE_TAG `
+            "installer_output/Aspiradora-Xiaomi-Setup.exe" `
+            "installer_output/Aspiradora-Xiaomi-Setup.exe.sha256" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION" `
+            --notes $notes `
+            --target $env:GITHUB_SHA
