@@ -1,7 +1,9 @@
 import hashlib
 import json
 import os
+import shutil
 import subprocess
+import sys
 import tempfile
 import urllib.request
 from pathlib import Path
@@ -12,6 +14,7 @@ API_URL = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
 INSTALLER_NAME = "Aspiradora-Xiaomi-Setup.exe"
 CHECKSUM_NAME = INSTALLER_NAME + ".sha256"
 APP_EXE_NAME = "Aspiradora Xiaomi.exe"
+UPDATER_EXE_NAME = "Aspiradora Xiaomi Updater.exe"
 
 
 def _version_tuple(value: str):
@@ -35,14 +38,25 @@ def _request_json(url: str):
         return json.loads(response.read().decode("utf-8"))
 
 
-def _download(url: str, destination: Path):
+def _download(url: str, destination: Path, progress_callback=None):
+    callback = progress_callback or (lambda _percent, _done, _total: None)
     req = urllib.request.Request(url, headers={"User-Agent": f"Aspiradora-Xiaomi/{VERSION}"})
     with urllib.request.urlopen(req, timeout=90) as response, destination.open("wb") as out:
+        try:
+            total = int(response.headers.get("Content-Length") or 0)
+        except (TypeError, ValueError):
+            total = 0
+        downloaded = 0
+        callback(0 if total else None, 0, total)
         while True:
-            chunk = response.read(1024 * 1024)
+            chunk = response.read(256 * 1024)
             if not chunk:
                 break
             out.write(chunk)
+            downloaded += len(chunk)
+            percent = min(100, int(downloaded * 100 / total)) if total else None
+            callback(percent, downloaded, total)
+        callback(100, downloaded, total or downloaded)
 
 
 def _sha256(path: Path):
@@ -77,67 +91,66 @@ def check_for_update():
     }
 
 
-def _powershell_literal(value: str) -> str:
-    return "'" + str(value).replace("'", "''") + "'"
+def _installed_app_path() -> Path:
+    if getattr(sys, "frozen", False):
+        return Path(sys.executable).resolve()
+    return Path(os.environ.get("LOCALAPPDATA", "")) / "Programs" / "Aspiradora Xiaomi" / APP_EXE_NAME
 
 
-def _launch_update_helper(installer: Path):
+def _bundled_helper_path() -> Path:
+    if getattr(sys, "frozen", False):
+        return Path(sys.executable).resolve().parent / UPDATER_EXE_NAME
+    return Path(__file__).resolve().parent.parent / "dist" / UPDATER_EXE_NAME
+
+
+def _launch_update_helper(installer: Path, version: str):
+    source_helper = _bundled_helper_path()
+    if not source_helper.exists():
+        raise RuntimeError(
+            "No encontré el componente visual de actualización. "
+            "Instalá esta versión manualmente una vez para reparar el actualizador."
+        )
+
     folder = installer.parent
-    helper = folder / "install_update.ps1"
-    current_pid = os.getpid()
-
-    script = f"""$ErrorActionPreference = 'SilentlyContinue'
-$pidToWait = {current_pid}
-try {{ Wait-Process -Id $pidToWait -Timeout 45 -ErrorAction SilentlyContinue }} catch {{}}
-Start-Sleep -Milliseconds 500
-$installer = {_powershell_literal(str(installer))}
-$args = @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/CLOSEAPPLICATIONS','/RESTARTAPPLICATIONS')
-try {{
-    Start-Process -FilePath $installer -ArgumentList $args -PassThru -Wait | Out-Null
-}} catch {{
-    exit 2
-}}
-Start-Sleep -Milliseconds 900
-$app = Join-Path $env:LOCALAPPDATA 'Programs\\Aspiradora Xiaomi\\{APP_EXE_NAME}'
-if (Test-Path $app) {{
-    Start-Process -FilePath $app
-}}
-"""
-    helper.write_text(script, encoding="utf-8-sig")
+    helper_copy = folder / UPDATER_EXE_NAME
+    shutil.copy2(source_helper, helper_copy)
+    app_exe = _installed_app_path()
 
     creationflags = 0
-    creationflags |= getattr(subprocess, "CREATE_NO_WINDOW", 0)
     creationflags |= getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
     creationflags |= getattr(subprocess, "DETACHED_PROCESS", 0)
 
     subprocess.Popen(
         [
-            "powershell.exe",
-            "-NoProfile",
-            "-ExecutionPolicy",
-            "Bypass",
-            "-WindowStyle",
-            "Hidden",
-            "-File",
-            str(helper),
+            str(helper_copy),
+            "--parent-pid",
+            str(os.getpid()),
+            "--installer",
+            str(installer),
+            "--app",
+            str(app_exe),
+            "--version",
+            str(version),
         ],
         creationflags=creationflags,
         close_fds=True,
     )
 
 
-def download_and_install(update: dict, status_callback=None):
-    callback = status_callback or (lambda _text: None)
+def download_and_install(update: dict, status_callback=None, progress_callback=None):
+    status = status_callback or (lambda _text: None)
+    progress = progress_callback or (lambda _percent, _done, _total: None)
     version = update["version"]
     folder = Path(tempfile.gettempdir()) / "AspiradoraXiaomiUpdates" / version
     folder.mkdir(parents=True, exist_ok=True)
     installer = folder / INSTALLER_NAME
     checksum_file = folder / CHECKSUM_NAME
 
-    callback(f"Descargando actualización {version}…")
-    _download(update["installer_url"], installer)
-    _download(update["checksum_url"], checksum_file)
+    status(f"Descargando actualización v{version}…")
+    _download(update["installer_url"], installer, progress)
 
+    status("Descarga completa. Verificando integridad…")
+    _download(update["checksum_url"], checksum_file)
     expected = checksum_file.read_text(encoding="utf-8").strip().split()[0].lower()
     actual = _sha256(installer)
     if not expected or actual != expected:
@@ -146,6 +159,7 @@ def download_and_install(update: dict, status_callback=None):
         finally:
             raise RuntimeError("La verificación SHA-256 de la actualización falló.")
 
-    callback(f"Actualización {version} lista. Cerrando para instalar…")
-    _launch_update_helper(installer)
+    status("Verificación correcta. Preparando instalación…")
+    _launch_update_helper(installer, version)
+    status("Actualizador listo. Cerrando la aplicación para instalar…")
     return True
