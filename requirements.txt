@@ -1,2 +1,3 @@
 git+https://github.com/rytilahti/python-miio.git
 micloud
+Pillow>=10,<13
