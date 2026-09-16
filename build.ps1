@@ -14,7 +14,8 @@ pyinstaller --noconfirm --clean --windowed --onedir `
     --name "Aspiradora Xiaomi" `
     --collect-all miio `
     --collect-all micloud `
-    src\app.py
+    --collect-all PIL `
+    src\app_v2.py
 
 $pf86 = ${env:ProgramFiles(x86)}
 $inno = @(
