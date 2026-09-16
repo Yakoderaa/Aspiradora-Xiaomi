@@ -17,7 +17,7 @@ class LocalMapStore:
     @staticmethod
     def _defaults() -> dict[str, Any]:
         return {
-            "version": 1,
+            "version": 2,
             "name": "Mi casa",
             "created_at": None,
             "updated_at": None,
@@ -35,6 +35,9 @@ class LocalMapStore:
                 data = json.loads(self.path.read_text(encoding="utf-8"))
                 if isinstance(data, dict):
                     self._data.update(data)
+                    self._data["version"] = 2
+                    for point in self._data.get("points", []):
+                        point.setdefault("phase", 0)
             except Exception:
                 self._data = self._defaults()
 
@@ -57,13 +60,25 @@ class LocalMapStore:
             self._data["rooms"] = rooms
             self._save_locked()
 
-    def merge_trajectory(self, points: list[dict[str, Any]]) -> int:
+    def merge_trajectory(self, points: list[dict[str, Any]], phase: int = 0) -> int:
+        """Mezcla telemetría incremental sin pisar otra fase de mapeo.
+
+        El E10 puede reiniciar sus pose IDs al comenzar un recorrido nuevo. Por eso
+        la clave interna combina fase + pose ID: la pasada de perímetro y la pasada
+        interior quedan ambas visibles en el mismo plano.
+        """
         if not points:
             return 0
+        phase = int(phase or 0)
         with self._lock:
             current = self._data.setdefault("points", [])
-            by_id = {int(p.get("id", i)): p for i, p in enumerate(current)}
+            by_id = {}
+            for i, point in enumerate(current):
+                p_phase = int(point.get("phase", 0) or 0)
+                p_id = int(point.get("id", i))
+                by_id[(p_phase, p_id)] = point
             before = len(by_id)
+
             for i, point in enumerate(points):
                 try:
                     pid = int(point.get("id", i))
@@ -73,8 +88,18 @@ class LocalMapStore:
                     update = int(point.get("update", 1) or 0)
                 except Exception:
                     continue
-                by_id[pid] = {"id": pid, "x": x, "y": y, "phi": phi, "update": update}
-            self._data["points"] = [by_id[key] for key in sorted(by_id)]
+                by_id[(phase, pid)] = {
+                    "id": pid,
+                    "phase": phase,
+                    "x": x,
+                    "y": y,
+                    "phi": phi,
+                    "update": update,
+                }
+
+            self._data["points"] = [
+                by_id[key] for key in sorted(by_id, key=lambda item: (item[0], item[1]))
+            ]
             if not self._data.get("created_at"):
                 self._data["created_at"] = datetime.now(timezone.utc).isoformat()
             self._save_locked()
