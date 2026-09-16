@@ -237,8 +237,6 @@ class XiaomiE10:
         if len(values) < 5:
             return []
 
-        # MIoT documenta el formato como:
-        # [first_poseid, x, y, phi, update, x, y, phi, update, ...]
         first_pose_id = int(values[0])
         payload = values[1:]
         count = len(payload) // 4
@@ -269,25 +267,38 @@ class XiaomiE10:
             "raw_path": values.get("path"),
         }
 
-    def _start_mapping_sweep(self, sweep_type: int):
-        """Arranca un recorrido de mapeo usando un tipo de barrido real del E10."""
+    def _prepare_mapping_vacuum(self):
+        """Prepara el robot para mapear aspirando suave y sin agua."""
         self.set_water(0)
         self.set_suction(1)
         self.set_mode(0)
+
+    def _start_mapping_sweep(self, sweep_type: int):
+        """Recorrido genérico; se usa únicamente para el Paso 2 global."""
+        self._prepare_mapping_vacuum()
         self.set_sweep_type(sweep_type)
-        # El perfil MIoT de b112 expone start en 2/1. Algunos firmwares también
-        # aceptan la acción histórica de aspirado 2/3; queda como fallback.
         try:
             return self.device.call_action_by(2, 1)
         except Exception:
             return self.device.call_action_by(2, 3)
 
     def start_mapping_perimeter(self):
-        """Primera fase: sigue paredes/bordes con sweep-type=edge (2)."""
-        return self._start_mapping_sweep(2)
+        """Paso 1: inicia DIRECTAMENTE limpieza de borde en toda la vivienda.
+
+        El E10 expone en el servicio Sweep (siid 7) la acción set-room-clean
+        (aiid 3) con tres entradas:
+          piid 24: clean-room-ids (vacío = toda la vivienda)
+          piid 25: clean-room-mode (2 = Edge)
+          piid 26: clean-room-oper (1 = Start)
+
+        Usamos esta acción específica para no ejecutar start-sweep/start-only-sweep,
+        que el firmware puede interpretar como una limpieza global después del borde.
+        """
+        self._prepare_mapping_vacuum()
+        return self.device.call_action_by(7, 3, ["", 2, 1])
 
     def start_mapping_interior(self):
-        """Segunda fase: recorrido global para completar el interior."""
+        """Paso 2: recorrido global para completar el interior."""
         return self._start_mapping_sweep(0)
 
     def start_mapping_run(self):
@@ -358,16 +369,21 @@ class XiaomiE10:
 def discover_from_xiaomi(username: str, password: str, locale: str = "all") -> list[dict[str, Any]]:
     """Obtiene E10 vinculados a la cuenta. La contraseña solo vive durante esta llamada."""
     cloud = CloudInterface(username=username.strip(), password=password)
-    devices = cloud.get_devices(locale=locale)
+    cloud.login()
+    regions = [locale] if locale != "all" else ["cn", "de", "us", "ru", "tw", "sg", "in", "i2"]
     found = []
-    for dev in devices.values():
-        if dev.model == MODEL and not dev.is_child:
-            found.append({
-                "name": dev.name or "Xiaomi Robot Vacuum E10",
-                "ip": dev.ip,
-                "token": dev.token,
-                "locale": dev.locale,
-                "online": dev.is_online,
-                "did": dev.did,
-            })
-    return found
+    for region in regions:
+        try:
+            for dev in cloud.get_devices(region):
+                if dev.get("model") == MODEL:
+                    found.append({
+                        "name": dev.get("name", "Xiaomi Vacuum E10"),
+                        "model": dev.get("model"),
+                        "ip": dev.get("localip", ""),
+                        "token": dev.get("token", ""),
+                        "did": dev.get("did", ""),
+                        "locale": region,
+                    })
+        except Exception:
+            continue
+    return [d for d in found if d["ip"] and d["token"]]
