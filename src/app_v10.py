@@ -1,6 +1,7 @@
 import math
 import threading
 import time
+import traceback
 
 import app_v9
 
@@ -56,33 +57,59 @@ class App(app_v9.App):
         return super()._handle_ui_event(kind, payload)
 
     # ------------------------------------------------------- estado de retorno
+    def _dock_assist_reset_cycle(self):
+        self._dock_assist_reference_distance = None
+        self._dock_assist_last_distance = None
+        self._dock_assist_last_position = None
+        self._dock_assist_last_motion_at = None
+        self._dock_assist_retry_until = 0.0
+        self._dock_assist_attempts = 0
+        self._dock_assist_worker_running = False
+        self._dock_assist_had_retry = False
+
     def _dock_assist_on_status(self, status):
         previous = self._dock_assist_status
         self._dock_assist_status = int(status)
+        now = time.monotonic()
 
         if status == 3:  # Volviendo a la base
-            if previous != 3:
-                self._dock_assist_reference_distance = None
-                self._dock_assist_last_distance = None
-                self._dock_assist_last_position = None
-                self._dock_assist_last_motion_at = time.monotonic()
-                self._dock_assist_retry_until = 0.0
-                self._dock_assist_attempts = 0
-                self._dock_assist_worker_running = False
-                self._dock_assist_had_retry = False
+            # Un STOP/START interno del reintento puede pasar un instante por
+            # espera/pausa. Conservamos el mismo ciclo durante esa ventana para
+            # no reiniciar el contador y entrar en un bucle infinito.
+            continuing_retry = (
+                self._dock_assist_had_retry
+                and now < self._dock_assist_retry_until + 45.0
+            )
+            if previous != 3 and not continuing_retry:
+                self._dock_assist_reset_cycle()
+                self._dock_assist_status = 3
+                self._dock_assist_last_motion_at = now
+            elif self._dock_assist_last_motion_at is None:
+                self._dock_assist_last_motion_at = now
             return
 
-        if previous == 3 and status == 4 and self._dock_assist_had_retry:
-            self._set_banner("Asistencia de base · acople completado y cargando correctamente.")
+        if status == 4:  # Cargando
+            if self._dock_assist_had_retry:
+                self._set_banner("Asistencia de base · acople completado y cargando correctamente.")
+            self._dock_assist_reset_cycle()
+            self._dock_assist_status = 4
+            return
 
-        if status != 3:
-            self._dock_assist_reference_distance = None
-            self._dock_assist_last_distance = None
-            self._dock_assist_last_position = None
-            self._dock_assist_last_motion_at = None
-            self._dock_assist_retry_until = 0.0
-            self._dock_assist_attempts = 0
-            self._dock_assist_worker_running = False
+        # Mientras el propio reintento está cambiando de estado, no borramos
+        # el ciclo. Una limpieza nueva sí lo cancela inmediatamente.
+        if status in (5, 6, 7, 8):
+            self._dock_assist_reset_cycle()
+            self._dock_assist_status = int(status)
+            return
+
+        if self._dock_assist_worker_running:
+            return
+        if self._dock_assist_had_retry and now < self._dock_assist_retry_until + 45.0:
+            return
+
+        if status in (0, 1, 2):
+            self._dock_assist_reset_cycle()
+            self._dock_assist_status = int(status)
 
     def _apply_map_state(self, state):
         super()._apply_map_state(state)
@@ -116,12 +143,7 @@ class App(app_v9.App):
 
     @staticmethod
     def _near_base_limit(reference_distance):
-        """Umbral tolerante a coordenadas expresadas en m, cm o mm.
-
-        El E10 no documenta la unidad del string robot-location/chargingbase.
-        Usamos principalmente una proporción de la distancia inicial y un mínimo
-        razonable según la magnitud para cubrir las representaciones habituales.
-        """
+        """Umbral tolerante a coordenadas expresadas en m, cm o mm."""
         reference_distance = max(float(reference_distance), 1e-9)
         relative = reference_distance * 0.18
         if reference_distance > 100.0:
@@ -157,8 +179,6 @@ class App(app_v9.App):
             self._dock_assist_last_motion_at = now
             return
 
-        # Si el primer dato se tomó cuando ya estaba cerca, conservamos como
-        # referencia la mayor distancia observada durante este retorno.
         self._dock_assist_reference_distance = max(
             float(self._dock_assist_reference_distance),
             distance,
@@ -187,6 +207,7 @@ class App(app_v9.App):
         near_base = distance <= self._near_base_limit(reference)
         stalled_for = now - float(self._dock_assist_last_motion_at or now)
 
+        # Damos 10 s para la alineación normal con los contactos antes de actuar.
         if not near_base or stalled_for < 10.0:
             return
         if now < self._dock_assist_retry_until:
@@ -245,10 +266,20 @@ class App(app_v9.App):
 
 
 if __name__ == "__main__":
-    app_v9._save_crash_log("")
     try:
         App().mainloop()
     except Exception:
-        import traceback
-        app_v9._save_crash_log(traceback.format_exc())
-        raise
+        details = traceback.format_exc()
+        app_v9._save_crash_log(details)
+        try:
+            root = app_v9.tk.Tk()
+            root.withdraw()
+            app_v9.messagebox.showerror(
+                "Aspiradora Xiaomi",
+                "La aplicación encontró un error y guardó el detalle en:\n"
+                "%LOCALAPPDATA%\\Aspiradora Xiaomi\\crash.log",
+                parent=root,
+            )
+            root.destroy()
+        except Exception:
+            pass
