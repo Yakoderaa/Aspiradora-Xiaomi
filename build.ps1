@@ -15,7 +15,7 @@ pyinstaller --noconfirm --clean --windowed --onedir `
     --collect-all miio `
     --collect-all micloud `
     --collect-all PIL `
-    src\app_v8.py
+    src\app_v9.py
 
 $pf86 = ${env:ProgramFiles(x86)}
 $inno = @(
