@@ -1,4 +1,6 @@
 import json
+import math
+import re
 from dataclasses import dataclass
 from typing import Any
 
@@ -113,11 +115,6 @@ class XiaomiE10:
         return self.device.set_property_by(2, 4, mode)
 
     def set_mop_enabled(self, enabled: bool, water_level: int = 1):
-        """Selecciona aspirado solo o aspirado con mopa.
-
-        La app no puede colocar físicamente la mopa: esta opción controla si el E10
-        usa agua y el modo de trapeado cuando el accesorio está instalado.
-        """
         if enabled:
             water_level = max(1, min(3, int(water_level)))
             self.set_mode(1)
@@ -150,15 +147,136 @@ class XiaomiE10:
         return self.device.set_property_by(4, 1, 1)
 
     def manual(self, direction: int):
-        # 1 adelante, 2 izquierda, 3 derecha, 4 atrás, 5 detener, 10 salir
         if direction not in (1, 2, 3, 4, 5, 10):
             raise ValueError("Dirección inválida")
         return self.device.set_property_by(7, 16, direction)
 
-    # --- Mapa y limpieza localizada (MIoT del xiaomi.vacuum.b112) ---------
+    # --- Telemetría y mapa local ------------------------------------------
+    # El E10 expone por MIoT la trayectoria de limpieza (10/5), la base
+    # (10/22) y la posición del robot (10/24). La aplicación usa esos datos
+    # directamente por LAN para construir su propio mapa sin descargar la
+    # imagen de Xiaomi Cloud.
+
+    @staticmethod
+    def _numeric_values(value: Any) -> list[float]:
+        if value is None:
+            return []
+        if isinstance(value, (list, tuple)):
+            result = []
+            for item in value:
+                if isinstance(item, (int, float)) and math.isfinite(float(item)):
+                    result.append(float(item))
+            return result
+        if isinstance(value, dict):
+            for key in ("data", "value", "position", "point"):
+                if key in value:
+                    values = XiaomiE10._numeric_values(value[key])
+                    if values:
+                        return values
+            ordered = []
+            for key in ("x", "y", "phi", "yaw", "angle"):
+                if key in value and isinstance(value[key], (int, float)):
+                    ordered.append(float(value[key]))
+            return ordered
+        text = str(value).strip()
+        if not text:
+            return []
+        try:
+            parsed = json.loads(text)
+            if parsed != value:
+                values = XiaomiE10._numeric_values(parsed)
+                if values:
+                    return values
+        except Exception:
+            pass
+        return [float(x) for x in re.findall(r"-?\d+(?:\.\d+)?", text)]
+
+    @classmethod
+    def parse_position(cls, value: Any) -> dict[str, float] | None:
+        if isinstance(value, dict) and "x" in value and "y" in value:
+            try:
+                x, y = float(value["x"]), float(value["y"])
+                angle = float(value.get("phi", value.get("yaw", value.get("angle", 0))) or 0)
+                if math.isfinite(x) and math.isfinite(y):
+                    return {"x": x, "y": y, "angle": angle}
+            except Exception:
+                return None
+        values = cls._numeric_values(value)
+        if len(values) < 2:
+            return None
+        x, y = values[0], values[1]
+        angle = values[2] if len(values) > 2 else 0.0
+        if not math.isfinite(x) or not math.isfinite(y):
+            return None
+        return {"x": x, "y": y, "angle": angle}
+
+    @classmethod
+    def parse_trajectory(cls, value: Any) -> list[dict[str, float | int]]:
+        if value is None:
+            return []
+        try:
+            parsed = json.loads(value) if isinstance(value, str) else value
+        except Exception:
+            parsed = value
+
+        if isinstance(parsed, list) and parsed and all(isinstance(p, dict) for p in parsed):
+            points = []
+            for index, p in enumerate(parsed):
+                pos = cls.parse_position(p)
+                if pos:
+                    points.append({"id": int(p.get("id", index)), "x": pos["x"], "y": pos["y"], "phi": pos["angle"], "update": int(p.get("update", 1))})
+            return points
+
+        values = cls._numeric_values(parsed)
+        if len(values) < 5:
+            return []
+
+        # MIoT documenta el formato como:
+        # [first_poseid, x, y, phi, update, x, y, phi, update, ...]
+        first_pose_id = int(values[0])
+        payload = values[1:]
+        count = len(payload) // 4
+        points = []
+        for i in range(count):
+            x, y, phi, update = payload[i * 4:i * 4 + 4]
+            if not (math.isfinite(x) and math.isfinite(y)):
+                continue
+            points.append({
+                "id": first_pose_id + i,
+                "x": float(x),
+                "y": float(y),
+                "phi": float(phi),
+                "update": int(update),
+            })
+        return points
+
+    def local_map_state(self) -> dict[str, Any]:
+        values = self._get_many([
+            ("path", 10, 5),
+            ("charging_base", 10, 22),
+            ("robot", 10, 24),
+        ])
+        return {
+            "path": self.parse_trajectory(values.get("path")),
+            "charging_base": self.parse_position(values.get("charging_base")),
+            "robot": self.parse_position(values.get("robot")),
+            "raw_path": values.get("path"),
+        }
+
+    def start_mapping_run(self):
+        """Recorre la vivienda para que la PC genere su mapa local.
+
+        No borra ni descarga mapas de Xiaomi. Se apaga agua y succión, y se usa el
+        recorrido global del E10 mientras la PC registra su trayectoria por LAN.
+        """
+        self.set_water(0)
+        self.set_suction(0)
+        self.set_mode(0)
+        return self.device.call_action_by(2, 3)
+
+    # --- Limpieza localizada ----------------------------------------------
 
     def current_map_reference(self):
-        """Devuelve la referencia del mapa actual (service 10, property 2)."""
         return self._value(10, 2)
 
     def current_map_name(self) -> str:
@@ -180,15 +298,6 @@ class XiaomiE10:
             return text.rstrip("/").split("/")[-1]
         return text
 
-    def map_positions(self) -> dict[str, Any]:
-        values = self._get_many([
-            ("map_id", 10, 2),
-            ("charger", 10, 22),
-            ("robot", 10, 24),
-            ("path", 10, 5),
-        ])
-        return values
-
     def get_map_room_list(self):
         map_id = self.current_map_reference()
         if map_id is None:
@@ -203,25 +312,16 @@ class XiaomiE10:
         return f"{value:.2f}".rstrip("0").rstrip(".")
 
     def clean_point(self, x: float, y: float):
-        """Inicia limpieza puntual alrededor de una coordenada del mapa."""
         target = f"{self._coord(x)},{self._coord(y)}"
         self.device.set_property_by(9, 5, target)
-        # point sweep type
         self.device.set_property_by(2, 8, 4)
         return self.device.call_action_by(9, 1)
 
     def clean_zone(self, x0: float, y0: float, x1: float, y1: float):
-        """Limpia un rectángulo del mapa."""
         left, right = sorted((float(x0), float(x1)))
         bottom, top = sorted((float(y0), float(y1)))
-        points = [
-            (left, bottom),
-            (left, top),
-            (right, top),
-            (right, bottom),
-        ]
+        points = [(left, bottom), (left, top), (right, top), (right, bottom)]
         zone = ",".join(self._coord(v) for point in points for v in point)
-        # set-zone-point also validates/records the area on this model.
         try:
             self.device.call_action_by(9, 8, [zone])
         except Exception:
@@ -232,7 +332,6 @@ class XiaomiE10:
         if not room_ids:
             raise ValueError("Elegí al menos una habitación.")
         value = ",".join(str(int(room_id)) for room_id in room_ids)
-        # clean-room-ids, clean-room-mode(Global), clean-room-oper(Start)
         return self.device.call_action_by(7, 3, [value, 0, 1])
 
 
@@ -243,14 +342,12 @@ def discover_from_xiaomi(username: str, password: str, locale: str = "all") -> l
     found = []
     for dev in devices.values():
         if dev.model == MODEL and not dev.is_child:
-            found.append(
-                {
-                    "name": dev.name or "Xiaomi Robot Vacuum E10",
-                    "ip": dev.ip,
-                    "token": dev.token,
-                    "locale": dev.locale,
-                    "online": dev.is_online,
-                    "did": dev.did,
-                }
-            )
+            found.append({
+                "name": dev.name or "Xiaomi Robot Vacuum E10",
+                "ip": dev.ip,
+                "token": dev.token,
+                "locale": dev.locale,
+                "online": dev.is_online,
+                "did": dev.did,
+            })
     return found
