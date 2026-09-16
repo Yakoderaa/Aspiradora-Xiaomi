@@ -15,7 +15,9 @@ pyinstaller --noconfirm --clean --windowed --onedir `
     --collect-all miio `
     --collect-all micloud `
     --collect-all PIL `
-    src\app_v3.py
+    --collect-all vacuum_map_parser_xiaomi `
+    --collect-all vacuum_map_parser_base `
+    src\app_v4.py
 
 $pf86 = ${env:ProgramFiles(x86)}
 $inno = @(
