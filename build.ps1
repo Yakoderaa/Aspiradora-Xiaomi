@@ -16,9 +16,10 @@ pyinstaller --noconfirm --clean --windowed --onedir `
     --collect-all micloud `
     src\app.py
 
+$pf86 = ${env:ProgramFiles(x86)}
 $inno = @(
-    "$env:ProgramFiles(x86)\Inno Setup 7\ISCC.exe",
-    "$env:ProgramFiles(x86)\Inno Setup 6\ISCC.exe"
+    "$pf86\Inno Setup 7\ISCC.exe",
+    "$pf86\Inno Setup 6\ISCC.exe"
 ) | Where-Object { Test-Path $_ } | Select-Object -First 1
 
 if (-not $inno) {
