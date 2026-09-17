@@ -13,12 +13,11 @@ python -m pip install pyinstaller==6.22.3
 # Genera el icono multi-resolución desde el icono de Xiaomi Home.
 python scripts\make_mihome_icon.py
 
-# Antes de empaquetar: sintaxis/imports + persistencia de mapas/planes/backups.
+# Verificaciones antes de empaquetar.
 python -m compileall -q src scripts
 python scripts\smoke_test.py
 
-# Helper independiente de actualizaciones. Incluye los recursos para que su
-# ventana Tk use el mismo icono que el ejecutable/instalador.
+# Helper independiente de actualizaciones, con el mismo icono de Mi Home.
 pyinstaller --noconfirm --clean --windowed --onefile `
     --name "Aspiradora Xiaomi Updater" `
     --icon "assets\mi_home.ico" `
@@ -33,7 +32,7 @@ pyinstaller --noconfirm --clean --windowed --onefile `
     --collect-all miio `
     src\scheduler_agent.py
 
-# Aplicación principal: icono en EXE + recursos para Tk/barra de tareas/bandeja.
+# Aplicación principal: icono en EXE + Tk + barra de tareas + bandeja.
 pyinstaller --noconfirm --clean --windowed --onedir `
     --name "Aspiradora Xiaomi" `
     --icon "assets\mi_home.ico" `
@@ -43,7 +42,7 @@ pyinstaller --noconfirm --clean --windowed --onedir `
     --collect-all micloud `
     --collect-all PIL `
     --collect-all pystray `
-    src\app_v19.py
+    src\app_v20.py
 
 Copy-Item `
     "dist\Aspiradora Xiaomi Updater.exe" `
@@ -55,7 +54,7 @@ Copy-Item `
     "dist\Aspiradora Xiaomi\Aspiradora Xiaomi Scheduler.exe" `
     -Force
 
-# Verificación post-build de los tres ejecutables y recursos de icono.
+# Verificación post-build de ejecutables y recursos de icono.
 $required = @(
     "dist\Aspiradora Xiaomi\Aspiradora Xiaomi.exe",
     "dist\Aspiradora Xiaomi\Aspiradora Xiaomi Updater.exe",
@@ -68,6 +67,42 @@ foreach ($path in $required) {
         throw "Falta un archivo requerido del build: $path"
     }
 }
+
+# Comprueba que Windows puede extraer un icono válido de cada ejecutable.
+Add-Type -AssemblyName System.Drawing
+$iconTargets = @(
+    "dist\Aspiradora Xiaomi\Aspiradora Xiaomi.exe",
+    "dist\Aspiradora Xiaomi\Aspiradora Xiaomi Updater.exe",
+    "dist\Aspiradora Xiaomi\Aspiradora Xiaomi Scheduler.exe"
+)
+foreach ($target in $iconTargets) {
+    $resolved = (Resolve-Path $target).Path
+    $icon = [System.Drawing.Icon]::ExtractAssociatedIcon($resolved)
+    if ($null -eq $icon -or $icon.Width -lt 16 -or $icon.Height -lt 16) {
+        throw "Windows no pudo extraer un icono válido de: $target"
+    }
+    $icon.Dispose()
+}
+
+# Smoke runtime: la app y el agente deben seguir vivos unos segundos. Esto
+# captura errores de importación/arranque que compileall y PyInstaller no ven.
+$appExe = (Resolve-Path "dist\Aspiradora Xiaomi\Aspiradora Xiaomi.exe").Path
+$appProcess = Start-Process -FilePath $appExe -ArgumentList "--tray" -PassThru
+Start-Sleep -Seconds 5
+$appProcess.Refresh()
+if ($appProcess.HasExited) {
+    throw "La aplicación empaquetada se cerró durante el smoke test de arranque. Código: $($appProcess.ExitCode)"
+}
+Stop-Process -Id $appProcess.Id -Force -ErrorAction SilentlyContinue
+
+$schedulerExe = (Resolve-Path "dist\Aspiradora Xiaomi\Aspiradora Xiaomi Scheduler.exe").Path
+$schedulerProcess = Start-Process -FilePath $schedulerExe -PassThru
+Start-Sleep -Seconds 3
+$schedulerProcess.Refresh()
+if ($schedulerProcess.HasExited) {
+    throw "El programador se cerró durante el smoke test de arranque. Código: $($schedulerProcess.ExitCode)"
+}
+Stop-Process -Id $schedulerProcess.Id -Force -ErrorAction SilentlyContinue
 
 $pf86 = ${env:ProgramFiles(x86)}
 $inno = @(
@@ -85,6 +120,12 @@ $installer = "installer_output\Aspiradora-Xiaomi-Setup.exe"
 if (-not (Test-Path $installer)) {
     throw "Inno Setup no generó el instalador esperado."
 }
+$installerIcon = [System.Drawing.Icon]::ExtractAssociatedIcon((Resolve-Path $installer).Path)
+if ($null -eq $installerIcon -or $installerIcon.Width -lt 16) {
+    throw "El instalador no contiene un icono válido."
+}
+$installerIcon.Dispose()
+
 $hash = (Get-FileHash $installer -Algorithm SHA256).Hash.ToLower()
 "$hash  Aspiradora-Xiaomi-Setup.exe" | Set-Content -Encoding ASCII "$installer.sha256"
 Write-Host "Instalador generado: $installer"
