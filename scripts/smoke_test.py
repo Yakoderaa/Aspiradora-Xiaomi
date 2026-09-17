@@ -58,7 +58,7 @@ class FakePointVacuum:
 
 
 def main():
-    import app_v21
+    import app_v22
     import pystray
     from backup_bundle import read_bundle, write_bundle
     from cleaning_plan import CleaningPlanStore
@@ -69,13 +69,27 @@ def main():
     from xiaomi_e10_live import XiaomiE10Live
 
     check(issubclass(XiaomiE10Live, XiaomiE10Edge), "La telemetría live debe conservar el controlador EDGE")
-    check(hasattr(app_v21.App, "_start_tray_icon"), "Falta integración de bandeja")
-    check(hasattr(app_v21.App, "open_quick_actions_config"), "Falta configuración de acciones rápidas")
-    check(hasattr(app_v21.App, "_sync_no_go_async"), "Falta sincronización de bloqueos por mapa")
-    check(hasattr(app_v21.App, "_map_double_click"), "Falta objetivo por doble clic")
-    check(hasattr(app_v21.App, "_map_drag"), "Falta desplazamiento/pan del mapa")
-    check(hasattr(app_v21.App, "logout_xiaomi_account"), "Falta desconexión de cuenta Xiaomi")
-    check(hasattr(app_v21.App, "_rebuild_mapped_walls"), "Falta generación de paredes persistentes")
+
+    # La v22 debe construir su interfaz desde cero y no depender del constructor visual anterior.
+    for method in (
+        "_build_ui",
+        "_build_home_page_v22",
+        "_build_clean_page_v22",
+        "_build_map_page_v22",
+        "_build_robot_page_v22",
+        "_build_settings_page_v22",
+        "_build_scheduler_page",
+        "_show_quick_panel",
+    ):
+        check(method in app_v22.App.__dict__, f"La nueva interfaz no implementa {method}")
+
+    check(hasattr(app_v22.App, "_start_tray_icon"), "Falta integración de bandeja")
+    check(hasattr(app_v22.App, "open_quick_actions_config"), "Falta configuración de acciones rápidas")
+    check(hasattr(app_v22.App, "_sync_no_go_async"), "Falta sincronización de bloqueos por mapa")
+    check(hasattr(app_v22.App, "_map_double_click"), "Falta objetivo por doble clic")
+    check(hasattr(app_v22.App, "_map_drag"), "Falta desplazamiento/pan del mapa")
+    check(hasattr(app_v22.App, "logout_xiaomi_account"), "Falta desconexión de cuenta Xiaomi")
+    check(hasattr(app_v22.App, "_rebuild_mapped_walls"), "Falta generación de paredes persistentes")
     check(bool(getattr(pystray.Icon, "HAS_DEFAULT_ACTION", False)), "La bandeja no expone acción primaria")
 
     parsed = XiaomiE10Live.parse_trajectory([10, 0.0, 0.0, 0.0, 1, 1.0, 2.0, 0.25, 1])
@@ -156,7 +170,7 @@ def main():
         maps_restored.select_map(first_id)
         check(maps_restored.snapshot().get("mapped_walls"), "La importación no restauró las paredes del mapa")
 
-    print("SMOKE TEST OK: EDGE+live, paredes persistentes, punto/succión, 4 mapas, planes, bandeja, pan y .xvac")
+    print("SMOKE TEST OK: UI v22 nueva, EDGE+live, paredes, punto/succión, 4 mapas, planes, bandeja y .xvac")
 
 
 if __name__ == "__main__":
