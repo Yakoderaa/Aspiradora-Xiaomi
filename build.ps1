@@ -19,6 +19,7 @@ python -m compileall -q src scripts
 python scripts\smoke_test.py
 python scripts\smoke_test_v24.py
 python scripts\smoke_test_v25.py
+python scripts\smoke_test_v26.py
 
 # Helper independiente de actualizaciones, con el mismo icono de Mi Home.
 pyinstaller --noconfirm --clean --windowed --onefile `
@@ -35,7 +36,7 @@ pyinstaller --noconfirm --clean --windowed --onefile `
     --collect-all miio `
     src\scheduler_agent.py
 
-# Aplicación principal v25: dispositivos + foto real E10 + errores sólo si son reales.
+# Aplicación principal v26: UI v25 + inicio EDGE nativo y watchdog robusto.
 pyinstaller --noconfirm --clean --windowed --onedir `
     --name "Aspiradora Xiaomi" `
     --icon "assets\mi_home.ico" `
@@ -46,7 +47,7 @@ pyinstaller --noconfirm --clean --windowed --onedir `
     --collect-all micloud `
     --collect-all PIL `
     --collect-all pystray `
-    src\main_v25.py
+    src\main_v26.py
 
 Copy-Item `
     "dist\Aspiradora Xiaomi Updater.exe" `
@@ -95,7 +96,7 @@ $appProcess = Start-Process -FilePath $appExe -ArgumentList "--tray" -PassThru
 Start-Sleep -Seconds 6
 $appProcess.Refresh()
 if ($appProcess.HasExited) {
-    throw "La aplicación v25 se cerró durante el smoke test de arranque. Código: $($appProcess.ExitCode)"
+    throw "La aplicación v26 se cerró durante el smoke test de arranque. Código: $($appProcess.ExitCode)"
 }
 Stop-Process -Id $appProcess.Id -Force -ErrorAction SilentlyContinue
 
