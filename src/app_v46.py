@@ -1,87 +1,139 @@
 import math
+import statistics
 import threading
 import time
 
 import app_v45
-from xiaomi_cloud_path_events_v46 import XiaomiCloudPathEventsV46
-from xiaomi_e10_map_v46 import XiaomiE10MapV46
+from xiaomi_cloud_history_v46 import XiaomiCloudHistoryV46
 
 
 class App(app_v45.App):
-    """v46: trayectoria desde el evento Cloud 10/5 + seguridad de origen.
+    """v46: trayectoria real desde el historial Xiaomi Cloud de 10/5.
 
-    El polling de 10/5 puede devolver ``hello`` aunque el firmware publique la
-    trayectoria como evento cleaning-path. V46 consulta el historial Cloud de
-    ese evento y sólo mueve el icono cuando aparecen DOS posiciones distintas.
-    Nunca usa cambios de chargingbase para confirmar movimiento.
+    V45 dejó probado que 10/24 permanece inmóvil y que 10/22 puede publicar el
+    sentinela 255_255. Por eso v46 deja de usar la posición Cloud actual como
+    fuente de movimiento y consulta ``user/get_user_device_data`` para la clave
+    MIoT 10.5. Cur-cleaning-path es una propiedad; ``event`` se consulta sólo
+    como fallback de compatibilidad.
+
+    Ninguna muestra aislada mueve el dibujo: sólo se acepta una trayectoria con
+    al menos dos coordenadas X/Y distintas.
     """
 
-    CLOUD_FILE_POLL_SECONDS = 2.0
-    CLOUD_UPLOAD_INTERVAL_SECONDS = 10.0
-    CLOUD_UPLOAD_SETTLE_SECONDS = 2.5
-    CLOUD_EVENT_POLL_MS = 1450
+    CLOUD_HISTORY_POLL_SECONDS = 1.8
+    HISTORY_POINT_ID_BASE = 4_600_000
+    HISTORY_MOTION_EPSILON = 0.015
 
     def __init__(self):
-        self._v46_event_worker = False
-        self._v46_event_since = 0.0
-        self._v46_event_diag = {}
-        self._v46_event_origins = {}
-        self._v46_event_scale = {}
-        self._v46_event_merged_count = 0
-        self._v46_event_new_count = 0
-        self._v46_event_motion = False
-        self._v46_event_error = None
-        self._v46_event_client = None
-        self._v46_last_upload_diag = {}
+        self._v46_history_worker = False
+        self._v46_history_last_at = 0.0
+        self._v46_history_ok_reads = 0
+        self._v46_history_error = None
+        self._v46_history_queries = {}
+        self._v46_history_winner = None
+        self._v46_history_records = 0
+        self._v46_history_raw_points = 0
+        self._v46_history_distinct_points = 0
+        self._v46_history_applied_points = 0
+        self._v46_history_new_last = 0
+        self._v46_history_newest = None
+        self._v46_history_scale = 1.0
+        self._v46_history_origin = None
+        self._v46_history_last_raw = None
+        self._v46_history_last_relative = None
+        self._v46_history_motion_confirmed = False
+        self._v46_history_point_id = self.HISTORY_POINT_ID_BASE
+        self._v46_history_seen = set()
+        self._v46_phase = None
+        self._v46_phase_started_at = 0.0
         super().__init__()
-        self.after(1100, self._v46_event_tick)
 
-    # ---------------------------------------------------------- mapa Cloud
-    def _v40_map_client(self, vacuum, settings):
-        if self._v40_client is None or self._v40_client_vacuum is not vacuum:
-            self._v40_client = XiaomiE10MapV46(vacuum, settings)
-            self._v40_client_vacuum = vacuum
-        return self._v40_client
-
-    # ------------------------------------------------------- evento 10/5
-    def _v46_reset_event_session(self, reset_origin=False):
-        self._v46_event_since = time.time() - 2.0
-        self._v46_event_diag = {}
-        self._v46_event_merged_count = 0
-        self._v46_event_new_count = 0
-        self._v46_event_motion = False
-        self._v46_event_error = None
-        self._v46_event_client = None
-        if reset_origin:
-            self._v46_event_origins = {}
-            self._v46_event_scale = {}
+    # ------------------------------------------------------------- sesión/fase
+    def _v46_reset_history_phase(self, phase=None):
+        self._v46_phase = int(phase or 0)
+        # Margen para no perder el primer frame por redondeo entre relojes.
+        self._v46_phase_started_at = time.time() - 5.0
+        self._v46_history_last_at = 0.0
+        self._v46_history_error = None
+        self._v46_history_queries = {}
+        self._v46_history_winner = None
+        self._v46_history_records = 0
+        self._v46_history_raw_points = 0
+        self._v46_history_distinct_points = 0
+        self._v46_history_applied_points = 0
+        self._v46_history_new_last = 0
+        self._v46_history_newest = None
+        self._v46_history_scale = 1.0
+        self._v46_history_origin = None
+        self._v46_history_last_raw = None
+        self._v46_history_last_relative = None
+        self._v46_history_motion_confirmed = False
+        self._v46_history_seen = set()
+        self._v46_history_point_id = self.HISTORY_POINT_ID_BASE + max(0, self._v46_phase) * 100_000
 
     def start_new_mapping(self):
-        self._v46_reset_event_session(reset_origin=True)
-        return super().start_new_mapping()
+        result = super().start_new_mapping()
+        if getattr(self, "mapping_active", False):
+            self._v46_reset_history_phase(getattr(self, "mapping_phase", 1))
+        return result
 
     def start_interior_mapping(self):
-        # Conservamos el origen del Paso 1: los puntos de ambos pasos comparten
-        # el mismo sistema de coordenadas cuando vienen de la misma sesión/mapa.
-        self._v46_reset_event_session(reset_origin=False)
-        return super().start_interior_mapping()
+        result = super().start_interior_mapping()
+        if getattr(self, "mapping_active", False):
+            self._v46_reset_history_phase(getattr(self, "mapping_phase", 2))
+        return result
 
-    @staticmethod
-    def _v46_distinct_points(points, epsilon=1e-4):
+    # ------------------------------------------------------------- Cloud 10.5
+    def _maybe_poll_cloud_position(self):
+        """Reemplaza el polling v37 de 10/24 por historial de 10/5."""
+        if not self.mapping_active or not self.vacuum:
+            return
+        if not self._cloud_session_ready() or self._v46_history_worker:
+            return
+
+        phase = int(getattr(self, "mapping_phase", 0) or 0)
+        if phase not in (1, 2):
+            return
+        if self._v46_phase != phase or not self._v46_phase_started_at:
+            self._v46_reset_history_phase(phase)
+
+        now = time.monotonic()
+        if now - float(self._v46_history_last_at or 0.0) < self.CLOUD_HISTORY_POLL_SECONDS:
+            return
+        self._v46_history_last_at = now
+        self._v46_history_worker = True
+        settings = dict(self.settings or {})
+        started_at = float(self._v46_phase_started_at)
+
+        def worker():
+            try:
+                result = XiaomiCloudHistoryV46(settings).read_cleaning_path_history(started_at)
+                self._post_ui("cloud_history_v46", result)
+            except Exception as exc:
+                self._post_ui(
+                    "cloud_history_error_v46",
+                    str(exc).strip() or "No se pudo consultar el historial 10.5 de Xiaomi Cloud.",
+                )
+
+        threading.Thread(target=worker, daemon=True).start()
+
+    # ------------------------------------------------------- trayectoria segura
+    @classmethod
+    def _distinct_xy_count(cls, points):
         distinct = []
         for point in points or []:
             try:
                 xy = (float(point["x"]), float(point["y"]))
             except Exception:
                 continue
-            if not distinct or math.hypot(xy[0] - distinct[-1][0], xy[1] - distinct[-1][1]) >= epsilon:
+            if not distinct or math.hypot(xy[0] - distinct[-1][0], xy[1] - distinct[-1][1]) >= cls.HISTORY_MOTION_EPSILON:
                 distinct.append(xy)
-        return distinct
+        return len(distinct)
 
     @staticmethod
-    def _v46_detect_path_scale(points):
-        """El spec B112 muestra x/y en metros; sólo corrige variantes enormes."""
-        distances = []
+    def _detect_history_scale(points):
+        """Detecta m/cm/mm por distancia entre poses, no por coordenada absoluta."""
+        steps = []
         previous = None
         for point in points or []:
             try:
@@ -89,223 +141,209 @@ class App(app_v45.App):
             except Exception:
                 continue
             if previous is not None:
-                d = math.hypot(current[0] - previous[0], current[1] - previous[1])
-                if d > 1e-9:
-                    distances.append(d)
+                distance = math.hypot(current[0] - previous[0], current[1] - previous[1])
+                if math.isfinite(distance) and distance > 1e-9:
+                    steps.append(distance)
             previous = current
-        if not distances:
+        if not steps:
             return 1.0
-        distances.sort()
-        median = distances[len(distances) // 2]
-        # Un robot no avanza decenas/centenas de metros entre poses contiguas.
-        if median > 100.0:
+        typical = float(statistics.median(steps[:80]))
+        # Un robot avanza décimas de metro por frame. En cm son decenas y en mm
+        # centenas; los umbrales son deliberadamente amplios.
+        if typical > 80.0:
             return 0.001
-        if median > 5.0:
+        if typical > 8.0:
             return 0.01
         return 1.0
 
-    def _v46_normalize_event_path(self, path, phase):
-        if not path:
+    def _normalize_history_points(self, points):
+        if not points:
             return []
-        phase = int(phase or 0)
-        # Un solo origen global mientras exista: mantiene Paso 1 y Paso 2
-        # alineados. Si V46 arrancó directamente en Paso 2, su primer punto es 0.
-        origin = self._v46_event_origins.get("global")
-        if origin is None:
-            first = path[0]
+        if self._v46_history_origin is None:
             try:
-                origin = (float(first["x"]), float(first["y"]))
+                first = points[0]
+                self._v46_history_origin = (float(first["x"]), float(first["y"]))
             except Exception:
                 return []
-            self._v46_event_origins["global"] = origin
-        scale = self._v46_event_scale.get("global")
-        if scale is None:
-            scale = self._v46_detect_path_scale(path)
-            self._v46_event_scale["global"] = scale
+        ox, oy = self._v46_history_origin
+        scale = self._detect_history_scale(points)
+        self._v46_history_scale = scale
 
         normalized = []
-        for point in path:
+        previous_xy = None
+        for point in points:
             try:
-                normalized.append({
-                    "id": int(point.get("id", len(normalized))),
-                    "x": (float(point["x"]) - origin[0]) * scale,
-                    "y": (float(point["y"]) - origin[1]) * scale,
-                    "phi": float(point.get("phi", 0) or 0),
-                    "update": int(point.get("update", 1) or 0),
-                })
+                raw_x = float(point["x"])
+                raw_y = float(point["y"])
+                phi = float(point.get("phi", 0) or 0)
+                protocol_id = int(point.get("id", 0) or 0)
             except Exception:
                 continue
+            x = (raw_x - ox) * scale
+            y = (raw_y - oy) * scale
+            if not (math.isfinite(x) and math.isfinite(y) and math.isfinite(phi)):
+                continue
+            xy = (x, y)
+            if previous_xy is not None and math.hypot(x - previous_xy[0], y - previous_xy[1]) < 1e-9:
+                continue
+            previous_xy = xy
+            normalized.append({
+                "protocol_id": protocol_id,
+                "x": x,
+                "y": y,
+                "phi": phi,
+                "update": int(point.get("update", 1) or 0),
+                "history_time": point.get("history_time"),
+                "raw_x": raw_x,
+                "raw_y": raw_y,
+            })
         return normalized
 
-    def _v46_apply_event_path(self, result):
+    def _apply_history_result(self, result):
+        self._v46_history_queries = dict((result or {}).get("queries") or {})
+        self._v46_history_winner = (result or {}).get("winner")
+        self._v46_history_records = int((result or {}).get("records_with_path", 0) or 0)
+        self._v46_history_newest = (result or {}).get("newest")
         points = list((result or {}).get("points") or [])
-        if not points or not self.local_map or not self.mapping_active:
-            return
-
-        merger = getattr(self.vacuum, "_merge_live_path", None) if self.vacuum else None
-        if callable(merger):
+        self._v46_history_raw_points = len(points)
+        self._v46_history_distinct_points = self._distinct_xy_count(points)
+        self._v46_history_new_last = 0
+        if points:
+            last = points[-1]
             try:
-                raw_merged, changed = merger(points)
+                self._v46_history_last_raw = (
+                    float(last["x"]), float(last["y"]), float(last.get("phi", 0) or 0)
+                )
             except Exception:
-                raw_merged, changed = points, len(points)
-        else:
-            raw_merged, changed = points, len(points)
+                self._v46_history_last_raw = None
 
-        phase = int(self.mapping_phase or 0)
-        normalized = self._v46_normalize_event_path(raw_merged, phase)
-        if not normalized:
+        # Una sola pose no es movimiento.
+        if self._v46_history_distinct_points < 2:
             return
-        distinct = self._v46_distinct_points(normalized, epsilon=self.MOTION_EPSILON)
-        motion = len(distinct) >= 2
 
-        self._v46_event_merged_count = len(normalized)
-        self._v46_event_new_count = int(changed or 0)
-        self._v46_event_motion = bool(motion)
+        normalized = self._normalize_history_points(points)
+        if len(normalized) < 2 or self._distinct_xy_count(normalized) < 2:
+            return
 
-        # Base/origen visual fijo. Una muestra única NO desplaza el robot.
-        self.local_map.set_charging_base({"x": 0.0, "y": 0.0, "angle": 0.0})
-        if motion:
-            added = self.local_map.merge_trajectory(normalized, phase=phase)
-            last = normalized[-1]
-            self.local_map.set_robot({
-                "x": float(last["x"]),
-                "y": float(last["y"]),
-                "angle": float(last.get("phi", 0) or 0),
-            })
-            self._v34_motion_confirmed = True
-            self._v34_position_changes = max(
-                int(getattr(self, "_v34_position_changes", 0) or 0),
-                max(1, len(distinct) - 1),
+        phase = int(getattr(self, "mapping_phase", 0) or 0)
+        if phase not in (1, 2) or (phase == 2 and getattr(self, "mapping_transitioning", False)):
+            return
+        if not self.local_map:
+            return
+
+        new_samples = []
+        for point in normalized:
+            signature = (
+                int(point.get("protocol_id", 0) or 0),
+                round(float(point["x"]), 6),
+                round(float(point["y"]), 6),
+                round(float(point.get("phi", 0) or 0), 6),
             )
-            if phase == 1:
-                self._rebuild_mapped_walls(force=False)
-        else:
-            added = 0
-            self.local_map.set_robot({"x": 0.0, "y": 0.0, "angle": 0.0})
+            if signature in self._v46_history_seen:
+                continue
+            self._v46_history_seen.add(signature)
+            self._v46_history_point_id += 1
+            new_samples.append({
+                "id": self._v46_history_point_id,
+                "x": float(point["x"]),
+                "y": float(point["y"]),
+                "phi": float(point.get("phi", 0) or 0),
+                "update": int(point.get("update", 1) or 0),
+            })
 
-        state = dict(getattr(self, "_last_map_state_debug", {}) or {})
-        state.update({
-            "path": normalized if motion else [],
-            "robot": None,
-            "charging_base": None,
-            "path_source": "Cloud history · event 10/5 cleaning-path",
-            "position_source": "último punto event 10/5" if motion else "event 10/5 · esperando segundo punto",
-            "direct_path_count": len(normalized),
-            "action_path_count": int(state.get("action_path_count", 0) or 0),
-            "accumulated_path_count": len(normalized),
-            "new_path_count": int(added or changed or 0),
-            "telemetry_note": "trayectoria Cloud 10/5 fresca" if motion else "primer punto Cloud recibido; todavía no confirma movimiento",
-        })
-        self._last_map_state_debug = state
+        if not new_samples:
+            return
+
+        self._v46_history_new_last = len(new_samples)
+        self._v46_history_applied_points += len(new_samples)
+        self._v46_history_motion_confirmed = True
+        self._v34_motion_confirmed = True
+        self._v34_position_changes = max(
+            int(getattr(self, "_v34_position_changes", 0) or 0),
+            max(1, self._v46_history_distinct_points - 1),
+        )
+
+        self.local_map.set_charging_base({"x": 0.0, "y": 0.0, "angle": 0.0})
+        self.local_map.merge_trajectory(new_samples, phase=phase)
+
+        last = normalized[-1]
+        relative = {
+            "x": float(last["x"]),
+            "y": float(last["y"]),
+            "angle": float(last.get("phi", 0) or 0),
+        }
+        self._v46_history_last_relative = (relative["x"], relative["y"], relative["angle"])
+        self.local_map.set_robot(relative)
+
+        if phase == 1:
+            self._rebuild_mapped_walls(force=False)
+
         try:
-            self._stable_map_status(state)
+            self.map_status_label.configure(
+                text=(
+                    f"Trayectoria Xiaomi Cloud 10/5 · X {relative['x']:+.3f} m · "
+                    f"Y {relative['y']:+.3f} m · {self._v46_history_applied_points} puntos reales"
+                )
+            )
+            self.mapping_steps_info.configure(
+                text="Fuente: historial Xiaomi Cloud 10.5 · no se usa 10/22 para inferir movimiento"
+            )
         except Exception:
             pass
         self._render_maps()
 
-    def _v46_event_tick(self):
-        try:
-            if (
-                self.mapping_active
-                and self.vacuum
-                and self._cloud_session_ready()
-                and not self._v46_event_worker
-                and self._v46_event_since > 0
-            ):
-                self._v46_event_worker = True
-                settings = dict(self.settings or {})
-                since_epoch = float(self._v46_event_since)
-
-                def worker():
-                    try:
-                        client = XiaomiCloudPathEventsV46(settings)
-                        result = client.read_cleaning_path(since_epoch, limit=60)
-                        self._post_ui("v46_cloud_path_history", result)
-                    except Exception as exc:
-                        self._post_ui(
-                            "v46_cloud_path_history_error",
-                            str(exc).strip() or type(exc).__name__,
-                        )
-
-                threading.Thread(target=worker, daemon=True).start()
-        finally:
-            try:
-                self.after(self.CLOUD_EVENT_POLL_MS, self._v46_event_tick)
-            except Exception:
-                pass
-
-    # ------------------------------------------------------------ UI events
+    # ------------------------------------------------------------- eventos UI
     def _handle_ui_event(self, kind, payload):
-        if kind == "v46_cloud_path_history":
-            self._v46_event_worker = False
+        if kind == "cloud_history_v46":
+            self._v46_history_worker = False
+            self._v46_history_ok_reads += 1
+            self._v46_history_error = None
             result = payload[0] if payload else {}
-            self._v46_event_diag = dict(result or {})
-            self._v46_event_error = None
-            self._v46_apply_event_path(result)
+            self._apply_history_result(result)
             return
-        if kind == "v46_cloud_path_history_error":
-            self._v46_event_worker = False
-            self._v46_event_error = str(payload[0]) if payload else "Error historial 10/5"
+        if kind == "cloud_history_error_v46":
+            self._v46_history_worker = False
+            self._v46_history_error = str(payload[0]) if payload else "Error historial Cloud 10.5"
             return
+        return super()._handle_ui_event(kind, payload)
 
-        result = super()._handle_ui_event(kind, payload)
-        if kind in ("cloud_ijai_map_state_v40", "cloud_ijai_map_error_v40"):
-            client = getattr(self, "_v40_client", None)
-            if client is not None:
-                self._v46_last_upload_diag = dict(
-                    getattr(client, "last_v46_upload_diagnostics", {}) or {}
-                )
-        return result
-
-    # --------------------------------------------------------- diagnóstico
+    # ------------------------------------------------------------- diagnóstico
     @staticmethod
-    def _v46_attempts_text(attempts):
-        if not attempts:
-            return "—"
-        rows = []
-        for item in attempts:
-            if item.get("ok"):
-                rows.append(
-                    f"{item.get('action')} {item.get('transport')} OK "
-                    f"top={item.get('top_code')!r} result={item.get('result_code')!r} out={item.get('out') or {}}"
-                )
-            else:
-                rows.append(
-                    f"{item.get('action')} {item.get('transport')} ERROR "
-                    f"{item.get('error') or item.get('cloud_error') or ''}"
-                )
-        return "\n    ".join(rows)
+    def _query_diag_text(queries, label):
+        item = (queries or {}).get(label) or {}
+        if not item:
+            return "sin consulta"
+        if not item.get("ok"):
+            return f"ERROR {item.get('error') or 'sin detalle'}"
+        return (
+            f"records={int(item.get('records', 0) or 0)} · "
+            f"con trayectoria={int(item.get('records_with_path', 0) or 0)} · "
+            f"puntos={int(item.get('points', 0) or 0)} · "
+            f"newest={item.get('newest')!r} · preview={item.get('preview') or '—'}"
+        )
 
     def _diagnostic_text(self):
         inherited = super()._diagnostic_text()
-        event = dict(self._v46_event_diag or {})
-        upload = dict(self._v46_last_upload_diag or {})
-        latest = event.get("latest_time")
-        age = None
-        try:
-            age = max(0.0, time.time() - float(latest)) if latest is not None else None
-        except Exception:
-            pass
         return (
-            "DIAGNÓSTICO V46 ACTIVO · evento cleaning-path + movimiento seguro\n"
-            "================================================================\n"
-            "causa V44 corregida: 10/24 quedó fijo; 10/22 pasó a 255_255 y generó el salto falso -196/-195\n"
-            "regla V46: cambios de chargingbase jamás confirman movimiento; 255_255 es sentinela\n"
-            "fuente nueva: /user/get_user_device_data → MIoT 10.5 type=event (fallback prop)\n"
-            f"historial ganador: key={event.get('winner_key') or '—'} · type={event.get('winner_type') or '—'}\n"
-            f"registros recibidos: {event.get('record_count', 0)} · stale ignorados: {event.get('stale_records_ignored', 0)}\n"
-            f"puntos parseados historial: {event.get('point_count', 0)} · fusionados: {self._v46_event_merged_count} · nuevos: {self._v46_event_new_count}\n"
-            f"último evento epoch: {latest!r} · edad: {f'{age:.1f}s' if age is not None else '—'}\n"
-            f"payload último evento (recortado): {event.get('latest_raw') or '—'}\n"
-            f"intentos historial: {event.get('attempts') or []}\n"
-            f"origen raw trayectoria: {self._v46_event_origins.get('global')!r} · escala: {self._v46_event_scale.get('global', 1.0)}\n"
-            f"movimiento confirmado por trayectoria: {self._v46_event_motion}\n"
-            f"error historial: {self._v46_event_error or '—'}\n"
-            "upload B112: 10/18 + 10/15(type=0) + 10/6(type=0) son acciones documentadas; map-id sólo si >0\n"
-            f"upload map_id: {upload.get('map_id')!r} · privacidad: original={upload.get('privacy_original')!r} actual={upload.get('privacy_now')!r}\n"
-            f"respuestas upload:\n    {self._v46_attempts_text(upload.get('attempts') or [])}\n"
-            f"outputs upload por PIID: {upload.get('outputs') or {}}\n"
-            "10/15 y 10/16 se conservan sólo como diagnóstico de argumentos de 10/12; el firmware puede no permitir leerlos como propiedades\n\n"
+            "DIAGNÓSTICO V46 ACTIVO · historial Cloud de cur-cleaning-path\n"
+            "=============================================================\n"
+            "fuente buscada: user/get_user_device_data · key=10.5\n"
+            "orden: prop:10.5 (correcto para cur-cleaning-path) · event:10.5 sólo fallback\n"
+            f"inicio de fase epoch: {self._v46_phase_started_at:.3f} · fase: {self._v46_phase!r}\n"
+            f"consultas historial correctas: {self._v46_history_ok_reads}\n"
+            f"prop:10.5: {self._query_diag_text(self._v46_history_queries, 'prop:10.5')}\n"
+            f"event:10.5: {self._query_diag_text(self._v46_history_queries, 'event:10.5')}\n"
+            f"ganador: {self._v46_history_winner or '—'} · registros útiles: {self._v46_history_records}\n"
+            f"puntos crudos: {self._v46_history_raw_points} · distintos X/Y: {self._v46_history_distinct_points}\n"
+            f"puntos aplicados acumulados: {self._v46_history_applied_points} · nuevos última lectura: {self._v46_history_new_last}\n"
+            f"escala detectada: {self._v46_history_scale:g} · origen raw primera pose: {self._v46_history_origin!r}\n"
+            f"última pose raw: {self._v46_history_last_raw!r}\n"
+            f"última pose relativa: {self._v46_history_last_relative!r}\n"
+            f"movimiento confirmado por historial: {self._v46_history_motion_confirmed}\n"
+            f"error historial: {self._v46_history_error or '—'}\n"
+            "seguridad: una muestra aislada no mueve el robot; 10/22=255_255 sigue ignorado\n"
+            "upload/mapa: V45 se conserva; con cur-map-id=0 no se ejecutan acciones de upload por ID\n"
+            "nota: el blob FDS/IJAI queda como fallback; v46 no necesita descifrarlo para obtener trayectoria\n\n"
             + inherited
         )
 
