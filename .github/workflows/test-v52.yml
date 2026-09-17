@@ -1,0 +1,49 @@
+name: Validate V52 branch
+
+on:
+  push:
+    branches: [v52-full-get-cur-path]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: windows-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup --no-progress -y
+
+      - name: Build and validate complete V52 installer
+        shell: pwsh
+        env:
+          APP_VERSION: 0.1.52.0
+        run: .\build.ps1
+
+      - name: Confirm installer outputs
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "installer_output\Aspiradora-Xiaomi-Setup.exe")) { throw "Falta instalador V52" }
+          if (-not (Test-Path "installer_output\Aspiradora-Xiaomi-Setup.exe.sha256")) { throw "Falta SHA-256 V52" }
+          Get-Item "installer_output\Aspiradora-Xiaomi-Setup.exe"
+          Get-Content "installer_output\Aspiradora-Xiaomi-Setup.exe.sha256"
+
+      - name: Upload V52 test installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: Aspiradora-Xiaomi-V52-test
+          path: |
+            installer_output/Aspiradora-Xiaomi-Setup.exe
+            installer_output/Aspiradora-Xiaomi-Setup.exe.sha256
