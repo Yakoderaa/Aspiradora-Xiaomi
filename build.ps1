@@ -33,6 +33,7 @@ python scripts\smoke_test_v38.py
 python scripts\smoke_test_v39.py
 python scripts\smoke_test_v40.py
 python scripts\smoke_test_v41.py
+python scripts\smoke_test_v41_all.py
 
 pyinstaller --noconfirm --clean --windowed --onefile `
     --name "Aspiradora Xiaomi Updater" `
