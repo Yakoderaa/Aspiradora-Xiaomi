@@ -46,6 +46,7 @@ python scripts\smoke_test_v50.py
 python scripts\smoke_test_v51.py
 python scripts\smoke_test_v52.py
 python scripts\smoke_test_v53.py
+python scripts\smoke_test_v54.py
 
 pyinstaller --noconfirm --clean --windowed --onefile `
     --name "Aspiradora Xiaomi Updater" `
@@ -75,7 +76,7 @@ pyinstaller --noconfirm --clean --windowed --onedir `
     --collect-all vacuum_map_parser_base `
     --collect-all vacuum_map_parser_xiaomi `
     --collect-all vacuum_map_parser_ijai `
-    src\main_v53.py
+    src\main_v54.py
 
 Copy-Item "dist\Aspiradora Xiaomi Updater.exe" "dist\Aspiradora Xiaomi\Aspiradora Xiaomi Updater.exe" -Force
 Copy-Item "dist\Aspiradora Xiaomi Scheduler.exe" "dist\Aspiradora Xiaomi\Aspiradora Xiaomi Scheduler.exe" -Force
