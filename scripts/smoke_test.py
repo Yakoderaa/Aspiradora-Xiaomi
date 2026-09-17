@@ -15,17 +15,19 @@ def check(condition, message):
 
 def main():
     # Todos los módulos críticos deben importar sin ejecutar la interfaz.
-    import app_v19
+    import app_v20
     import pystray
     from backup_bundle import read_bundle, write_bundle
     from cleaning_plan import CleaningPlanStore
     from local_mapping import LocalMapStore
+    from scheduler_agent import schedule_due
     from xiaomi_e10_edge import XiaomiE10Edge
     from xiaomi_e10_live import XiaomiE10Live
 
     check(issubclass(XiaomiE10Live, XiaomiE10Edge), "La telemetría live debe conservar el controlador EDGE")
-    check(hasattr(app_v19.App, "_start_tray_icon"), "Falta integración de bandeja")
-    check(hasattr(app_v19.App, "open_quick_actions_config"), "Falta configuración de acciones rápidas")
+    check(hasattr(app_v20.App, "_start_tray_icon"), "Falta integración de bandeja")
+    check(hasattr(app_v20.App, "open_quick_actions_config"), "Falta configuración de acciones rápidas")
+    check(hasattr(app_v20.App, "_sync_no_go_async"), "Falta sincronización de bloqueos por mapa")
     check(bool(getattr(pystray.Icon, "HAS_DEFAULT_ACTION", False)), "La bandeja no expone acción primaria")
 
     parsed = XiaomiE10Live.parse_trajectory([10, 0.0, 0.0, 0.0, 1, 1.0, 2.0, 0.25, 1])
@@ -56,7 +58,7 @@ def main():
         plan.set_active_map(first_id)
         zone1 = plan.add_zone("Cocina", 0, 0, 2, 2)
         plan.add_no_go("Escalera", 3, 3, 4, 4)
-        plan.add_schedule({
+        schedule = plan.add_schedule({
             "name": "Mañana",
             "days": [0, 2, 4],
             "hour": 9,
@@ -65,6 +67,7 @@ def main():
             "target": "zones",
             "zone_ids": [zone1["id"]],
         })
+        check(str(schedule.get("map_id")) == first_id, "La programación no quedó asociada al mapa activo")
         check(len(plan.snapshot(first_id)["zones"]) == 1, "La zona no quedó asociada al primer mapa")
 
         second_id = next(item["id"] for item in maps.list_maps() if item["id"] != first_id)
@@ -72,6 +75,7 @@ def main():
         plan.add_zone("Dormitorio", 5, 5, 6, 6)
         check(len(plan.snapshot(second_id)["zones"]) == 1, "La zona del segundo mapa no se guardó")
         check(len(plan.snapshot(first_id)["zones"]) == 1, "Los mapas mezclaron sus zonas")
+        check(len(plan.snapshot(second_id)["schedules"]) == 0, "Las programaciones se mezclaron entre mapas")
 
         backup = folder / "prueba.xvac"
         write_bundle(backup, maps.library_snapshot(), plan.snapshot_all())
@@ -83,7 +87,7 @@ def main():
         maps_restored.replace_library(restored["maps"])
         check(len(maps_restored.list_maps()) == 4, "La importación no restauró los mapas")
 
-    print("SMOKE TEST OK: imports, EDGE+live, trayectoria, 4 mapas, planes y .xvac")
+    print("SMOKE TEST OK: imports, EDGE+live, trayectoria, 4 mapas, planes, scheduler, bandeja y .xvac")
 
 
 if __name__ == "__main__":
