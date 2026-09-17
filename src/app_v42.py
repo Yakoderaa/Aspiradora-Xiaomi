@@ -45,12 +45,14 @@ class App(app_v41.App):
         return (
             "DIAGNÓSTICO V42 ACTIVO · IJAI parser oficial\n"
             "=============================================\n"
-            "corrección V42: usa directamente unpack_map() + parse() de vacuum-map-parser-ijai 0.1.1\n"
+            "corrección V42: usa directamente unpack_map() de vacuum-map-parser-ijai 0.1.1\n"
             "clave b112: MD5 central de 16 caracteres ASCII; V41 sólo probaba variantes binarias/hex incompatibles\n"
+            "validación: tras descifrar se exige protobuf coherente; el renderer visual es best-effort\n"
             f"wifi_sn estrictos (16–24, uppercase): {diag.get('strict_wifi_count', 0)}\n"
             f"intentos parser nativo: {diag.get('attempts', 0)}\n"
             f"unpack_map correctos: {diag.get('unpack_ok', 0)}\n"
-            f"parse correctos: {diag.get('parse_ok', 0)}\n"
+            f"protobuf correctos: {diag.get('protobuf_ok', 0)}\n"
+            f"renderer/parse correctos: {diag.get('parse_ok', 0)}\n"
             f"mapa nativo validado: {winner}\n"
             f"variante blob ganadora: {diag.get('winner_blob_variant') or '—'}\n"
             f"fuentes ganadoras: {self._v42_source_text(diag.get('winner_sources'))}\n"
@@ -58,9 +60,10 @@ class App(app_v41.App):
             f"vacuum_position nativa: {diag.get('robot')!r}\n"
             f"charger nativa: {diag.get('base')!r}\n"
             f"path nativo: {diag.get('path_count', 0)} puntos · imagen: {bool(diag.get('image', False))}\n"
+            f"error renderer (si lo hubo): {diag.get('renderer_error') or '—'}\n"
             f"fallback V41: {diag.get('legacy_fallback') or ('no necesario' if winner else '—')}\n"
             "seguridad diagnóstico: URLs FDS firmadas se omiten\n"
-            "nota: V42 deja que el paquete IJAI haga internamente su protobuf y sus transformaciones, sin reimplementar esa capa\n\n"
+            "nota: V42 conserva currentPose/chargeStation/historyPose aunque falle la parte visual del parser\n\n"
             + inherited
         )
 
