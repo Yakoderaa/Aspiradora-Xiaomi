@@ -96,6 +96,8 @@ class SettingsStore:
             "start_with_windows": False,
             "close_to_tray": True,
             "start_minimized_to_tray": True,
+            "window_geometry": "",
+            "window_state": "normal",
             "tray_quick_actions": [
                 "clean_all",
                 "dock",
@@ -114,6 +116,8 @@ class SettingsStore:
             actions = defaults.get("tray_quick_actions")
             if not isinstance(actions, list):
                 defaults["tray_quick_actions"] = ["clean_all", "dock", "map", "stop"]
+            if defaults.get("window_state") not in ("normal", "zoomed"):
+                defaults["window_state"] = "normal"
         except Exception:
             return defaults
         return defaults
