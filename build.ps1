@@ -42,7 +42,7 @@ pyinstaller --noconfirm --clean --windowed --onedir `
     --collect-all micloud `
     --collect-all PIL `
     --collect-all pystray `
-    src\app_v20.py
+    src\app_v21.py
 
 Copy-Item `
     "dist\Aspiradora Xiaomi Updater.exe" `
