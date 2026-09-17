@@ -1,0 +1,40 @@
+name: Validate V48 branch
+
+on:
+  push:
+    branches: [v48-cloud-history-probe]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: windows-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup --no-progress -y
+
+      - name: Build and validate complete V48 installer
+        shell: pwsh
+        env:
+          APP_VERSION: 0.1.48.0
+        run: .\build.ps1
+
+      - name: Confirm installer outputs
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "installer_output\Aspiradora-Xiaomi-Setup.exe")) { throw "Falta instalador V48" }
+          if (-not (Test-Path "installer_output\Aspiradora-Xiaomi-Setup.exe.sha256")) { throw "Falta SHA-256 V48" }
+          Get-Item "installer_output\Aspiradora-Xiaomi-Setup.exe"
+          Get-Content "installer_output\Aspiradora-Xiaomi-Setup.exe.sha256"
