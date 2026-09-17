@@ -2,7 +2,7 @@ import threading
 import time
 
 import app_v40
-from xiaomi_e10_map_v41 import XiaomiE10MapV41
+from xiaomi_e10_map_v41_all import XiaomiE10MapV41All
 
 
 class App(app_v40.App):
@@ -29,7 +29,7 @@ class App(app_v40.App):
     # ------------------------------------------------------------ cliente mapa
     def _v40_map_client(self, vacuum, settings):
         if self._v40_client is None or self._v40_client_vacuum is not vacuum:
-            self._v40_client = XiaomiE10MapV41(vacuum, settings)
+            self._v40_client = XiaomiE10MapV41All(vacuum, settings)
             self._v40_client_vacuum = vacuum
         return self._v40_client
 
@@ -160,7 +160,8 @@ class App(app_v40.App):
             f"decoder ganador: {self._v41_winning_decoder or '—'}\n"
             f"hash blob actual: {(self._v41_blob_hash or '—')[:16]} · cambios de blob: {self._v41_blob_hash_changes}\n"
             f"último error exhaustivo: {self._v41_map_error or '—'}\n"
-            "validación: sólo se acepta una variante si produce RobotMap protobuf coherente\n\n"
+            "fallbacks: IJAI AES-ECB + zlib/deflate/gzip + raw/base64/hex + JSON + Xiaomi AES-CBC\n"
+            "validación: sólo se acepta una variante si produce RobotMap/telemetría estructuralmente coherente\n\n"
             + inherited
         )
 
