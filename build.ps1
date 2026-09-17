@@ -26,7 +26,7 @@ pyinstaller --noconfirm --clean --windowed --onedir `
     --collect-all miio `
     --collect-all micloud `
     --collect-all PIL `
-    src\app_v14.py
+    src\app_v15.py
 
 Copy-Item `
     "dist\Aspiradora Xiaomi Updater.exe" `
