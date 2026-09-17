@@ -69,7 +69,7 @@ def unprotect_text(value: str) -> str:
 
 
 class SettingsStore:
-    PROTECTED_FIELDS = ("token", "cloud_session")
+    PROTECTED_FIELDS = ("token", "cloud_session", "github_token")
 
     def __init__(self):
         appdata = Path(os.environ.get("LOCALAPPDATA", Path.home()))
@@ -88,12 +88,12 @@ class SettingsStore:
             "xiaomi_login_method": "",
             "xiaomi_user_id": "",
             "xiaomi_user_name": "",
+            "github_token": "",
             "mop_enabled": False,
             "mop_water_level": 1,
             "suction": 2,
             "auto_update": True,
             "poll_seconds": 5,
-            # Integración con Windows / bandeja de sistema.
             "start_with_windows": False,
             "close_to_tray": True,
             "start_minimized_to_tray": True,
