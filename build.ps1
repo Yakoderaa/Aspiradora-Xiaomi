@@ -10,13 +10,15 @@ python -m pip install pyinstaller==6.22.3
 
 "VERSION = `"$($env:APP_VERSION)`"" | Set-Content -Encoding UTF8 src\_build_version.py
 
-# Genera el icono multi-resolución desde el icono de Xiaomi Home.
+# Recursos visuales del build.
 python scripts\make_mihome_icon.py
+python scripts\fetch_e10_product_image.py
 
 # Verificaciones antes de empaquetar.
 python -m compileall -q src scripts
 python scripts\smoke_test.py
 python scripts\smoke_test_v24.py
+python scripts\smoke_test_v25.py
 
 # Helper independiente de actualizaciones, con el mismo icono de Mi Home.
 pyinstaller --noconfirm --clean --windowed --onefile `
@@ -33,17 +35,18 @@ pyinstaller --noconfirm --clean --windowed --onefile `
     --collect-all miio `
     src\scheduler_agent.py
 
-# Aplicación principal v24: selector de dispositivos -> Emilia -> panel completo.
+# Aplicación principal v25: dispositivos + foto real E10 + errores sólo si son reales.
 pyinstaller --noconfirm --clean --windowed --onedir `
     --name "Aspiradora Xiaomi" `
     --icon "assets\mi_home.ico" `
     --add-data "assets\mi_home.ico;assets" `
     --add-data "assets\mi_home.png;assets" `
+    --add-data "assets\xiaomi_robot_vacuum_e10.jpg;assets" `
     --collect-all miio `
     --collect-all micloud `
     --collect-all PIL `
     --collect-all pystray `
-    src\main_v24.py
+    src\main_v25.py
 
 Copy-Item `
     "dist\Aspiradora Xiaomi Updater.exe" `
@@ -55,13 +58,14 @@ Copy-Item `
     "dist\Aspiradora Xiaomi\Aspiradora Xiaomi Scheduler.exe" `
     -Force
 
-# Verificación post-build de ejecutables y recursos de icono.
+# Verificación post-build de ejecutables y recursos visuales.
 $required = @(
     "dist\Aspiradora Xiaomi\Aspiradora Xiaomi.exe",
     "dist\Aspiradora Xiaomi\Aspiradora Xiaomi Updater.exe",
     "dist\Aspiradora Xiaomi\Aspiradora Xiaomi Scheduler.exe",
     "dist\Aspiradora Xiaomi\_internal\assets\mi_home.ico",
-    "dist\Aspiradora Xiaomi\_internal\assets\mi_home.png"
+    "dist\Aspiradora Xiaomi\_internal\assets\mi_home.png",
+    "dist\Aspiradora Xiaomi\_internal\assets\xiaomi_robot_vacuum_e10.jpg"
 )
 foreach ($path in $required) {
     if (-not (Test-Path $path)) {
@@ -91,7 +95,7 @@ $appProcess = Start-Process -FilePath $appExe -ArgumentList "--tray" -PassThru
 Start-Sleep -Seconds 6
 $appProcess.Refresh()
 if ($appProcess.HasExited) {
-    throw "La aplicación v24 se cerró durante el smoke test de arranque. Código: $($appProcess.ExitCode)"
+    throw "La aplicación v25 se cerró durante el smoke test de arranque. Código: $($appProcess.ExitCode)"
 }
 Stop-Process -Id $appProcess.Id -Force -ErrorAction SilentlyContinue
 
