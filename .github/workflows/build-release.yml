@@ -15,6 +15,7 @@ concurrency:
 jobs:
   build-release:
     runs-on: windows-latest
+    timeout-minutes: 20
 
     steps:
       - name: Checkout
@@ -51,20 +52,55 @@ jobs:
             installer_output/Aspiradora-Xiaomi-Setup.exe.sha256
 
       - name: Publish GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ env.RELEASE_TAG }}
-          name: Aspiradora Xiaomi ${{ env.APP_VERSION }} · V46
-          target_commitish: ${{ github.sha }}
-          body: |
-            V46 para Windows 10/11 x64.
-            Incluye lectura de historial Xiaomi Cloud para 10.5/10.24 y protección contra movimientos falsos por chargingbase.
-            La aplicación instalada detecta esta release, verifica el SHA-256 y actualiza silenciosamente.
-          draft: false
-          prerelease: false
-          fail_on_unmatched_files: true
-          files: |
-            installer_output/Aspiradora-Xiaomi-Setup.exe
-            installer_output/Aspiradora-Xiaomi-Setup.exe.sha256
+        shell: pwsh
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $ErrorActionPreference = "Stop"
+          $tag = $env:RELEASE_TAG
+          $repo = $env:GITHUB_REPOSITORY
+          $notes = "V46 para Windows 10/11 x64. Incluye lectura de historial Xiaomi Cloud para 10.5/10.24 y protección contra movimientos falsos por chargingbase. La aplicación instalada detecta esta release, verifica el SHA-256 y actualiza silenciosamente."
+
+          # La release se crea pública primero: los drafts no son resolubles de
+          # forma fiable por `gh release upload <tag>` mientras el tag aún no existe.
+          gh release create $tag `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V46" `
+            --notes $notes `
+            --target $env:GITHUB_SHA
+          if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
+
+          function Upload-AssetWithRetry([string]$file, [string]$name) {
+            for ($attempt = 1; $attempt -le 6; $attempt++) {
+              Write-Host "Subiendo $name · intento $attempt/6"
+              $args = @("release", "upload", $tag, $file, "--clobber", "--repo", $repo)
+              $process = Start-Process -FilePath "gh" -ArgumentList $args -PassThru -NoNewWindow
+              $finished = $process.WaitForExit(90000)
+              if (-not $finished) {
+                Write-Warning "Upload de $name excedió 90 s; reiniciando intento."
+                Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+              } elseif ($process.ExitCode -eq 0) {
+                Start-Sleep -Seconds 3
+                $json = gh api "repos/$repo/releases/tags/$tag" | ConvertFrom-Json
+                $asset = @($json.assets | Where-Object { $_.name -eq $name } | Select-Object -First 1)
+                if ($asset.Count -gt 0 -and $asset[0].state -eq "uploaded") {
+                  Write-Host "$name confirmado como uploaded."
+                  return
+                }
+                Write-Warning "$name todavía no figura como uploaded."
+              } else {
+                Write-Warning "gh terminó con código $($process.ExitCode) para $name."
+              }
+              Start-Sleep -Seconds (5 * $attempt)
+            }
+            throw "No se pudo subir y confirmar $name después de 6 intentos."
+          }
+
+          Upload-AssetWithRetry "installer_output/Aspiradora-Xiaomi-Setup.exe.sha256" "Aspiradora-Xiaomi-Setup.exe.sha256"
+          Upload-AssetWithRetry "installer_output/Aspiradora-Xiaomi-Setup.exe" "Aspiradora-Xiaomi-Setup.exe"
+
+          $release = gh api "repos/$repo/releases/tags/$tag" | ConvertFrom-Json
+          $exe = @($release.assets | Where-Object { $_.name -eq "Aspiradora-Xiaomi-Setup.exe" } | Select-Object -First 1)
+          $sha = @($release.assets | Where-Object { $_.name -eq "Aspiradora-Xiaomi-Setup.exe.sha256" } | Select-Object -First 1)
+          if ($exe.Count -eq 0 -or $exe[0].state -ne "uploaded") { throw "EXE no confirmado en la release." }
+          if ($sha.Count -eq 0 -or $sha[0].state -ne "uploaded") { throw "SHA no confirmado en la release." }
+          Write-Host "Release $tag publicada y verificada con ambos assets."
