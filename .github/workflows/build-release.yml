@@ -59,10 +59,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V48 para Windows 10/11 x64. Corrige la restauración de map-privacy 10/23 detectada en V47 y agrega una sonda de sólo lectura sobre Xiaomi Cloud para probar 20 variantes de historial de cleaning-path (fase/24h/todo, uid/no-uid, prop/event y claves alternativas) sin permitir que históricos viejos muevan el robot."
+          $notes = "V49 para Windows 10/11 x64. Hace observable y acotada la sonda Cloud de V48: progreso consulta por consulta, resultados parciales en F12, duración por request, timeout de 7 segundos y aborto seguro tras 3 timeouts consecutivos. Conserva las protecciones de movimiento y la restauración de map-privacy de V48."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V48" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V49" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
