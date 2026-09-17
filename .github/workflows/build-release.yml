@@ -59,10 +59,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V54 para Windows 10/11 x64. V53 encontró una combinación fuerte del slot 0 clásico: MD5 hexadecimal completo produce padding PKCS7 válido y plaintext hexadecimal válido. V54 aísla sólo esos candidatos parciales y analiza el contenido post-hex sin sumar claves: tamaño/hash/prefijo/sufijo, entropía, distribución de bytes, bloques repetidos, magic, JSON, RobotMap, protobuf wire genérico y zlib/deflate/gzip. También cuenta lecturas y cambios de hash para saber si el blob 7264 B es vivo o estático. Sólo lee Xiaomi Cloud; no ejecuta acciones ni modifica propiedades del robot y conserva todas las guardas de V53/V51/V45."
+          $notes = "V55 para Windows 10/11 x64. Esta versión deja de depender de 10/12 y del blob Cloud para el movimiento principal. Construye una trayectoria persistente directamente a partir de cambios temporales X/Y reales de 10/24 robot-location: la primera muestra aislada no mueve nada; el segundo X/Y distinto confirma movimiento y crea la polilínea con ambas poses, y cada cambio posterior agrega un punto. 10/12 queda fuera del loop vivo para reducir latencia. Los cambios de chargingbase no cuentan como movimiento; se conservan las guardas V45/V51. V54 queda sólo como diagnóstico complementario del blob Cloud."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V54" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V55" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
