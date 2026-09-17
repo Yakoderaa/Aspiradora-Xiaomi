@@ -25,6 +25,7 @@ class CleaningPlanStore:
             "points": [],
             "schedules": [],
             "device_origin": None,
+            "virtual_walls_managed": False,
             "last_runs": {},
             "updated_at": None,
         }
@@ -84,12 +85,15 @@ class CleaningPlanStore:
             **self._rect(x0, y0, x1, y1),
         }
         data["no_go"].append(wall)
+        data["virtual_walls_managed"] = True
         self._write(data)
         return wall
 
     def delete_no_go(self, wall_id):
         data = self._read()
         data["no_go"] = [w for w in data["no_go"] if w.get("id") != wall_id]
+        # Se mantiene True para que eliminar el último bloqueo también lo quite del robot.
+        data["virtual_walls_managed"] = True
         self._write(data)
 
     def add_point(self, name, x, y):
