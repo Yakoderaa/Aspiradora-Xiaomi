@@ -20,7 +20,6 @@ class FakePointDevice:
 
     def call_action_by(self, siid, aiid, params=None):
         self.actions.append((siid, aiid, list(params or [])))
-        # Simula el firmware que salta a Turbo al entrar en limpieza puntual.
         if siid == 9:
             self.owner.suction = 4
         return {"code": 0}
@@ -59,23 +58,24 @@ class FakePointVacuum:
 
 
 def main():
-    import app_v20
+    import app_v21
     import pystray
     from backup_bundle import read_bundle, write_bundle
     from cleaning_plan import CleaningPlanStore
     from local_mapping import LocalMapStore
+    from map_geometry import build_mapped_walls
     from robot_plans import start_point_clean
-    from scheduler_agent import schedule_due
     from xiaomi_e10_edge import XiaomiE10Edge
     from xiaomi_e10_live import XiaomiE10Live
 
     check(issubclass(XiaomiE10Live, XiaomiE10Edge), "La telemetría live debe conservar el controlador EDGE")
-    check(hasattr(app_v20.App, "_start_tray_icon"), "Falta integración de bandeja")
-    check(hasattr(app_v20.App, "open_quick_actions_config"), "Falta configuración de acciones rápidas")
-    check(hasattr(app_v20.App, "_sync_no_go_async"), "Falta sincronización de bloqueos por mapa")
-    check(hasattr(app_v20.App, "_map_double_click"), "Falta objetivo por doble clic")
-    check(hasattr(app_v20.App, "_map_drag"), "Falta desplazamiento/pan del mapa")
-    check(hasattr(app_v20.App, "logout_xiaomi_account"), "Falta desconexión de cuenta Xiaomi")
+    check(hasattr(app_v21.App, "_start_tray_icon"), "Falta integración de bandeja")
+    check(hasattr(app_v21.App, "open_quick_actions_config"), "Falta configuración de acciones rápidas")
+    check(hasattr(app_v21.App, "_sync_no_go_async"), "Falta sincronización de bloqueos por mapa")
+    check(hasattr(app_v21.App, "_map_double_click"), "Falta objetivo por doble clic")
+    check(hasattr(app_v21.App, "_map_drag"), "Falta desplazamiento/pan del mapa")
+    check(hasattr(app_v21.App, "logout_xiaomi_account"), "Falta desconexión de cuenta Xiaomi")
+    check(hasattr(app_v21.App, "_rebuild_mapped_walls"), "Falta generación de paredes persistentes")
     check(bool(getattr(pystray.Icon, "HAS_DEFAULT_ACTION", False)), "La bandeja no expone acción primaria")
 
     parsed = XiaomiE10Live.parse_trajectory([10, 0.0, 0.0, 0.0, 1, 1.0, 2.0, 0.25, 1])
@@ -89,15 +89,25 @@ def main():
     check(fake.sweep_type == 4, "La limpieza puntual no configuró sweep_type=4")
     check(fake.device.actions and fake.device.actions[0][0] == 9, "No se envió la acción de limpieza puntual")
 
+    perimeter = [
+        {"id": 1, "phase": 1, "x": 0.0, "y": 0.0, "phi": 0.0, "update": 1},
+        {"id": 2, "phase": 1, "x": 1.0, "y": 0.0, "phi": 0.0, "update": 1},
+        {"id": 3, "phase": 1, "x": 2.0, "y": 0.0, "phi": 0.0, "update": 1},
+        {"id": 4, "phase": 1, "x": 2.0, "y": 1.0, "phi": 1.57, "update": 1},
+        {"id": 5, "phase": 1, "x": 2.0, "y": 2.0, "phi": 1.57, "update": 1},
+    ]
+    walls = build_mapped_walls(perimeter)
+    check(walls and len(walls[0].get("points", [])) >= 3, "EDGE no produjo una pared simplificada válida")
+
     with tempfile.TemporaryDirectory() as temp:
         folder = Path(temp)
         maps = LocalMapStore(folder)
         first_id = maps.active_map_id
-        maps.merge_trajectory([
-            {"id": 1, "x": 0.0, "y": 0.0, "phi": 0.0, "update": 1},
-            {"id": 2, "x": 1.0, "y": 0.0, "phi": 0.0, "update": 1},
-        ], phase=1)
-        check(len(maps.snapshot()["points"]) == 2, "No se persistió la trayectoria")
+        maps.merge_trajectory(perimeter, phase=1)
+        maps.set_mapped_walls(walls)
+        snap = maps.snapshot()
+        check(len(snap["points"]) == len(perimeter), "No se persistió la trayectoria")
+        check(snap.get("mapped_walls"), "Las paredes estimadas no quedaron guardadas dentro del mapa")
 
         for name in ("Planta alta", "Garage", "Patio"):
             maps.create_map(name)
@@ -137,12 +147,16 @@ def main():
         restored = read_bundle(backup)
         check(len(restored["maps"]["maps"]) == 4, "El backup no conserva los cuatro mapas")
         check(restored["cleaning_plan"]["schedules"], "El backup perdió programaciones")
+        restored_first = next(item for item in restored["maps"]["maps"] if item.get("id") == first_id)
+        check(restored_first.get("mapped_walls"), "El .xvac perdió las paredes estimadas del mapa")
 
         maps_restored = LocalMapStore(folder / "restored")
         maps_restored.replace_library(restored["maps"])
         check(len(maps_restored.list_maps()) == 4, "La importación no restauró los mapas")
+        maps_restored.select_map(first_id)
+        check(maps_restored.snapshot().get("mapped_walls"), "La importación no restauró las paredes del mapa")
 
-    print("SMOKE TEST OK: imports, EDGE+live, punto/succión, 4 mapas, planes, scheduler, bandeja, pan y .xvac")
+    print("SMOKE TEST OK: EDGE+live, paredes persistentes, punto/succión, 4 mapas, planes, bandeja, pan y .xvac")
 
 
 if __name__ == "__main__":
