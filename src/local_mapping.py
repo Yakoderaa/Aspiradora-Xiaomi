@@ -1,25 +1,45 @@
 import json
 import threading
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 
 class LocalMapStore:
-    """Mapa persistente generado en la PC a partir de la telemetría LAN del E10."""
+    """Biblioteca persistente de mapas locales.
+
+    Mantiene la misma interfaz histórica (snapshot/merge_trajectory/etc.) sobre el
+    mapa activo, pero guarda hasta cuatro mapas independientes. Si existe el viejo
+    local_map.json se migra automáticamente sin modificarlo.
+    """
+
+    MAX_MAPS = 4
+    LIBRARY_VERSION = 3
 
     def __init__(self, app_folder: Path):
-        self.path = Path(app_folder) / "local_map.json"
+        self.folder = Path(app_folder)
+        self.folder.mkdir(parents=True, exist_ok=True)
+        self.path = self.folder / "maps.json"
+        self.legacy_path = self.folder / "local_map.json"
         self._lock = threading.RLock()
-        self._data = self._defaults()
+        self._data = self._library_defaults()
         self._load()
 
     @staticmethod
-    def _defaults() -> dict[str, Any]:
+    def _now():
+        return datetime.now(timezone.utc).isoformat()
+
+    @staticmethod
+    def _new_id():
+        return uuid.uuid4().hex[:10]
+
+    @classmethod
+    def _blank_map(cls, name="Mi casa", map_id=None) -> dict[str, Any]:
         return {
-            "version": 2,
-            "name": "Mi casa",
-            "created_at": None,
+            "id": str(map_id or cls._new_id()),
+            "name": str(name).strip() or "Mapa",
+            "created_at": cls._now(),
             "updated_at": None,
             "points": [],
             "robot": None,
@@ -27,51 +47,219 @@ class LocalMapStore:
             "rooms": [],
         }
 
+    @classmethod
+    def _library_defaults(cls):
+        first = cls._blank_map("Mi casa")
+        return {
+            "version": cls.LIBRARY_VERSION,
+            "active_map_id": first["id"],
+            "maps": [first],
+            "updated_at": cls._now(),
+        }
+
+    @classmethod
+    def _normalize_map(cls, source, fallback_name="Mapa"):
+        source = dict(source or {})
+        result = cls._blank_map(source.get("name") or fallback_name, source.get("id") or cls._new_id())
+        result["created_at"] = source.get("created_at") or result["created_at"]
+        result["updated_at"] = source.get("updated_at")
+        result["robot"] = source.get("robot") if isinstance(source.get("robot"), dict) else None
+        result["charging_base"] = source.get("charging_base") if isinstance(source.get("charging_base"), dict) else None
+        result["rooms"] = list(source.get("rooms") or [])
+        result["points"] = list(source.get("points") or [])
+        for point in result["points"]:
+            if isinstance(point, dict):
+                point.setdefault("phase", 0)
+        return result
+
     def _load(self):
         with self._lock:
-            if not self.path.exists():
-                return
-            try:
-                data = json.loads(self.path.read_text(encoding="utf-8"))
-                if isinstance(data, dict):
-                    self._data.update(data)
-                    self._data["version"] = 2
-                    for point in self._data.get("points", []):
-                        point.setdefault("phase", 0)
-            except Exception:
-                self._data = self._defaults()
+            loaded = None
+            if self.path.exists():
+                try:
+                    candidate = json.loads(self.path.read_text(encoding="utf-8"))
+                    if isinstance(candidate, dict) and isinstance(candidate.get("maps"), list):
+                        loaded = candidate
+                except Exception:
+                    loaded = None
+
+            if loaded is None and self.legacy_path.exists():
+                try:
+                    legacy = json.loads(self.legacy_path.read_text(encoding="utf-8"))
+                    if isinstance(legacy, dict):
+                        migrated = self._normalize_map(legacy, legacy.get("name") or "Mi casa")
+                        loaded = {
+                            "version": self.LIBRARY_VERSION,
+                            "active_map_id": migrated["id"],
+                            "maps": [migrated],
+                            "updated_at": self._now(),
+                        }
+                except Exception:
+                    loaded = None
+
+            if loaded is None:
+                loaded = self._library_defaults()
+
+            maps = []
+            seen = set()
+            for index, item in enumerate(list(loaded.get("maps") or [])[: self.MAX_MAPS], start=1):
+                normalized = self._normalize_map(item, f"Mapa {index}")
+                if normalized["id"] in seen:
+                    normalized["id"] = self._new_id()
+                seen.add(normalized["id"])
+                maps.append(normalized)
+            if not maps:
+                maps = [self._blank_map("Mi casa")]
+
+            active = str(loaded.get("active_map_id") or "")
+            if active not in {item["id"] for item in maps}:
+                active = maps[0]["id"]
+
+            self._data = {
+                "version": self.LIBRARY_VERSION,
+                "active_map_id": active,
+                "maps": maps,
+                "updated_at": loaded.get("updated_at") or self._now(),
+            }
+            self._save_locked()
 
     def _save_locked(self):
-        self._data["updated_at"] = datetime.now(timezone.utc).isoformat()
-        self.path.write_text(
-            json.dumps(self._data, ensure_ascii=False, indent=2),
-            encoding="utf-8",
-        )
+        self._data["version"] = self.LIBRARY_VERSION
+        self._data["updated_at"] = self._now()
+        tmp = self.path.with_suffix(".tmp")
+        tmp.write_text(json.dumps(self._data, ensure_ascii=False, indent=2), encoding="utf-8")
+        tmp.replace(self.path)
+
+    def _active_locked(self):
+        active_id = self._data.get("active_map_id")
+        for item in self._data.get("maps", []):
+            if item.get("id") == active_id:
+                return item
+        first = self._data["maps"][0]
+        self._data["active_map_id"] = first["id"]
+        return first
+
+    @property
+    def active_map_id(self):
+        with self._lock:
+            return str(self._active_locked()["id"])
+
+    def list_maps(self):
+        with self._lock:
+            active = self._data.get("active_map_id")
+            result = []
+            for item in self._data.get("maps", []):
+                result.append({
+                    "id": item["id"],
+                    "name": item.get("name") or "Mapa",
+                    "active": item["id"] == active,
+                    "points": len(item.get("points") or []),
+                    "rooms": len(item.get("rooms") or []),
+                    "created_at": item.get("created_at"),
+                    "updated_at": item.get("updated_at"),
+                })
+            return json.loads(json.dumps(result))
+
+    def select_map(self, map_id: str):
+        map_id = str(map_id)
+        with self._lock:
+            if map_id not in {item.get("id") for item in self._data.get("maps", [])}:
+                raise KeyError("El mapa seleccionado no existe.")
+            self._data["active_map_id"] = map_id
+            self._save_locked()
+            return self.snapshot()
+
+    def create_map(self, name="Mapa"):
+        with self._lock:
+            if len(self._data.get("maps", [])) >= self.MAX_MAPS:
+                raise RuntimeError("Ya hay cuatro mapas guardados. Eliminá uno para crear otro.")
+            item = self._blank_map(name or f"Mapa {len(self._data['maps']) + 1}")
+            self._data["maps"].append(item)
+            self._data["active_map_id"] = item["id"]
+            self._save_locked()
+            return json.loads(json.dumps(item))
+
+    def rename_map(self, map_id: str, name: str):
+        with self._lock:
+            for item in self._data.get("maps", []):
+                if item.get("id") == str(map_id):
+                    item["name"] = str(name).strip() or item.get("name") or "Mapa"
+                    item["updated_at"] = self._now()
+                    self._save_locked()
+                    return
+            raise KeyError("El mapa no existe.")
+
+    def delete_map(self, map_id: str):
+        with self._lock:
+            maps = self._data.get("maps", [])
+            if len(maps) <= 1:
+                raise RuntimeError("Debe quedar al menos un mapa en la aplicación.")
+            before = len(maps)
+            maps[:] = [item for item in maps if item.get("id") != str(map_id)]
+            if len(maps) == before:
+                raise KeyError("El mapa no existe.")
+            if self._data.get("active_map_id") == str(map_id):
+                self._data["active_map_id"] = maps[0]["id"]
+            self._save_locked()
 
     def snapshot(self) -> dict[str, Any]:
         with self._lock:
+            return json.loads(json.dumps(self._active_locked()))
+
+    def library_snapshot(self):
+        with self._lock:
             return json.loads(json.dumps(self._data))
+
+    def replace_library(self, library):
+        """Restaura una biblioteca validada desde un backup de la app."""
+        if not isinstance(library, dict) or not isinstance(library.get("maps"), list):
+            raise ValueError("El archivo no contiene una biblioteca de mapas válida.")
+        if not library.get("maps"):
+            raise ValueError("El archivo no contiene ningún mapa.")
+        if len(library["maps"]) > self.MAX_MAPS:
+            raise ValueError("El archivo contiene más de cuatro mapas.")
+        with self._lock:
+            maps = [self._normalize_map(item, f"Mapa {i + 1}") for i, item in enumerate(library["maps"])]
+            ids = set()
+            for item in maps:
+                if item["id"] in ids:
+                    item["id"] = self._new_id()
+                ids.add(item["id"])
+            active = str(library.get("active_map_id") or "")
+            if active not in ids:
+                active = maps[0]["id"]
+            self._data = {
+                "version": self.LIBRARY_VERSION,
+                "active_map_id": active,
+                "maps": maps,
+                "updated_at": self._now(),
+            }
+            self._save_locked()
 
     def clear_map(self, keep_rooms: bool = False):
         with self._lock:
-            rooms = self._data.get("rooms", []) if keep_rooms else []
-            self._data = self._defaults()
-            self._data["created_at"] = datetime.now(timezone.utc).isoformat()
-            self._data["rooms"] = rooms
+            item = self._active_locked()
+            rooms = item.get("rooms", []) if keep_rooms else []
+            name = item.get("name") or "Mapa"
+            map_id = item["id"]
+            created_at = self._now()
+            replacement = self._blank_map(name, map_id)
+            replacement["created_at"] = created_at
+            replacement["rooms"] = rooms
+            index = self._data["maps"].index(item)
+            self._data["maps"][index] = replacement
             self._save_locked()
 
-    def merge_trajectory(self, points: list[dict[str, Any]], phase: int = 0) -> int:
-        """Mezcla telemetría incremental sin pisar otra fase de mapeo.
+    def _touch_active_locked(self):
+        self._active_locked()["updated_at"] = self._now()
 
-        El E10 puede reiniciar sus pose IDs al comenzar un recorrido nuevo. Por eso
-        la clave interna combina fase + pose ID: la pasada de perímetro y la pasada
-        interior quedan ambas visibles en el mismo plano.
-        """
+    def merge_trajectory(self, points: list[dict[str, Any]], phase: int = 0) -> int:
         if not points:
             return 0
         phase = int(phase or 0)
         with self._lock:
-            current = self._data.setdefault("points", [])
+            item = self._active_locked()
+            current = item.setdefault("points", [])
             by_id = {}
             for i, point in enumerate(current):
                 p_phase = int(point.get("phase", 0) or 0)
@@ -97,11 +285,10 @@ class LocalMapStore:
                     "update": update,
                 }
 
-            self._data["points"] = [
-                by_id[key] for key in sorted(by_id, key=lambda item: (item[0], item[1]))
-            ]
-            if not self._data.get("created_at"):
-                self._data["created_at"] = datetime.now(timezone.utc).isoformat()
+            item["points"] = [by_id[key] for key in sorted(by_id, key=lambda value: (value[0], value[1]))]
+            if not item.get("created_at"):
+                item["created_at"] = self._now()
+            self._touch_active_locked()
             self._save_locked()
             return len(by_id) - before
 
@@ -109,29 +296,34 @@ class LocalMapStore:
         if not point:
             return
         with self._lock:
-            self._data["robot"] = {
+            item = self._active_locked()
+            item["robot"] = {
                 "x": float(point["x"]),
                 "y": float(point["y"]),
                 "angle": float(point.get("angle", 0) or 0),
             }
+            self._touch_active_locked()
             self._save_locked()
 
     def set_charging_base(self, point: dict[str, Any] | None):
         if not point:
             return
         with self._lock:
-            self._data["charging_base"] = {
+            item = self._active_locked()
+            item["charging_base"] = {
                 "x": float(point["x"]),
                 "y": float(point["y"]),
                 "angle": float(point.get("angle", 0) or 0),
             }
+            self._touch_active_locked()
             self._save_locked()
 
     def add_room(self, name: str, x0: float, y0: float, x1: float, y1: float) -> dict[str, Any]:
         left, right = sorted((float(x0), float(x1)))
         bottom, top = sorted((float(y0), float(y1)))
         with self._lock:
-            rooms = self._data.setdefault("rooms", [])
+            item = self._active_locked()
+            rooms = item.setdefault("rooms", [])
             next_id = max([int(r.get("id", 0)) for r in rooms] + [0]) + 1
             room = {
                 "id": next_id,
@@ -142,19 +334,24 @@ class LocalMapStore:
                 "y1": top,
             }
             rooms.append(room)
+            self._touch_active_locked()
             self._save_locked()
             return dict(room)
 
     def delete_room(self, room_id: int):
         with self._lock:
+            item = self._active_locked()
             room_id = int(room_id)
-            self._data["rooms"] = [r for r in self._data.get("rooms", []) if int(r.get("id", -1)) != room_id]
+            item["rooms"] = [r for r in item.get("rooms", []) if int(r.get("id", -1)) != room_id]
+            self._touch_active_locked()
             self._save_locked()
 
     def rename_room(self, room_id: int, name: str):
         with self._lock:
-            for room in self._data.get("rooms", []):
+            item = self._active_locked()
+            for room in item.get("rooms", []):
                 if int(room.get("id", -1)) == int(room_id):
                     room["name"] = name.strip() or room.get("name") or f"Habitación {room_id}"
                     break
+            self._touch_active_locked()
             self._save_locked()
