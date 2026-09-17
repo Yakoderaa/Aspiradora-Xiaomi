@@ -12,6 +12,7 @@ from tkinter import messagebox, ttk
 
 APPDATA_DIR = Path(os.environ.get("LOCALAPPDATA", Path.home())) / "Aspiradora Xiaomi"
 LOG_PATH = APPDATA_DIR / "update.log"
+SCHEDULER_EXE_NAME = "Aspiradora Xiaomi Scheduler.exe"
 
 
 def log(message: str):
@@ -40,6 +41,23 @@ def wait_for_process(pid: int, timeout_ms: int = 60000):
             raise TimeoutError("La aplicación anterior no se cerró a tiempo.")
     finally:
         kernel32.CloseHandle(handle)
+
+
+def stop_scheduler():
+    """Libera el ejecutable del agente antes de que Inno lo reemplace."""
+    if os.name != "nt":
+        return
+    try:
+        subprocess.run(
+            ["taskkill", "/IM", SCHEDULER_EXE_NAME, "/F"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            timeout=8,
+            check=False,
+        )
+        log("Programador detenido para actualizar.")
+    except Exception as exc:
+        log(f"No pude detener el programador: {exc}")
 
 
 class UpdateWindow(tk.Tk):
@@ -88,6 +106,7 @@ class UpdateWindow(tk.Tk):
             log(f"Inicio helper v{self.version}. PID anterior={self.parent_pid}")
             self._set_status("Cerrando la versión anterior…")
             wait_for_process(self.parent_pid)
+            stop_scheduler()
 
             if not self.installer.exists():
                 raise FileNotFoundError(f"No se encontró el instalador: {self.installer}")
@@ -112,7 +131,6 @@ class UpdateWindow(tk.Tk):
             self._set_status("Instalación completada.", "Abriendo Aspiradora Xiaomi…")
             time.sleep(0.8)
             if not self.app_exe.exists():
-                # Ruta estándar del instalador, por si cambió la ubicación del ejecutable anterior.
                 fallback = Path(os.environ.get("LOCALAPPDATA", "")) / "Programs" / "Aspiradora Xiaomi" / "Aspiradora Xiaomi.exe"
                 if fallback.exists():
                     self.app_exe = fallback
