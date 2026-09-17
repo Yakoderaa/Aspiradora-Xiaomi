@@ -105,17 +105,48 @@ def start_zone_clean(vacuum, zone, plan, mode, suction=1, water=0):
 
 
 def start_point_clean(vacuum, point, plan, suction=1):
+    """Limpieza puntual respetando exactamente la succión elegida.
+
+    Algunos firmwares del E10 cambian temporalmente la potencia al entrar en
+    sweep_type=4. Por eso fijamos el modo punto primero, arrancamos la tarea y
+    después reimponemos la succión solicitada durante el breve handshake inicial.
+    """
     x, y = local_point_to_device(point["x"], point["y"], plan)
     target = f"{_fmt(x)},{_fmt(y)}"
-    vacuum.set_suction(max(1, min(4, int(suction or 1))))
+    requested_suction = max(1, min(4, int(suction or 1)))
+
     vacuum.set_water(0)
     vacuum.set_mode(0)
     vacuum.set_sweep_type(4)
+    vacuum.set_suction(requested_suction)
+
     try:
-        return vacuum.device.call_action_by(9, 9, [target])
+        result = vacuum.device.call_action_by(9, 9, [target])
     except Exception:
         vacuum.device.set_property_by(9, 5, target)
-        return vacuum.device.call_action_by(9, 1)
+        result = vacuum.device.call_action_by(9, 1)
+
+    # El cambio a limpieza puntual puede volver a tocar fan-level después del
+    # action. Durante ~2 s comprobamos y reponemos sólo la succión pedida.
+    deadline = time.monotonic() + 2.2
+    while time.monotonic() < deadline:
+        time.sleep(0.22)
+        try:
+            values = vacuum._get_many([
+                ("status", 2, 1),
+                ("suction", 7, 5),
+            ])
+            status = int(values.get("status", -1) if values.get("status") is not None else -1)
+            current = int(values.get("suction", -1) if values.get("suction") is not None else -1)
+            if current != requested_suction:
+                vacuum.set_suction(requested_suction)
+            if status in (5, 6, 7) and current == requested_suction:
+                break
+        except Exception:
+            # La limpieza ya fue enviada; una lectura fallida no debe cancelar el objetivo.
+            continue
+
+    return result
 
 
 def wait_for_cleaning_cycle(vacuum, timeout=3 * 60 * 60, poll_seconds=3.0):
