@@ -59,10 +59,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V49 para Windows 10/11 x64. Hace observable y acotada la sonda Cloud de V48: progreso consulta por consulta, resultados parciales en F12, duración por request, timeout de 7 segundos y aborto seguro tras 3 timeouts consecutivos. Conserva las protecciones de movimiento y la restauración de map-privacy de V48."
+          $notes = "V50 para Windows 10/11 x64. Captura y analiza la respuesta directa de get_interim_file_url_pro antes de usar el endpoint clásico: detecta payload base64/hex/envelope, prueba IJAI y Xiaomi JSON y muestra en F12 tipo, tamaño, hash y progreso de decodificación sin exponer datos sensibles. Conserva intactas las reglas de movimiento, upload y map-privacy de V49."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V49" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V50" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
