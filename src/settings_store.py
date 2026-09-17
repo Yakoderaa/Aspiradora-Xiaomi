@@ -44,7 +44,7 @@ def unprotect_text(value: str) -> str:
     if not value:
         return ""
     if value.startswith("plain:"):
-        return base64.b64decode(value[6:]).decode("utf-8")
+        return base64.b64decode(value[6:]).decode("ascii")
     if not value.startswith("dpapi:"):
         return ""
     raw = base64.b64decode(value[6:])
@@ -69,7 +69,7 @@ def unprotect_text(value: str) -> str:
 
 
 class SettingsStore:
-    PROTECTED_FIELDS = ("token", "cloud_session", "github_token")
+    PROTECTED_FIELDS = ("token", "cloud_session")
 
     def __init__(self):
         appdata = Path(os.environ.get("LOCALAPPDATA", Path.home()))
@@ -88,7 +88,6 @@ class SettingsStore:
             "xiaomi_login_method": "",
             "xiaomi_user_id": "",
             "xiaomi_user_name": "",
-            "github_token": "",
             "mop_enabled": False,
             "mop_water_level": 1,
             "suction": 2,
@@ -121,6 +120,7 @@ class SettingsStore:
 
     def save(self, settings: dict):
         data = dict(settings)
+        data.pop("github_token", None)
         for field in self.PROTECTED_FIELDS:
             value = data.get(field, "")
             data[field] = protect_text(value) if value else ""
