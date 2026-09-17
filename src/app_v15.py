@@ -1,5 +1,15 @@
 import threading
 
+# app_v14 usa constantes visuales que app_v9 no exportaba directamente.
+# Las exponemos antes de importar app_v14 para evitar un cierre al arrancar.
+import app_v8
+import app_v9
+
+app_v9.CARD = app_v8.CARD
+app_v9.GREEN = app_v8.GREEN
+app_v9.MUTED = app_v8.MUTED
+app_v9.ACCENT = app_v8.ACCENT
+
 import app_v14
 
 
