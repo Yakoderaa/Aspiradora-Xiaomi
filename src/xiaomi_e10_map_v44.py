@@ -1,8 +1,8 @@
 import hashlib
 import json
-import re
 from typing import Any
 
+from xiaomi_e10_map_v42 import XiaomiE10MapV42
 from xiaomi_e10_map_v43 import XiaomiE10MapV43
 
 
@@ -15,10 +15,8 @@ class XiaomiE10MapV44(XiaomiE10MapV43):
     llegara al parser oficial, por lo que se probaba una clave derivada de otro
     valor del servicio 1 y el resultado era siempre Padding is incorrect.
 
-    Esta versión conserva todas las rutas anteriores pero añade, y prioriza, el
-    serial real con formato flexible (10..25 caracteres, '/' permitido), además
-    del UID que viene tras ';' en 7/45. Nunca expone el serial ni IDs en texto:
-    el diagnóstico sólo informa fuente, longitud, forma y un hash corto.
+    Esta versión prioriza IJAI para B112, conserva Xiaomi JSON como fallback y
+    nunca imprime serial/UID/DID/MAC: sólo fuente, longitud, forma y hash corto.
     """
 
     def __init__(self, *args, **kwargs):
@@ -35,8 +33,6 @@ class XiaomiE10MapV44(XiaomiE10MapV43):
         cleaned = text.replace("/", "")
         if not cleaned.isalnum():
             return False
-        # Seriales reales observados pueden empezar por dígitos; exigimos al
-        # menos una letra y que las letras estén en mayúscula.
         return any(ch.isalpha() for ch in cleaned) and text.upper() == text
 
     @staticmethod
@@ -58,7 +54,6 @@ class XiaomiE10MapV44(XiaomiE10MapV43):
 
     @staticmethod
     def _multi_prop_items(raw: Any):
-        """Devuelve strings individuales de 7/45 sin asumir JSON perfecto."""
         if raw is None:
             return []
         if isinstance(raw, (list, tuple)):
@@ -104,14 +99,12 @@ class XiaomiE10MapV44(XiaomiE10MapV43):
         }
 
     def _key_candidates(self):
-        # Conservamos TODO lo que ya encontraba V41 y añadimos las fuentes con
-        # validación correcta para seriales que contienen '/'.
         wifi, owners, dids, macs = super()._key_candidates()
         device = self.vacuum.device
         extra_wifi = []
         extra_owners = []
 
-        # Orden verificado por integraciones IJAI: 1/5 primero, 1/3 después.
+        # Orden documentado en implementaciones IJAI: 1/5, 1/3, luego 7/45.
         for piid in (5, 3):
             try:
                 value = self._property_value(device, 1, piid)
@@ -133,9 +126,6 @@ class XiaomiE10MapV44(XiaomiE10MapV43):
         extra_wifi.extend((serial, "LAN 7/45") for serial in serials)
         extra_owners.extend((owner, "UID sufijo 7/45") for owner in owner_suffixes)
 
-        # La nube suele reflejar las mismas propiedades aunque una lectura LAN
-        # puntual falle. No usamos valores ajenos a 1/5, 1/3 y 7/45 como fuente
-        # prioritaria, pero los candidatos antiguos siguen presentes por fallback.
         cloud_values = self._cloud_props([(1, 5), (1, 3), (7, 45)])
         for (siid, piid), value in cloud_values.items():
             if (siid, piid) == (7, 45):
@@ -151,8 +141,6 @@ class XiaomiE10MapV44(XiaomiE10MapV43):
         dids = self._dedupe(dids)
         macs = self._dedupe(macs)
 
-        # Actualizamos el diagnóstico compartido para que V42 pruebe y reporte
-        # exactamente este material ampliado.
         self.last_key_diagnostics.update({
             "wifi_sources": [source for _, source in wifi],
             "owner_sources": [source for _, source in owners],
@@ -171,31 +159,53 @@ class XiaomiE10MapV44(XiaomiE10MapV43):
             "mac_sources": [source for _, source in macs],
             "slash_wifi_count": sum(1 for value, _ in wifi if "/" in str(value)),
             "strict_wifi_count": self.last_key_diagnostics.get("strict_wifi_count", 0),
-            "route": "IJAI con wifi_sn flexible + fallbacks V43/V42/V41",
+            "route": "IJAI primario con wifi_sn flexible; Xiaomi JSON y V41 como fallback",
         }
         return wifi, owners, dids, macs
 
+    def _mark_success(self, snapshot, route):
+        self.last_v44_diagnostics.update({
+            "route": route,
+            "success": True,
+            "crypto_mode": getattr(snapshot, "crypto_mode", None),
+            "winner_wifi_source": getattr(snapshot, "wifi_sn_source", None),
+            "winner_wifi_length": getattr(snapshot, "wifi_sn_length", 0),
+            "winner_owner_source": getattr(snapshot, "owner_source", None),
+            "winner_did_source": getattr(snapshot, "did_source", None),
+            "winner_mac_source": getattr(snapshot, "mac_source", None),
+            "raw_bytes": getattr(snapshot, "raw_size", 0),
+            "raw_prefix_hex": getattr(snapshot, "raw_prefix_hex", ""),
+            "blob_sha12": str(getattr(snapshot, "blob_sha256", ""))[:12],
+            "decrypted_bytes": getattr(snapshot, "decrypted_size", 0),
+        })
+        return snapshot
+
     def load(self):
+        # La evidencia más reciente para perfiles xiaomi.b112 los enruta como
+        # rebrand IJAI. Lo intentamos primero para no ocultar la señal tras el
+        # fallback Xiaomi JSON de V43.
+        ijai_error = None
         try:
-            snapshot = super().load()
+            snapshot = XiaomiE10MapV42.load(self)
+            return self._mark_success(snapshot, "IJAI primario V42 + wifi_sn flexible V44")
+        except Exception as exc:
+            ijai_error = self._safe_http_error(exc)
             self.last_v44_diagnostics.update({
-                "success": True,
-                "crypto_mode": getattr(snapshot, "crypto_mode", None),
-                "winner_wifi_source": getattr(snapshot, "wifi_sn_source", None),
-                "winner_wifi_length": getattr(snapshot, "wifi_sn_length", 0),
-                "winner_owner_source": getattr(snapshot, "owner_source", None),
-                "winner_did_source": getattr(snapshot, "did_source", None),
-                "winner_mac_source": getattr(snapshot, "mac_source", None),
-                "raw_bytes": getattr(snapshot, "raw_size", 0),
-                "raw_prefix_hex": getattr(snapshot, "raw_prefix_hex", ""),
-                "blob_sha12": str(getattr(snapshot, "blob_sha256", ""))[:12],
-                "decrypted_bytes": getattr(snapshot, "decrypted_size", 0),
+                "ijai_primary_error": ijai_error,
+                "v42_native": dict(getattr(self, "last_native_diagnostics", {}) or {}),
+                "slots": dict(getattr(self, "last_slot_diagnostics", {}) or {}),
             })
-            return snapshot
+
+        # Si el firmware concreto contradice la clasificación IJAI, V43 conserva
+        # la ruta Xiaomi JSON y vuelve a tener los fallbacks antiguos.
+        try:
+            snapshot = XiaomiE10MapV43.load(self)
+            return self._mark_success(snapshot, "fallback V43 tras IJAI primario")
         except Exception as exc:
             self.last_v44_diagnostics.update({
                 "success": False,
                 "error": self._safe_http_error(exc),
+                "ijai_primary_error": ijai_error,
                 "v42_native": dict(getattr(self, "last_native_diagnostics", {}) or {}),
                 "v43_xiaomi": dict(getattr(self, "last_xiaomi_diagnostics", {}) or {}),
                 "slots": dict(getattr(self, "last_slot_diagnostics", {}) or {}),
