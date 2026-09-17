@@ -42,8 +42,12 @@ def build_mapped_walls(points, tolerance=0.055, jump_distance=1.20, min_step=0.0
     trayectoria del centro del robot mientras sigue el borde. Por eso estas
     paredes son estimadas y deliberadamente no se desplazan artificialmente
     hacia izquierda/derecha.
+
+    app_v18 guarda dos familias de puntos en paralelo: muestras rápidas con IDs
+    bajos y la trayectoria completa de get-current-path con IDs 500000+. Cuando
+    existe la segunda, la usamos como fuente canónica para no duplicar paredes.
     """
-    ordered = []
+    parsed = []
     for index, point in enumerate(points or []):
         try:
             if int(point.get("phase", 0) or 0) != 1:
@@ -53,9 +57,13 @@ def build_mapped_walls(points, tolerance=0.055, jump_distance=1.20, min_step=0.0
             if not (math.isfinite(x) and math.isfinite(y)):
                 continue
             pid = int(point.get("id", index))
-            ordered.append((pid, x, y))
+            parsed.append((pid, x, y))
         except Exception:
             continue
+
+    full_path = [item for item in parsed if item[0] >= 500000]
+    live_samples = [item for item in parsed if item[0] < 500000]
+    ordered = full_path if len(full_path) >= 2 else live_samples
     ordered.sort(key=lambda item: item[0])
 
     groups = []
