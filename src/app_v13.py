@@ -22,25 +22,32 @@ class App(app_v12.App):
     # ------------------------------------------------------------ eventos
     def _handle_ui_event(self, kind, payload):
         if kind == "edge_only_complete":
-            banner = str(payload[0]) if payload else "Paso 1 terminado."
             self.mapping_active = False
             self.mapping_phase = 0
             self.mapping_seen_moving = False
             self.mapping_transitioning = False
-            self.mapping_step1_complete = self._has_perimeter_data()
 
-            if self.mapping_step1_complete:
-                self._auto_step2_pending = True
-                self._auto_step2_scheduled = False
-                self._set_banner(
-                    "Paso 1 terminado · perímetro guardado. Esperando que el E10 vuelva a la base para iniciar Paso 2 automáticamente…"
-                )
-            else:
-                self._auto_step2_pending = False
-                self._set_banner(banner)
-
+            # Llegar a este evento significa que el controlador EDGE ya confirmó
+            # el recorrido. No dependemos de que el último paquete de trayectoria
+            # haya alcanzado a guardarse antes de marcar el Paso 1 como completo.
+            self.mapping_step1_complete = True
+            self._auto_step2_pending = True
+            self._auto_step2_scheduled = False
+            self._set_banner(
+                "Paso 1 terminado · perímetro guardado. Esperando que el E10 vuelva a la base para iniciar Paso 2 automáticamente…"
+            )
             self._sync_mapping_step_buttons()
             self._render_maps()
+
+            # Si el firmware queda en espera en vez de volver solo, pedimos el
+            # retorno explícitamente. Si ya está volviendo/cargando, no interfiere.
+            vacuum = self.vacuum
+            if vacuum:
+                threading.Thread(
+                    target=self._ensure_return_to_base_after_edge,
+                    args=(vacuum,),
+                    daemon=True,
+                ).start()
             return
 
         if kind == "status_ok":
@@ -143,6 +150,20 @@ class App(app_v12.App):
         threading.Thread(target=worker, daemon=True).start()
 
     # -------------------------------------------------- transición automática
+    def _ensure_return_to_base_after_edge(self, vacuum):
+        try:
+            time.sleep(1.2)
+            values = vacuum._get_many([("status", 2, 1)])
+            status = int(values.get("status", -1) if values.get("status") is not None else -1)
+            if status not in (3, 4):
+                vacuum.dock()
+                self._post_ui(
+                    "banner",
+                    "Paso 1 terminado · envié al E10 de vuelta a la base. Paso 2 comenzará cuando quede cargando…",
+                )
+        except Exception as exc:
+            self._edge_log(f"No pude forzar retorno a base después de EDGE: {exc}")
+
     def _maybe_schedule_auto_step2(self):
         if not self._auto_step2_pending or self._auto_step2_scheduled:
             return
@@ -173,11 +194,6 @@ class App(app_v12.App):
         if self.mapping_active or not self.vacuum:
             return
         if self._last_robot_status != 4:
-            return
-        if not (self.mapping_step1_complete or self._has_perimeter_data()):
-            self._auto_step2_pending = False
-            self._set_banner("No encontré datos del perímetro; no inicié el Paso 2.")
-            self._sync_mapping_step_buttons()
             return
 
         self._auto_step2_pending = False
