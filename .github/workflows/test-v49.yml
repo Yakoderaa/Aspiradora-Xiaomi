@@ -35,6 +35,7 @@ jobs:
       - name: Confirm installer outputs
         shell: pwsh
         run: |
+          # Segundo push intencional: el workflow ya existe en la rama.
           if (-not (Test-Path "installer_output\Aspiradora-Xiaomi-Setup.exe")) { throw "Falta instalador V49" }
           if (-not (Test-Path "installer_output\Aspiradora-Xiaomi-Setup.exe.sha256")) { throw "Falta SHA-256 V49" }
           Get-Item "installer_output\Aspiradora-Xiaomi-Setup.exe"
