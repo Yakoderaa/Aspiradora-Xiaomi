@@ -3,9 +3,12 @@ import traceback
 
 import app_v41
 import device_metadata_patch
+import xiaomi_e10_live_patch_v41
 
 
 def main():
+    xiaomi_e10_live_patch_v41.install()
+
     if "--packaging-smoke-test" in sys.argv:
         # Los imports de app_v41 incluyen protobuf, IJAI, Crypto y el pipeline
         # exhaustivo. Llegar hasta acá valida que PyInstaller los empaquetó.
