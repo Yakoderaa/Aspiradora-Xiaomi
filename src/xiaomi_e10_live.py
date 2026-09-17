@@ -13,12 +13,15 @@ class XiaomiE10Live(XiaomiE10Edge):
     devolver temporalmente una cadena vacía. En esos huecos NO debemos volver a
     10/24 porque varios E10 dejan robot-location congelado sobre la base.
 
-    Algunos firmwares reutilizan el mismo pose-id y sólo cambian x/y/phi. En ese
-    caso tratamos cada cambio como una muestra nueva del recorrido: si no,
-    relativizar un único punto contra sí mismo deja X=0/Y=0 para siempre.
+    Además, 10/5 puede devolver sólo el primer pose-id, sin coordenadas. Ese ID es
+    valioso: 10/12 (get-cur-path) espera un rango de pose-id real. Las versiones
+    anteriores descartaban ese encabezado y sondeaban rangos cercanos a cero o
+    puntos futuros; ahora pedimos historia terminando exactamente en el pose-id
+    observado por el robot.
     """
 
-    PATH_PROBE_ENDS = (256, 1024, 4096, 16384, 65535, 262143)
+    FALLBACK_PROBE_ENDS = (256, 1024, 4096, 16384, 65535, 262143)
+    HISTORY_SPANS = (64, 256, 1024, 4096)
     MAX_CACHED_POSES = 20000
     SYNTHETIC_POSE_BASE = 2_000_000_000
 
@@ -40,6 +43,8 @@ class XiaomiE10Live(XiaomiE10Edge):
         self._live_stream_protocol_id = None
         self._live_stream_last = None
         self._live_stream_mode = False
+        self._last_action_raw = None
+        self._last_action_probe_range = None
 
     @classmethod
     def _extract_action_output(cls, value: Any, target_piid: int = 5):
@@ -79,6 +84,19 @@ class XiaomiE10Live(XiaomiE10Edge):
                     return found
         if isinstance(value, (str, bytes)):
             return value.decode("utf-8", errors="ignore") if isinstance(value, bytes) else value
+        return None
+
+    @classmethod
+    def _header_pose_id(cls, value):
+        """Extrae el primer pose-id incluso cuando 10/5 sólo devuelve ``[id]``."""
+        try:
+            values = cls._numeric_values(value)
+            if values:
+                candidate = int(values[0])
+                if 0 <= candidate <= 4294967295:
+                    return candidate
+        except Exception:
+            pass
         return None
 
     @staticmethod
@@ -189,33 +207,40 @@ class XiaomiE10Live(XiaomiE10Edge):
             for pid in ids[: len(cache) - self.MAX_CACHED_POSES]:
                 cache.pop(pid, None)
 
-        ordered = [cache[pid] for pid in sorted(cache)]
-        return ordered, changed
+        return [cache[pid] for pid in sorted(cache)], changed
 
-    def _next_path_probe_range(self, direct_path):
-        """Genera una ventana para 10/12 sin leer 10/15/10/16 como propiedades."""
+    def _next_path_probe_range(self, direct_path, header_pose_id=None):
+        """Pide historia *hasta* el último pose-id observado, no puntos futuros."""
         last_direct = self._last_pose_id(direct_path)
         cursor = getattr(self, "_live_path_cursor", None)
-
-        known = last_direct if last_direct is not None else cursor
-        if known is not None:
-            start = max(0, int(known) - 16)
-            end = min(4294967295, max(start + 1, int(known) + 160))
-            return start, end
+        candidates = [value for value in (last_direct, header_pose_id, cursor) if value is not None]
+        known = max(candidates) if candidates else None
 
         index = int(getattr(self, "_live_path_probe_index", 0) or 0)
-        end = self.PATH_PROBE_ENDS[index % len(self.PATH_PROBE_ENDS)]
         self._live_path_probe_index = index + 1
+
+        if known is not None:
+            span = self.HISTORY_SPANS[index % len(self.HISTORY_SPANS)]
+            end = max(1, min(4294967295, int(known)))
+            start = max(0, end - int(span))
+            if start >= end:
+                start = max(0, end - 1)
+            return start, end
+
+        end = self.FALLBACK_PROBE_ENDS[index % len(self.FALLBACK_PROBE_ENDS)]
         return 0, int(end)
 
-    def _get_path_by_action(self, direct_path):
-        start, end = self._next_path_probe_range(direct_path)
+    def _get_path_by_action(self, direct_path, header_pose_id=None):
+        start, end = self._next_path_probe_range(direct_path, header_pose_id)
+        self._last_action_probe_range = (start, end)
         try:
             response = self.device.call_action_by(10, 12, [int(start), int(end)])
             raw = self._extract_action_output(response, 5)
+            self._last_action_raw = raw
             path = self.parse_trajectory(raw)
             return raw, path, None, (start, end)
         except Exception as exc:
+            self._last_action_raw = None
             return None, [], str(exc), (start, end)
 
     def _fresh_current_path(self):
@@ -251,6 +276,7 @@ class XiaomiE10Live(XiaomiE10Edge):
 
     def local_map_state(self) -> dict[str, Any]:
         direct_raw = self._fresh_current_path()
+        direct_header_id = self._header_pose_id(direct_raw)
         direct_path = self.parse_trajectory(direct_raw)
         direct_signature = self._path_signature(direct_path)
         previous_signature = getattr(self, "_live_path_last_signature", None)
@@ -264,6 +290,10 @@ class XiaomiE10Live(XiaomiE10Edge):
                 self._live_path_cursor = protocol_last
         else:
             self._live_path_empty_reads = int(getattr(self, "_live_path_empty_reads", 0) or 0) + 1
+            if direct_header_id is not None:
+                # Un frame [pose_id] sigue indicando dónde termina la historia.
+                if self._live_path_cursor is None or direct_header_id > self._live_path_cursor:
+                    self._live_path_cursor = direct_header_id
 
         try:
             values = self._get_many([
@@ -276,29 +306,36 @@ class XiaomiE10Live(XiaomiE10Edge):
         action_raw = None
         action_path = []
         action_error = None
-        probe_range = self._next_path_probe_range(direct_path)
-        if not direct_changed or not direct_path:
-            action_raw, action_path, action_error, probe_range = self._get_path_by_action(direct_path)
+        probe_range = self._next_path_probe_range(direct_path, direct_header_id)
+        if not direct_changed or len(direct_path) <= 1:
+            action_raw, action_path, action_error, probe_range = self._get_path_by_action(
+                direct_path,
+                direct_header_id,
+            )
             action_last = self._last_pose_id(action_path)
             if action_last is not None:
-                self._live_path_cursor = action_last
+                self._live_path_cursor = max(action_last, self._live_path_cursor or action_last)
 
-        accumulated, changed_count = self._merge_live_path(direct_path, action_path)
+        accumulated, changed_count = self._merge_live_path(action_path, direct_path)
 
-        if direct_changed:
+        if direct_changed and len(direct_path) > 1:
+            self._live_path_source = "trayectoria 10/5"
+        elif action_path:
+            self._live_path_source = (
+                "stream 10/12 · pose-id reutilizado"
+                if getattr(self, "_live_stream_mode", False)
+                else "historial 10/12"
+            )
+        elif direct_changed:
             self._live_path_source = (
                 "stream 10/5 · pose-id reutilizado"
                 if getattr(self, "_live_stream_mode", False)
                 else "trayectoria 10/5"
             )
-        elif action_path:
-            self._live_path_source = (
-                "stream 10/12 · pose-id reutilizado"
-                if getattr(self, "_live_stream_mode", False)
-                else "trayectoria 10/12"
-            )
         elif accumulated:
             self._live_path_source = "última trayectoria válida"
+        elif direct_header_id is not None:
+            self._live_path_source = "pose-id 10/5 · recuperando historial 10/12"
         else:
             self._live_path_source = "esperando primera coordenada"
 
@@ -335,19 +372,27 @@ class XiaomiE10Live(XiaomiE10Edge):
         stale_1024 = bool(robot_1024 is not None and same_robot_reads >= 3)
         note = ""
         if not accumulated and stale_1024:
-            note = "10/24 permanece sin cambios; esperando 10/5"
+            if direct_header_id is not None:
+                note = f"10/24 fijo; recuperando historial desde pose-id {direct_header_id}"
+            else:
+                note = "10/24 permanece sin cambios; esperando 10/5"
 
         return {
             "path": accumulated,
             "charging_base": base,
             "robot": robot,
             "raw_path": direct_raw if direct_raw is not None else action_raw,
+            "raw_path_direct": direct_raw,
+            "raw_path_action": action_raw,
             "raw_robot": raw_robot,
             "raw_base": raw_base,
+            "direct_header_id": direct_header_id,
             "path_source": self._live_path_source,
             "position_source": position_source,
             "path_start": accumulated[0]["id"] if accumulated else probe_range[0],
             "path_end": self._live_path_cursor if self._live_path_cursor is not None else probe_range[1],
+            "probe_start": probe_range[0],
+            "probe_end": probe_range[1],
             "direct_path_count": len(direct_path),
             "action_path_count": len(action_path),
             "accumulated_path_count": len(accumulated),
