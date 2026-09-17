@@ -1,0 +1,47 @@
+name: Validate V55 branch
+
+on:
+  push:
+    branches: [v55-live-robot-location]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: windows-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup --no-progress -y
+
+      - name: Build and validate complete V55 installer
+        shell: pwsh
+        env:
+          APP_VERSION: 0.1.55.0
+        run: .\build.ps1
+
+      - name: Confirm installer outputs
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "installer_output\Aspiradora-Xiaomi-Setup.exe")) { throw "Falta instalador V55" }
+          if (-not (Test-Path "installer_output\Aspiradora-Xiaomi-Setup.exe.sha256")) { throw "Falta SHA-256 V55" }
+
+      - name: Upload V55 test installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: Aspiradora-Xiaomi-V55-test
+          path: |
+            installer_output/Aspiradora-Xiaomi-Setup.exe
+            installer_output/Aspiradora-Xiaomi-Setup.exe.sha256
