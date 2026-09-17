@@ -2,11 +2,14 @@
 
 from typing import Any
 
-from xiaomi_e10 import XiaomiE10
+from xiaomi_e10_edge import XiaomiE10Edge
 
 
-class XiaomiE10Live(XiaomiE10):
-    """Obtiene la trayectoria mediante el mecanismo MIoT real del B112.
+class XiaomiE10Live(XiaomiE10Edge):
+    """EDGE estable + trayectoria MIoT real del B112.
+
+    Heredamos de XiaomiE10Edge para conservar el arranque de perímetro que ya
+    evita rearmados/pitidos, y encima agregamos únicamente la telemetría del mapa.
 
     El perfil del E10 expone:
       10/5  current-path
@@ -24,19 +27,27 @@ class XiaomiE10Live(XiaomiE10):
         if value is None:
             return None
         if isinstance(value, dict):
-            # Respuesta MIoT típica: {code: 0, out: [{piid: 5, value: ...}]}
             out = value.get("out")
             if isinstance(out, list):
                 for item in out:
                     if isinstance(item, dict):
-                        if int(item.get("piid", target_piid) or target_piid) == target_piid and "value" in item:
+                        try:
+                            piid = int(item.get("piid", target_piid) or target_piid)
+                        except Exception:
+                            piid = target_piid
+                        if piid == target_piid and "value" in item:
                             return item.get("value")
                 for item in out:
                     found = cls._extract_action_output(item, target_piid)
                     if found is not None:
                         return found
-            if "value" in value and ("piid" not in value or int(value.get("piid", target_piid) or target_piid) == target_piid):
-                return value.get("value")
+            if "value" in value:
+                try:
+                    piid = int(value.get("piid", target_piid) or target_piid)
+                except Exception:
+                    piid = target_piid
+                if piid == target_piid:
+                    return value.get("value")
             for key in ("result", "data", "payload"):
                 if key in value:
                     found = cls._extract_action_output(value[key], target_piid)
@@ -47,7 +58,6 @@ class XiaomiE10Live(XiaomiE10):
                 found = cls._extract_action_output(item, target_piid)
                 if found is not None:
                     return found
-        # Algunos firmwares devuelven directamente el valor de salida.
         if isinstance(value, (str, bytes)):
             return value.decode("utf-8", errors="ignore") if isinstance(value, bytes) else value
         return None
@@ -75,8 +85,6 @@ class XiaomiE10Live(XiaomiE10):
             except Exception as exc:
                 action_error = str(exc)
 
-        # get-current-path es preferido cuando devuelve datos. Si el firmware
-        # mantiene esa acción desactivada durante una fase, usamos 10/5 directo.
         if action_path:
             path = action_path
             source = "get-current-path"
