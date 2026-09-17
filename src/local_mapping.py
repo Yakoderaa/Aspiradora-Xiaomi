@@ -1,4 +1,5 @@
 import json
+import math
 import threading
 import uuid
 from datetime import datetime, timezone
@@ -15,7 +16,7 @@ class LocalMapStore:
     """
 
     MAX_MAPS = 4
-    LIBRARY_VERSION = 3
+    LIBRARY_VERSION = 4
 
     def __init__(self, app_folder: Path):
         self.folder = Path(app_folder)
@@ -42,6 +43,7 @@ class LocalMapStore:
             "created_at": cls._now(),
             "updated_at": None,
             "points": [],
+            "mapped_walls": [],
             "robot": None,
             "charging_base": None,
             "rooms": [],
@@ -58,6 +60,23 @@ class LocalMapStore:
         }
 
     @classmethod
+    def _normalize_wall(cls, wall):
+        if not isinstance(wall, dict):
+            return None
+        clean = []
+        for point in wall.get("points", []) or []:
+            try:
+                x = float(point["x"])
+                y = float(point["y"])
+                if math.isfinite(x) and math.isfinite(y):
+                    clean.append({"x": x, "y": y})
+            except Exception:
+                continue
+        if len(clean) < 2:
+            return None
+        return {"points": clean, "estimated": bool(wall.get("estimated", True))}
+
+    @classmethod
     def _normalize_map(cls, source, fallback_name="Mapa"):
         source = dict(source or {})
         result = cls._blank_map(source.get("name") or fallback_name, source.get("id") or cls._new_id())
@@ -70,6 +89,11 @@ class LocalMapStore:
         for point in result["points"]:
             if isinstance(point, dict):
                 point.setdefault("phase", 0)
+        result["mapped_walls"] = []
+        for wall in source.get("mapped_walls", []) or []:
+            normalized = cls._normalize_wall(wall)
+            if normalized:
+                result["mapped_walls"].append(normalized)
         return result
 
     def _load(self):
@@ -154,6 +178,7 @@ class LocalMapStore:
                     "name": item.get("name") or "Mapa",
                     "active": item["id"] == active,
                     "points": len(item.get("points") or []),
+                    "walls": len(item.get("mapped_walls") or []),
                     "rooms": len(item.get("rooms") or []),
                     "created_at": item.get("created_at"),
                     "updated_at": item.get("updated_at"),
@@ -211,7 +236,6 @@ class LocalMapStore:
             return json.loads(json.dumps(self._data))
 
     def replace_library(self, library):
-        """Restaura una biblioteca validada desde un backup de la app."""
         if not isinstance(library, dict) or not isinstance(library.get("maps"), list):
             raise ValueError("El archivo no contiene una biblioteca de mapas válida.")
         if not library.get("maps"):
@@ -291,6 +315,18 @@ class LocalMapStore:
             self._touch_active_locked()
             self._save_locked()
             return len(by_id) - before
+
+    def set_mapped_walls(self, walls):
+        clean = []
+        for wall in walls or []:
+            normalized = self._normalize_wall(wall)
+            if normalized:
+                clean.append(normalized)
+        with self._lock:
+            item = self._active_locked()
+            item["mapped_walls"] = clean
+            self._touch_active_locked()
+            self._save_locked()
 
     def set_robot(self, point: dict[str, Any] | None):
         if not point:
