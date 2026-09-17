@@ -62,18 +62,33 @@ class XiaomiE10MapClient:
 
     @staticmethod
     def _extract_url(response) -> str | None:
+        """Extrae la URL temporal de Xiaomi Cloud.
+
+        micloud devuelve el cuerpo RC4 ya descifrado como ``bytes`` en algunas
+        versiones. La implementación anterior sólo aceptaba str/dict y por eso
+        descartaba una respuesta válida como si Xiaomi no hubiese dado una URL.
+        """
         if response is None:
             return None
+        if isinstance(response, (bytes, bytearray, memoryview)):
+            try:
+                response = bytes(response).decode("utf-8-sig")
+            except UnicodeDecodeError:
+                return None
         if isinstance(response, str):
             try:
-                response = json.loads(response)
-            except json.JSONDecodeError:
+                response = json.loads(response.lstrip("\ufeff"))
+            except (json.JSONDecodeError, TypeError, ValueError):
                 return None
         if not isinstance(response, dict):
             return None
+
         result = response.get("result")
         if isinstance(result, dict):
-            return result.get("url")
+            for key in ("url", "file_url", "download_url"):
+                value = result.get(key)
+                if value:
+                    return str(value)
         return None
 
     def _map_download_url(self, map_name: str) -> str:
@@ -86,20 +101,24 @@ class XiaomiE10MapClient:
         params = {"data": json.dumps({"obj_name": obj_name}, separators=(",", ":"))}
 
         errors = []
+        responses = []
         for endpoint in ("/v2/home/get_interim_file_url_pro", "/v2/home/get_interim_file_url"):
             try:
                 response = cloud.request_country(endpoint, self.region, dict(params))
+                responses.append(type(response).__name__)
                 url = self._extract_url(response)
                 if url:
                     return url
             except Exception as exc:
                 errors.append(str(exc))
 
-        detail = f" ({errors[-1]})" if errors else ""
-        raise RuntimeError(
-            "Xiaomi no entregó la URL del mapa. La sesión puede haber vencido; probá vincular nuevamente con QR."
-            + detail
-        )
+        detail_parts = []
+        if responses:
+            detail_parts.append("respuesta=" + "/".join(responses))
+        if errors:
+            detail_parts.append(errors[-1])
+        detail = " (" + " · ".join(detail_parts) + ")" if detail_parts else ""
+        raise RuntimeError("Xiaomi Cloud respondió, pero no pude extraer la URL temporal del mapa." + detail)
 
     @staticmethod
     def _normalize_raw_map(raw_map: bytes) -> bytes:
