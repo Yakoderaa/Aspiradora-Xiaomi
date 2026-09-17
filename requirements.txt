@@ -2,3 +2,4 @@ git+https://github.com/rytilahti/python-miio.git
 micloud
 requests>=2.31,<3
 Pillow>=10,<13
+pystray>=0.19.5,<1
