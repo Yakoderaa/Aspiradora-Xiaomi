@@ -29,7 +29,7 @@ jobs:
       - name: Build and validate complete V47 installer
         shell: pwsh
         env:
-          APP_VERSION: 0.1.47-test
+          APP_VERSION: 0.1.47.0
         run: .\build.ps1
 
       - name: Confirm installer outputs
