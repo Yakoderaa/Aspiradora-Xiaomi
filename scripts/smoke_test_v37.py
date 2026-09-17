@@ -1,3 +1,4 @@
+import json
 import os
 import sys
 
@@ -21,11 +22,18 @@ response = {
     ],
 }
 
-decoded = XiaomiCloudTelemetry.decode_response(response)
-assert decoded["values"]["robot_location"] == "59_60_3.0"
-assert decoded["values"]["charging_base"] == "60_60"
-assert decoded["meta"]["robot_location"]["updateTime"] == 13
+for wire_response in (
+    response,
+    json.dumps(response, separators=(",", ":")),
+    json.dumps(response, separators=(",", ":")).encode("utf-8"),
+    ("\ufeff" + json.dumps(response, separators=(",", ":"))).encode("utf-8"),
+):
+    decoded = XiaomiCloudTelemetry.decode_response(wire_response)
+    assert decoded["values"]["robot_location"] == "59_60_3.0"
+    assert decoded["values"]["charging_base"] == "60_60"
+    assert decoded["meta"]["robot_location"]["updateTime"] == 13
+
 assert App._xy_from_miot("59_60_3.0") == (59.0, 60.0)
 assert App._xy_from_miot("60_60") == (60.0, 60.0)
 
-print("smoke_test_v37 OK")
+print("smoke_test_v37 OK · dict/str/bytes")
