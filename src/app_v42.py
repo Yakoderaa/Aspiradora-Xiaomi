@@ -3,7 +3,7 @@ from xiaomi_e10_map_v42 import XiaomiE10MapV42
 
 
 class App(app_v41.App):
-    """v42: corrige la capa de validación/parseo del blob IJAI del E10."""
+    """v42: corrige la derivación/decodificación IJAI del E10 usando el parser instalado."""
 
     def __init__(self):
         self._v42_native_diag = {}
@@ -43,9 +43,10 @@ class App(app_v41.App):
         inherited = super()._diagnostic_text()
         winner = bool(diag.get("winner"))
         return (
-            "DIAGNÓSTICO V42 ACTIVO · IJAI binario nativo\n"
-            "===============================================\n"
-            "corrección V42: unpack_map() + parse() del paquete IJAI; NO validación protobuf\n"
+            "DIAGNÓSTICO V42 ACTIVO · IJAI parser oficial\n"
+            "=============================================\n"
+            "corrección V42: usa directamente unpack_map() + parse() de vacuum-map-parser-ijai 0.1.1\n"
+            "clave b112: MD5 central de 16 caracteres ASCII; V41 sólo probaba variantes binarias/hex incompatibles\n"
             f"wifi_sn estrictos (16–24, uppercase): {diag.get('strict_wifi_count', 0)}\n"
             f"intentos parser nativo: {diag.get('attempts', 0)}\n"
             f"unpack_map correctos: {diag.get('unpack_ok', 0)}\n"
@@ -59,7 +60,7 @@ class App(app_v41.App):
             f"path nativo: {diag.get('path_count', 0)} puntos · imagen: {bool(diag.get('image', False))}\n"
             f"fallback V41: {diag.get('legacy_fallback') or ('no necesario' if winner else '—')}\n"
             "seguridad diagnóstico: URLs FDS firmadas se omiten\n"
-            "nota: las líneas V40/V41 heredadas que dicen 'protobuf' son históricas; V42 usa el binario real del parser\n\n"
+            "nota: V42 deja que el paquete IJAI haga internamente su protobuf y sus transformaciones, sin reimplementar esa capa\n\n"
             + inherited
         )
 
