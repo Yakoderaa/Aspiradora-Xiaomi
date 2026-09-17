@@ -126,6 +126,9 @@ class App(app_v19.App):
         self._account_status_label = None
         self._account_user_label = None
         self._account_button = None
+        self._quick_panel_hover = False
+        self._quick_panel_close_job = None
+        self._quick_panel_open_grace_until = 0
         super().__init__()
 
         # Las versiones anteriores no guardaban identidad de la cuenta. No
@@ -186,7 +189,11 @@ class App(app_v19.App):
         return "Usuario no guardado por la versión anterior"
 
     def _install_xiaomi_account_card(self):
-        page = self._page("settings")
+        # Reutilizamos la página de Ajustes ya creada; no generamos otra página
+        # encima porque eso ocultaría opciones anteriores.
+        page = self._pages.get("settings")
+        if page is None:
+            return
         card = tk.Frame(page, bg=CARD, highlightthickness=1, highlightbackground=BORDER)
         card.pack(fill="x", padx=5, pady=5)
         self._account_card = card
@@ -242,35 +249,100 @@ class App(app_v19.App):
         return result
 
     # ----------------------------------------------------- flyout de bandeja
+    def _quick_panel_pointer_inside(self, win):
+        """True si el cursor está físicamente dentro del panel rápido."""
+        try:
+            if not win or not win.winfo_exists():
+                return False
+            px, py = self.winfo_pointerxy()
+            x0 = win.winfo_rootx()
+            y0 = win.winfo_rooty()
+            x1 = x0 + win.winfo_width()
+            y1 = y0 + win.winfo_height()
+            return x0 <= px < x1 and y0 <= py < y1
+        except Exception:
+            return False
+
+    def _cancel_quick_panel_close(self):
+        job = self._quick_panel_close_job
+        self._quick_panel_close_job = None
+        if job:
+            try:
+                self.after_cancel(job)
+            except Exception:
+                pass
+
+    def _schedule_quick_panel_close(self, delay=420):
+        self._cancel_quick_panel_close()
+        win = self._quick_panel
+        if not win or not win.winfo_exists():
+            return
+
+        def check():
+            self._quick_panel_close_job = None
+            current = self._quick_panel
+            if current is not win or not win.winfo_exists():
+                return
+            # Nunca cerramos si el mouse está sobre el panel, aunque Explorer
+            # haya cerrado el flyout de iconos ocultos o haya cambiado el foco.
+            if self._quick_panel_hover or self._quick_panel_pointer_inside(win):
+                return
+            try:
+                import time
+                if time.monotonic() < self._quick_panel_open_grace_until:
+                    self._schedule_quick_panel_close(180)
+                    return
+            except Exception:
+                pass
+            try:
+                win.destroy()
+            except Exception:
+                pass
+            if self._quick_panel is win:
+                self._quick_panel = None
+
+        self._quick_panel_close_job = self.after(max(80, int(delay)), check)
+
     def _show_quick_panel(self):
         super()._show_quick_panel()
         win = self._quick_panel
         if not win or not win.winfo_exists():
             return
 
-        def maybe_close(_event=None):
-            if not win.winfo_exists():
-                return
+        import time
+        self._quick_panel_hover = self._quick_panel_pointer_inside(win)
+        # Da tiempo para mover el cursor desde el icono/flyout de Windows hasta
+        # nuestro panel sin que desaparezca durante el pequeño hueco entre ambos.
+        self._quick_panel_open_grace_until = time.monotonic() + 1.15
+        self._cancel_quick_panel_close()
 
-            def check_focus():
-                if not win.winfo_exists():
-                    return
-                try:
-                    focused = self.focus_get()
-                    if focused is None or focused.winfo_toplevel() is not win:
-                        win.destroy()
-                        if self._quick_panel is win:
-                            self._quick_panel = None
-                except Exception:
-                    try:
-                        win.destroy()
-                    except Exception:
-                        pass
+        def enter(_event=None):
+            self._quick_panel_hover = True
+            self._cancel_quick_panel_close()
 
-            win.after(90, check_focus)
+        def leave(_event=None):
+            self._quick_panel_hover = False
+            self._schedule_quick_panel_close(460)
 
-        win.bind("<FocusOut>", maybe_close, add="+")
-        win.bind("<Escape>", lambda _event: win.destroy(), add="+")
+        def focus_out(_event=None):
+            # El foco puede irse porque Explorer cerró su bandeja. Sólo cerramos
+            # si además el cursor no está usando nuestro panel.
+            if not self._quick_panel_pointer_inside(win):
+                self._schedule_quick_panel_close(260)
+
+        def close_now(_event=None):
+            self._cancel_quick_panel_close()
+            try:
+                win.destroy()
+            except Exception:
+                pass
+            if self._quick_panel is win:
+                self._quick_panel = None
+
+        win.bind("<Enter>", enter, add="+")
+        win.bind("<Leave>", leave, add="+")
+        win.bind("<FocusOut>", focus_out, add="+")
+        win.bind("<Escape>", close_now, add="+")
 
     # ---------------------------------------------------------- pan del mapa
     def _reset_coordinate_session(self):
