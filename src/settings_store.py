@@ -44,7 +44,7 @@ def unprotect_text(value: str) -> str:
     if not value:
         return ""
     if value.startswith("plain:"):
-        return base64.b64decode(value[6:]).decode("ascii")
+        return base64.b64decode(value[6:]).decode("utf-8")
     if not value.startswith("dpapi:"):
         return ""
     raw = base64.b64decode(value[6:])
