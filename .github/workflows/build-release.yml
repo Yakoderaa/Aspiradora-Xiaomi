@@ -59,10 +59,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V53 para Windows 10/11 x64. Tras confirmar en V52 que 10/12 get-cur-path no devuelve trayectoria ni con el rango uint32 completo, V53 se concentra en el slot 0 clásico de get_interim_file_url. F12 muestra fingerprint seguro del blob (tamaño/hash/prefijo/entropía/bloques repetidos/magic) y prueba únicamente las dos derivaciones IJAI publicadas: MD5 central de 16 caracteres ASCII y MD5 hexadecimal completo convertido a 16 bytes. Informa padding/hex/JSON/protobuf por modo y la versión/modo real del parser instalado. No ejecuta acciones ni modifica propiedades del robot y conserva todas las guardas de V51/V45."
+          $notes = "V54 para Windows 10/11 x64. V53 encontró una combinación fuerte del slot 0 clásico: MD5 hexadecimal completo produce padding PKCS7 válido y plaintext hexadecimal válido. V54 aísla sólo esos candidatos parciales y analiza el contenido post-hex sin sumar claves: tamaño/hash/prefijo/sufijo, entropía, distribución de bytes, bloques repetidos, magic, JSON, RobotMap, protobuf wire genérico y zlib/deflate/gzip. También cuenta lecturas y cambios de hash para saber si el blob 7264 B es vivo o estático. Sólo lee Xiaomi Cloud; no ejecuta acciones ni modifica propiedades del robot y conserva todas las guardas de V53/V51/V45."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V53" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V54" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
