@@ -13,13 +13,14 @@ class XiaomiE10Live(XiaomiE10Edge):
     devolver temporalmente una cadena vacía. En esos huecos NO debemos volver a
     10/24 porque varios E10 dejan robot-location congelado sobre la base.
 
-    Por eso esta clase acumula los pose-id recibidos durante la sesión actual y
-    mantiene el último punto válido como posición del robot hasta que llegue uno
-    nuevo. 10/12 queda como recuperación/fallback para completar fragmentos.
+    Algunos firmwares reutilizan el mismo pose-id y sólo cambian x/y/phi. En ese
+    caso tratamos cada cambio como una muestra nueva del recorrido: si no,
+    relativizar un único punto contra sí mismo deja X=0/Y=0 para siempre.
     """
 
     PATH_PROBE_ENDS = (256, 1024, 4096, 16384, 65535, 262143)
     MAX_CACHED_POSES = 20000
+    SYNTHETIC_POSE_BASE = 2_000_000_000
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -35,6 +36,10 @@ class XiaomiE10Live(XiaomiE10Edge):
         self._live_path_last_signature = None
         self._live_path_empty_reads = 0
         self._live_path_source = "esperando trayectoria"
+        self._live_stream_seq = 0
+        self._live_stream_protocol_id = None
+        self._live_stream_last = None
+        self._live_stream_mode = False
 
     @classmethod
     def _extract_action_output(cls, value: Any, target_piid: int = 5):
@@ -101,20 +106,40 @@ class XiaomiE10Live(XiaomiE10Edge):
         except Exception:
             return None
 
+    @staticmethod
+    def _pose_signature(point):
+        try:
+            return (
+                round(float(point.get("x", 0.0)), 6),
+                round(float(point.get("y", 0.0)), 6),
+                round(float(point.get("phi", 0.0) or 0.0), 6),
+            )
+        except Exception:
+            return None
+
+    def _next_synthetic_pose_id(self):
+        self._live_stream_seq = int(getattr(self, "_live_stream_seq", 0) or 0) + 1
+        return self.SYNTHETIC_POSE_BASE + self._live_stream_seq
+
     def _merge_live_path(self, *paths):
-        """Une fragmentos MIoT por pose-id y conserva el recorrido entre polls."""
+        """Une fragmentos MIoT y soporta streams que reutilizan un único pose-id."""
         cache = getattr(self, "_live_path_cache", None)
         if not isinstance(cache, dict):
             cache = {}
             self._live_path_cache = cache
 
         changed = 0
+        seen_this_merge = set()
+
         for path in paths:
-            for point in path or []:
+            incoming = list(path or [])
+            single_pose_frame = len(incoming) == 1
+
+            for point in incoming:
                 try:
-                    pid = int(point.get("id", 0))
+                    protocol_id = int(point.get("id", 0))
                     normalized = {
-                        "id": pid,
+                        "id": protocol_id,
                         "x": float(point["x"]),
                         "y": float(point["y"]),
                         "phi": float(point.get("phi", 0) or 0),
@@ -122,9 +147,41 @@ class XiaomiE10Live(XiaomiE10Edge):
                     }
                 except Exception:
                     continue
-                previous = cache.get(pid)
+
+                signature = (
+                    protocol_id,
+                    *self._pose_signature(normalized),
+                    normalized["update"],
+                )
+                if signature in seen_this_merge:
+                    continue
+                seen_this_merge.add(signature)
+
+                if single_pose_frame:
+                    previous_stream = getattr(self, "_live_stream_last", None)
+                    previous_protocol_id = getattr(self, "_live_stream_protocol_id", None)
+
+                    if (
+                        previous_stream is not None
+                        and previous_protocol_id == protocol_id
+                        and self._pose_signature(previous_stream) != self._pose_signature(normalized)
+                    ):
+                        self._live_stream_mode = True
+                        synthetic_id = self._next_synthetic_pose_id()
+                        sample = dict(normalized)
+                        sample["id"] = synthetic_id
+                        cache[synthetic_id] = sample
+                        self._live_stream_last = dict(normalized)
+                        self._live_stream_protocol_id = protocol_id
+                        changed += 1
+                        continue
+
+                    self._live_stream_last = dict(normalized)
+                    self._live_stream_protocol_id = protocol_id
+
+                previous = cache.get(protocol_id)
                 if previous != normalized:
-                    cache[pid] = normalized
+                    cache[protocol_id] = normalized
                     changed += 1
 
         if len(cache) > self.MAX_CACHED_POSES:
@@ -133,9 +190,6 @@ class XiaomiE10Live(XiaomiE10Edge):
                 cache.pop(pid, None)
 
         ordered = [cache[pid] for pid in sorted(cache)]
-        last_id = self._last_pose_id(ordered)
-        if last_id is not None:
-            self._live_path_cursor = last_id
         return ordered, changed
 
     def _next_path_probe_range(self, direct_path):
@@ -143,8 +197,6 @@ class XiaomiE10Live(XiaomiE10Edge):
         last_direct = self._last_pose_id(direct_path)
         cursor = getattr(self, "_live_path_cursor", None)
 
-        # Si conocemos el pose-id actual, pedimos una pequeña superposición hacia
-        # atrás y algo de margen hacia adelante. La caché elimina duplicados.
         known = last_direct if last_direct is not None else cursor
         if known is not None:
             start = max(0, int(known) - 16)
@@ -167,7 +219,6 @@ class XiaomiE10Live(XiaomiE10Edge):
             return None, [], str(exc), (start, end)
 
     def _fresh_current_path(self):
-        """Lee 10/5 de forma dedicada: es la fuente prioritaria en movimiento."""
         try:
             values = self._get_many([("path", 10, 5)])
             return values.get("path")
@@ -199,8 +250,6 @@ class XiaomiE10Live(XiaomiE10Edge):
         return int(self._live_robot_same_reads)
 
     def local_map_state(self) -> dict[str, Any]:
-        # 10/5 se consulta sola para reducir la posibilidad de recibir una muestra
-        # vieja dentro de un get_properties grande.
         direct_raw = self._fresh_current_path()
         direct_path = self.parse_trajectory(direct_raw)
         direct_signature = self._path_signature(direct_path)
@@ -210,11 +259,12 @@ class XiaomiE10Live(XiaomiE10Edge):
         if direct_path:
             self._live_path_empty_reads = 0
             self._live_path_last_signature = direct_signature
+            protocol_last = self._last_pose_id(direct_path)
+            if protocol_last is not None:
+                self._live_path_cursor = protocol_last
         else:
             self._live_path_empty_reads = int(getattr(self, "_live_path_empty_reads", 0) or 0) + 1
 
-        # Base y 10/24 son secundarios. Se leen juntos, pero nunca pisan una
-        # trayectoria ya confirmada en esta sesión.
         try:
             values = self._get_many([
                 ("charging_base", 10, 22),
@@ -223,22 +273,30 @@ class XiaomiE10Live(XiaomiE10Edge):
         except Exception:
             values = {}
 
-        # 10/12 es fallback. Si 10/5 está avanzando no lo llamamos en cada frame:
-        # así reducimos tráfico y evitamos que la acción interfiera con la lectura
-        # directa. Lo usamos cuando 10/5 está vacío o dejó de avanzar.
         action_raw = None
         action_path = []
         action_error = None
         probe_range = self._next_path_probe_range(direct_path)
         if not direct_changed or not direct_path:
             action_raw, action_path, action_error, probe_range = self._get_path_by_action(direct_path)
+            action_last = self._last_pose_id(action_path)
+            if action_last is not None:
+                self._live_path_cursor = action_last
 
         accumulated, changed_count = self._merge_live_path(direct_path, action_path)
 
         if direct_changed:
-            self._live_path_source = "trayectoria 10/5"
+            self._live_path_source = (
+                "stream 10/5 · pose-id reutilizado"
+                if getattr(self, "_live_stream_mode", False)
+                else "trayectoria 10/5"
+            )
         elif action_path:
-            self._live_path_source = "trayectoria 10/12"
+            self._live_path_source = (
+                "stream 10/12 · pose-id reutilizado"
+                if getattr(self, "_live_stream_mode", False)
+                else "trayectoria 10/12"
+            )
         elif accumulated:
             self._live_path_source = "última trayectoria válida"
         else:
@@ -250,9 +308,6 @@ class XiaomiE10Live(XiaomiE10Edge):
         robot_1024 = self.parse_position(raw_robot)
         same_robot_reads = self._track_robot_staleness(raw_robot)
 
-        # Regla fundamental de v29: una vez recibimos trayectoria, la posición
-        # visual sale SIEMPRE del último pose acumulado. Un frame vacío de 10/5 no
-        # puede teletransportar el icono otra vez a la base mediante 10/24.
         if accumulated:
             first = accumulated[0]
             last = accumulated[-1]
@@ -269,8 +324,6 @@ class XiaomiE10Live(XiaomiE10Edge):
             }
             position_source = self._live_path_source
         else:
-            # Antes de la primera trayectoria todavía mostramos 10/24, pero queda
-            # claramente marcado como fallback para diagnóstico.
             if robot_1024 is None:
                 fresh_robot = self._fresh_robot_position()
                 raw_robot = fresh_robot if fresh_robot is not None else raw_robot
@@ -284,7 +337,6 @@ class XiaomiE10Live(XiaomiE10Edge):
         if not accumulated and stale_1024:
             note = "10/24 permanece sin cambios; esperando 10/5"
 
-        last_pose_id = self._last_pose_id(accumulated)
         return {
             "path": accumulated,
             "charging_base": base,
@@ -295,12 +347,13 @@ class XiaomiE10Live(XiaomiE10Edge):
             "path_source": self._live_path_source,
             "position_source": position_source,
             "path_start": accumulated[0]["id"] if accumulated else probe_range[0],
-            "path_end": last_pose_id if last_pose_id is not None else probe_range[1],
+            "path_end": self._live_path_cursor if self._live_path_cursor is not None else probe_range[1],
             "direct_path_count": len(direct_path),
             "action_path_count": len(action_path),
             "accumulated_path_count": len(accumulated),
             "new_path_count": changed_count,
-            "last_pose_id": last_pose_id,
+            "last_pose_id": self._live_path_cursor,
+            "single_pose_stream": bool(getattr(self, "_live_stream_mode", False)),
             "instant_robot": robot if not accumulated else None,
             "path_action_error": action_error,
             "position_stale": bool(not accumulated and stale_1024),
