@@ -1,6 +1,5 @@
 import ctypes
 import os
-import shlex
 import sys
 from pathlib import Path
 
@@ -60,7 +59,7 @@ def _startup_command(minimized=True) -> str:
     if getattr(sys, "frozen", False):
         parts = [str(exe)]
     else:
-        app = Path(__file__).resolve().parent / "app_v19.py"
+        app = Path(__file__).resolve().parent / "app_v20.py"
         parts = [str(exe), str(app)]
     if minimized:
         parts.append("--tray")
