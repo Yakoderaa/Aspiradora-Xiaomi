@@ -59,12 +59,12 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V46 para Windows 10/11 x64. Incluye lectura de historial Xiaomi Cloud para 10.5/10.24 y protección contra movimientos falsos por chargingbase. La aplicación instalada detecta esta release, verifica el SHA-256 y actualiza silenciosamente."
+          $notes = "V47 para Windows 10/11 x64. Habilita temporalmente map-privacy 10/23 durante el mapeo para permitir que Xiaomi Cloud publique el historial 10.5, conserva las protecciones de movimiento de V45/V46 y restaura automáticamente la preferencia original al terminar."
 
           # La release se crea pública primero: los drafts no son resolubles de
           # forma fiable por `gh release upload <tag>` mientras el tag aún no existe.
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V46" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V47" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
