@@ -187,8 +187,11 @@ class UpdateWindow(tk.Tk):
             if not self.app_exe.exists():
                 raise FileNotFoundError(f"La actualización terminó, pero no encontré {self.app_exe}")
 
-            subprocess.Popen([str(self.app_exe)], close_fds=True)
-            log(f"Aplicación relanzada: {self.app_exe}")
+            # La nueva instancia sabe que fue abierta por el actualizador y puede
+            # reaplicar la geometría guardada después de que Windows estabilice
+            # la ventana. El instalador no relanza otra copia por su cuenta.
+            subprocess.Popen([str(self.app_exe), "--after-update"], close_fds=True)
+            log(f"Aplicación relanzada después de actualizar: {self.app_exe}")
             self._post("complete")
         except Exception as exc:
             log("ERROR: " + traceback.format_exc())
