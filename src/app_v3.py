@@ -1,3 +1,4 @@
+import json
 import threading
 
 import app_v2
@@ -38,14 +39,25 @@ def _show_qr(self, login, info):
 
             device = devices[0]
 
-            # Guardamos únicamente identidad/metadatos de la vinculación QR. El
-            # token local del robot se persiste por el flujo normal de conexión.
             self.app.settings["xiaomi_login_method"] = "qr"
             self.app.settings["xiaomi_user_id"] = str(login.user_id or "")
             self.app.settings["xiaomi_user_name"] = str(login.account_display or login.user_id or "Cuenta Xiaomi")
             self.app.settings["device_name"] = str(device.get("name") or "Xiaomi Robot Vacuum E10")
             self.app.settings["device_did"] = str(device.get("did") or "")
             self.app.settings["device_region"] = str(device.get("locale") or "")
+            self.app.settings["cloud_session"] = json.dumps(
+                {
+                    "method": "qr",
+                    "user_id": login.user_id,
+                    "cuser_id": login.cuser_id,
+                    "ssecurity": login.ssecurity,
+                    "pass_token": login.pass_token,
+                    "service_token": login.service_token,
+                    "account_display": login.account_display,
+                },
+                ensure_ascii=False,
+            )
+            # SettingsStore cifra cloud_session con DPAPI antes de escribirlo.
             self.app.store.save(self.app.settings)
 
             self.after(0, lambda: self._qr_success(device, len(devices)))
