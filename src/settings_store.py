@@ -69,7 +69,6 @@ def unprotect_text(value: str) -> str:
 
 
 class SettingsStore:
-    # Datos que no deben quedar en texto plano en AppData.
     PROTECTED_FIELDS = ("token", "cloud_session")
 
     def __init__(self):
@@ -90,6 +89,16 @@ class SettingsStore:
             "mop_water_level": 1,
             "auto_update": True,
             "poll_seconds": 5,
+            # Integración con Windows / bandeja de sistema.
+            "start_with_windows": False,
+            "close_to_tray": True,
+            "start_minimized_to_tray": True,
+            "tray_quick_actions": [
+                "clean_all",
+                "dock",
+                "map",
+                "stop",
+            ],
         }
         if not self.path.exists():
             return defaults
@@ -99,6 +108,9 @@ class SettingsStore:
             for field in self.PROTECTED_FIELDS:
                 if defaults.get(field):
                     defaults[field] = unprotect_text(defaults[field])
+            actions = defaults.get("tray_quick_actions")
+            if not isinstance(actions, list):
+                defaults["tray_quick_actions"] = ["clean_all", "dock", "map", "stop"]
         except Exception:
             return defaults
         return defaults
