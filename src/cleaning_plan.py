@@ -6,7 +6,13 @@ from pathlib import Path
 
 
 class CleaningPlanStore:
-    """Zonas, bloqueos y programaciones compartidas entre la UI y el agente."""
+    """Zonas, bloqueos, puntos y programaciones por mapa.
+
+    snapshot() mantiene la API anterior y devuelve solamente el mapa activo.
+    snapshot_all() se usa para backups y para el agente de programaciones.
+    """
+
+    VERSION = 2
 
     def __init__(self, app_folder: Path):
         self.folder = Path(app_folder)
@@ -15,17 +21,21 @@ class CleaningPlanStore:
         self._lock = threading.RLock()
         if not self.path.exists():
             self._write(self._defaults())
+        else:
+            # Fuerza una lectura/escritura de migración una sola vez.
+            self._write(self._read())
 
     @staticmethod
     def _defaults():
         return {
-            "version": 1,
+            "version": CleaningPlanStore.VERSION,
+            "active_map_id": "legacy",
             "zones": [],
             "no_go": [],
             "points": [],
             "schedules": [],
-            "device_origin": None,
-            "virtual_walls_managed": False,
+            "device_origins": {},
+            "virtual_walls_managed_maps": {},
             "last_runs": {},
             "updated_at": None,
         }
@@ -38,20 +48,103 @@ class CleaningPlanStore:
                     raise ValueError("Formato inválido")
             except Exception:
                 data = self._defaults()
+
+            # Migración transparente del formato v1.
+            if int(data.get("version", 1) or 1) < self.VERSION:
+                active = str(data.get("active_map_id") or "legacy")
+                for key in ("zones", "no_go", "points", "schedules"):
+                    for item in data.get(key, []) or []:
+                        if isinstance(item, dict):
+                            item.setdefault("map_id", active)
+                origin = data.get("device_origin")
+                origins = dict(data.get("device_origins") or {})
+                if isinstance(origin, dict):
+                    origins.setdefault(active, origin)
+                managed = dict(data.get("virtual_walls_managed_maps") or {})
+                if "virtual_walls_managed" in data:
+                    managed.setdefault(active, bool(data.get("virtual_walls_managed")))
+                data["device_origins"] = origins
+                data["virtual_walls_managed_maps"] = managed
+                data["active_map_id"] = active
+                data["version"] = self.VERSION
+                data.pop("device_origin", None)
+                data.pop("virtual_walls_managed", None)
+
             defaults = self._defaults()
             defaults.update(data)
+            defaults["version"] = self.VERSION
+            defaults["active_map_id"] = str(defaults.get("active_map_id") or "legacy")
+            for key in ("zones", "no_go", "points", "schedules"):
+                defaults[key] = list(defaults.get(key) or [])
+                for item in defaults[key]:
+                    if isinstance(item, dict):
+                        item.setdefault("map_id", defaults["active_map_id"])
+            defaults["device_origins"] = dict(defaults.get("device_origins") or {})
+            defaults["virtual_walls_managed_maps"] = dict(defaults.get("virtual_walls_managed_maps") or {})
+            defaults["last_runs"] = dict(defaults.get("last_runs") or {})
             return defaults
 
     def _write(self, data):
         with self._lock:
             data = dict(data)
+            data["version"] = self.VERSION
             data["updated_at"] = datetime.now(timezone.utc).isoformat()
             tmp = self.path.with_suffix(".tmp")
             tmp.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
             tmp.replace(self.path)
 
-    def snapshot(self):
+    def active_map_id(self):
+        return str(self._read().get("active_map_id") or "legacy")
+
+    def set_active_map(self, map_id):
+        data = self._read()
+        data["active_map_id"] = str(map_id)
+        self._write(data)
+
+    def snapshot_all(self):
         return self._read()
+
+    def snapshot(self, map_id=None):
+        data = self._read()
+        map_id = str(map_id or data.get("active_map_id") or "legacy")
+        schedules = [dict(x) for x in data.get("schedules", []) if str(x.get("map_id")) == map_id]
+        schedule_ids = {str(x.get("id")) for x in schedules}
+        return {
+            "version": self.VERSION,
+            "active_map_id": map_id,
+            "zones": [dict(x) for x in data.get("zones", []) if str(x.get("map_id")) == map_id],
+            "no_go": [dict(x) for x in data.get("no_go", []) if str(x.get("map_id")) == map_id],
+            "points": [dict(x) for x in data.get("points", []) if str(x.get("map_id")) == map_id],
+            "schedules": schedules,
+            "device_origin": data.get("device_origins", {}).get(map_id),
+            "virtual_walls_managed": bool(data.get("virtual_walls_managed_maps", {}).get(map_id, False)),
+            "last_runs": {k: v for k, v in data.get("last_runs", {}).items() if str(k) in schedule_ids},
+            "updated_at": data.get("updated_at"),
+        }
+
+    def replace_all(self, imported):
+        if not isinstance(imported, dict):
+            raise ValueError("El backup de zonas y programaciones no es válido.")
+        data = self._defaults()
+        data.update(imported)
+        data["version"] = self.VERSION
+        self._write(data)
+
+    def delete_map_data(self, map_id):
+        map_id = str(map_id)
+        data = self._read()
+        removed_schedule_ids = {
+            str(item.get("id")) for item in data.get("schedules", []) if str(item.get("map_id")) == map_id
+        }
+        for key in ("zones", "no_go", "points", "schedules"):
+            data[key] = [item for item in data.get(key, []) if str(item.get("map_id")) != map_id]
+        data.get("device_origins", {}).pop(map_id, None)
+        data.get("virtual_walls_managed_maps", {}).pop(map_id, None)
+        for sid in removed_schedule_ids:
+            data.get("last_runs", {}).pop(sid, None)
+        if data.get("active_map_id") == map_id:
+            data["active_map_id"] = "legacy"
+        self._write(data)
 
     @staticmethod
     def _rect(x0, y0, x1, y1):
@@ -61,8 +154,10 @@ class CleaningPlanStore:
 
     def add_zone(self, name, x0, y0, x1, y1):
         data = self._read()
+        map_id = str(data.get("active_map_id") or "legacy")
         zone = {
             "id": uuid.uuid4().hex[:10],
+            "map_id": map_id,
             "name": (str(name).strip() or "Zona"),
             **self._rect(x0, y0, x1, y1),
         }
@@ -79,27 +174,32 @@ class CleaningPlanStore:
 
     def add_no_go(self, name, x0, y0, x1, y1):
         data = self._read()
+        map_id = str(data.get("active_map_id") or "legacy")
         wall = {
             "id": uuid.uuid4().hex[:10],
+            "map_id": map_id,
             "name": (str(name).strip() or "Zona bloqueada"),
             **self._rect(x0, y0, x1, y1),
         }
         data["no_go"].append(wall)
-        data["virtual_walls_managed"] = True
+        data["virtual_walls_managed_maps"][map_id] = True
         self._write(data)
         return wall
 
     def delete_no_go(self, wall_id):
         data = self._read()
+        target = next((w for w in data["no_go"] if w.get("id") == wall_id), None)
+        map_id = str((target or {}).get("map_id") or data.get("active_map_id") or "legacy")
         data["no_go"] = [w for w in data["no_go"] if w.get("id") != wall_id]
-        # Se mantiene True para que eliminar el último bloqueo también lo quite del robot.
-        data["virtual_walls_managed"] = True
+        # True se conserva para poder enviar explícitamente cero bloqueos.
+        data["virtual_walls_managed_maps"][map_id] = True
         self._write(data)
 
     def add_point(self, name, x, y):
         data = self._read()
         point = {
             "id": uuid.uuid4().hex[:10],
+            "map_id": str(data.get("active_map_id") or "legacy"),
             "name": (str(name).strip() or "Punto"),
             "x": float(x),
             "y": float(y),
@@ -113,15 +213,17 @@ class CleaningPlanStore:
         data["points"] = [p for p in data["points"] if p.get("id") != point_id]
         self._write(data)
 
-    def set_device_origin(self, x, y):
+    def set_device_origin(self, x, y, map_id=None):
         data = self._read()
-        data["device_origin"] = {"x": float(x), "y": float(y)}
+        map_id = str(map_id or data.get("active_map_id") or "legacy")
+        data["device_origins"][map_id] = {"x": float(x), "y": float(y)}
         self._write(data)
 
     def add_schedule(self, schedule):
         data = self._read()
         item = dict(schedule)
         item["id"] = uuid.uuid4().hex[:10]
+        item.setdefault("map_id", str(data.get("active_map_id") or "legacy"))
         item.setdefault("enabled", True)
         item.setdefault("zone_ids", [])
         item.setdefault("days", [])
@@ -140,7 +242,7 @@ class CleaningPlanStore:
     def delete_schedule(self, schedule_id):
         data = self._read()
         data["schedules"] = [s for s in data["schedules"] if s.get("id") != schedule_id]
-        data["last_runs"].pop(schedule_id, None)
+        data["last_runs"].pop(str(schedule_id), None)
         self._write(data)
 
     def mark_run(self, schedule_id, run_key, result="started"):
