@@ -18,6 +18,20 @@ from xiaomi_e10 import MODEL, XiaomiE10
 
 
 _XIAOMI_MAP_IV = b"ABCDEF1234123412"
+_IJAI_WIFI_SN_LENGTHS = (18, 20)
+_IJAI_MODELS = {
+    "xiaomi.vacuum.b106bk",
+    "xiaomi.vacuum.b106tr",
+    "xiaomi.vacuum.b112",
+    "xiaomi.vacuum.b112bk",
+    "xiaomi.vacuum.b112gl",
+    "xiaomi.vacuum.b112tr",
+    "xiaomi.vacuum.c101",
+    "xiaomi.vacuum.c101eu",
+    "xiaomi.vacuum.c102",
+    "xiaomi.vacuum.c104",
+    "xiaomi.vacuum.e101gl",
+}
 
 
 @dataclass
@@ -35,15 +49,20 @@ class MapSnapshot:
     raw_base: tuple[float, float] | None = None
     raw_path: list[tuple[float, float]] | None = None
     parser_error: str | None = None
+    decoder_family: str = "unknown"
+    wifi_sn_found: bool = False
+    wifi_sn_length: int = 0
+    mac_found: bool = False
+    raw_prefix_hex: str = ""
 
 
 class XiaomiE10MapClient:
     """Descarga y decodifica el mapa que Xiaomi Home guarda en Xiaomi Cloud.
 
-    El E10 usa el formato de mapa JSON v2 de Xiaomi. Ese formato no usa el nombre
-    de modelo completo como clave AES: Xiaomi Home toma solamente los últimos
-    16 caracteres del model string, deriva una segunda clave con MD5 y recién
-    entonces descifra/descomprime el JSON del mapa.
+    El E10 xiaomi.vacuum.b112 pertenece a la familia de mapas IJAI: el blob
+    descargado es base64 + AES-ECB + zlib y la clave se deriva de Wi-Fi SN,
+    owner/user id, DID, modelo y MAC. Algunas familias Xiaomi nuevas usan en
+    cambio un JSON v2 con AES-CBC; conservamos ese decoder como fallback.
     """
 
     def __init__(self, vacuum: XiaomiE10, settings: dict):
@@ -79,7 +98,6 @@ class XiaomiE10MapClient:
 
     @staticmethod
     def _extract_url(response) -> str | None:
-        """Extrae la URL temporal incluso si micloud devuelve bytes."""
         if response is None:
             return None
         if isinstance(response, (bytes, bytearray, memoryview)):
@@ -94,7 +112,6 @@ class XiaomiE10MapClient:
                 return None
         if not isinstance(response, dict):
             return None
-
         result = response.get("result")
         if isinstance(result, dict):
             for key in ("url", "file_url", "download_url"):
@@ -112,7 +129,9 @@ class XiaomiE10MapClient:
 
         errors = []
         responses = []
-        for endpoint in ("/v2/home/get_interim_file_url_pro", "/v2/home/get_interim_file_url"):
+        # b112/IJAI suele usar _pro; mantenemos el endpoint simple de fallback.
+        endpoints = ("/v2/home/get_interim_file_url_pro", "/v2/home/get_interim_file_url")
+        for endpoint in endpoints:
             try:
                 response = cloud.request_country(endpoint, self.region, dict(params))
                 responses.append(type(response).__name__)
@@ -142,7 +161,6 @@ class XiaomiE10MapClient:
 
     @staticmethod
     def decrypt_xiaomi_v2(raw_map: bytes, model: str, device_id: str) -> str:
-        """Replica el descifrado usado por Xiaomi Home para mapas JSON v2."""
         envelope = json.loads(raw_map)
         version = envelope.get("version") if isinstance(envelope, dict) else None
         if not isinstance(envelope, dict) or int(version if version is not None else -1) != 2:
@@ -159,7 +177,6 @@ class XiaomiE10MapClient:
             )
         did_bytes = str(device_id).encode("latin1")
         ciphertext = base64.b64decode(data)
-
         original_work = model_key + did_bytes
         first_key_material = AES.new(model_key, AES.MODE_CBC, _XIAOMI_MAP_IV).encrypt(
             pad(original_work, AES.block_size)
@@ -172,59 +189,163 @@ class XiaomiE10MapClient:
         return zlib.decompress(compressed).decode("utf-8")
 
     @staticmethod
-    def _normalize_raw_map(raw_map: bytes) -> bytes:
-        """Compatibilidad con mapas antiguos envueltos sólo en un campo data."""
-        try:
-            parsed = json.loads(raw_map)
-            if isinstance(parsed, dict) and parsed.get("data"):
-                return base64.decodebytes(str(parsed["data"]).encode("latin1"))
-        except (ValueError, TypeError, KeyError, UnicodeDecodeError):
-            pass
-        return raw_map
+    def _xiaomi_parser() -> XiaomiMapDataParser:
+        return XiaomiMapDataParser(ColorsPalette(), Sizes(), [], ImageConfig(), [])
 
     @staticmethod
-    def _parser() -> XiaomiMapDataParser:
-        return XiaomiMapDataParser(
-            ColorsPalette(),
-            Sizes(),
-            [],
-            ImageConfig(),
-            [],
-        )
+    def _ijai_parser():
+        from vacuum_map_parser_ijai.map_data_parser import IjaiMapDataParser
+        return IjaiMapDataParser(ColorsPalette(), Sizes(), [], ImageConfig(), [])
 
     @staticmethod
-    def _xy_dict(value) -> tuple[float, float] | None:
-        if not isinstance(value, dict):
+    def _point_xy(value) -> tuple[float, float] | None:
+        if value is None:
             return None
+        if isinstance(value, dict):
+            try:
+                return float(value["x"]), float(value["y"])
+            except (KeyError, TypeError, ValueError):
+                return None
         try:
-            return float(value["x"]), float(value["y"])
-        except (KeyError, TypeError, ValueError):
+            return float(value.x), float(value.y)
+        except Exception:
             return None
 
     @classmethod
+    def _flatten_path_points(cls, value) -> list[tuple[float, float]]:
+        result: list[tuple[float, float]] = []
+        seen: set[tuple[int, int]] = set()
+
+        def add(item):
+            point = cls._point_xy(item)
+            if point is not None:
+                key = (round(point[0] * 1000), round(point[1] * 1000))
+                if key not in seen:
+                    seen.add(key)
+                    result.append(point)
+                return
+            if isinstance(item, dict):
+                for key in ("points", "path", "paths"):
+                    if key in item:
+                        add(item[key])
+                return
+            if isinstance(item, (list, tuple)):
+                for child in item:
+                    add(child)
+                return
+            for attr in ("points", "path", "paths"):
+                try:
+                    child = getattr(item, attr)
+                except Exception:
+                    continue
+                if child is not None:
+                    add(child)
+
+        add(value)
+        return result
+
+    @staticmethod
+    def _valid_wifi_sn(value) -> str | None:
+        text = str(value or "").strip().replace('"', "")
+        if len(text) in _IJAI_WIFI_SN_LENGTHS and text.isalnum() and text.isupper():
+            return text
+        return None
+
+    def _get_wifi_sn(self) -> str | None:
+        # Igual que el extractor IJAI probado: 1/3 y 1/5; fallback 7/45.
+        for piid in (3, 5):
+            try:
+                data = self.vacuum.device.get_property_by(1, piid)
+                if isinstance(data, list) and data and isinstance(data[0], dict):
+                    value = self._valid_wifi_sn(data[0].get("value"))
+                    if value:
+                        return value
+            except Exception:
+                pass
+        try:
+            data = self.vacuum.device.get_property_by(7, 45)
+            if isinstance(data, list) and data and isinstance(data[0], dict):
+                raw = str(data[0].get("value") or "")
+                owner = str(self.session_data.get("user_id") or "")
+                for item in raw.split(","):
+                    cleaned = item.replace('"', "").strip()
+                    if owner and owner in cleaned:
+                        cleaned = cleaned.split(";", 1)[0]
+                    value = self._valid_wifi_sn(cleaned)
+                    if value:
+                        return value
+        except Exception:
+            pass
+        return None
+
+    def _get_device_mac(self) -> str | None:
+        try:
+            info = self.vacuum.info()
+            for attr in ("mac", "mac_address"):
+                value = str(getattr(info, attr, "") or "").strip()
+                if value:
+                    return value
+            raw = getattr(info, "data", None) or getattr(info, "raw", None)
+            if isinstance(raw, dict):
+                for key in ("mac", "mac_address"):
+                    value = str(raw.get(key) or "").strip()
+                    if value:
+                        return value
+        except Exception:
+            pass
+        # Algunos get_devices ya traen MAC; dejamos soporte si se persiste en una versión futura.
+        value = str(self.settings.get("device_mac") or "").strip()
+        return value or None
+
+    @classmethod
     def _payload_telemetry(cls, payload: Any):
-        """Extrae posición/base/recorrido sin depender del renderer del parser."""
         if not isinstance(payload, dict):
             return None, None, []
-
-        robot = cls._xy_dict(payload.get("position"))
+        robot = cls._point_xy(payload.get("position"))
         base = None
         if payload.get("have_pile"):
             try:
                 base = (float(payload.get("pile_x", 0)), float(payload.get("pile_y", 0)))
             except (TypeError, ValueError):
                 base = None
-
         source = payload.get("paths")
-        if isinstance(source, dict):
-            source = source.get("points")
-        path: list[tuple[float, float]] = []
-        if isinstance(source, list):
-            for item in source:
-                point = cls._xy_dict(item)
-                if point is not None:
-                    path.append(point)
+        path = cls._flatten_path_points(source)
         return robot, base, path
+
+    def _decode_ijai(self, downloaded: bytes):
+        wifi_sn = self._get_wifi_sn()
+        mac = self._get_device_mac()
+        owner_id = str(self.session_data.get("user_id") or "").strip()
+        missing = []
+        if not wifi_sn:
+            missing.append("Wi-Fi SN")
+        if not mac:
+            missing.append("MAC")
+        if not owner_id:
+            missing.append("owner id")
+        if missing:
+            raise RuntimeError("Faltan datos para descifrar IJAI: " + ", ".join(missing))
+
+        parser = self._ijai_parser()
+        unpacked = parser.unpack_map(
+            downloaded,
+            wifi_sn=wifi_sn,
+            owner_id=owner_id,
+            device_id=self.did,
+            model=MODEL,
+            device_mac=mac,
+        )
+        map_data = parser.parse(unpacked)
+        robot = self._point_xy(getattr(map_data, "vacuum_position", None))
+        base = self._point_xy(getattr(map_data, "charger", None))
+        path = self._flatten_path_points(getattr(map_data, "path", None))
+        image = None
+        try:
+            if map_data.image and not map_data.image.is_empty and map_data.image.data is not None:
+                image = map_data.image.data.convert("RGBA")
+        except Exception:
+            image = None
+        return parser, map_data, image, robot, base, path, wifi_sn, mac
 
     def load(self) -> MapSnapshot:
         map_name = self.vacuum.current_map_name()
@@ -234,67 +355,85 @@ class XiaomiE10MapClient:
         downloaded = bytes(response.content)
         raw_size = len(downloaded)
         envelope_version = self._envelope_version(downloaded)
+        raw_prefix_hex = downloaded[:24].hex()
 
-        parser = self._parser()
-        crypto_mode = "legacy-parser"
-        payload = None
-        try:
-            if envelope_version in (2, "2"):
-                # Xiaomi Home usa model.slice(-16). La ruta genérica de la
-                # librería es la que provocaba "AES key length (14 bytes)".
-                unpacked = self.decrypt_xiaomi_v2(downloaded, MODEL, self.did)
-                crypto_mode = "xiaomi-home-v2-suffix16"
-            else:
-                raw_map = self._normalize_raw_map(downloaded)
-                unpacked = parser.unpack_map(
-                    raw_map.hex(),
-                    model=MODEL[-16:],
-                    device_id=self.did,
-                )
-                crypto_mode = "legacy-parser-suffix16"
-            try:
-                payload = json.loads(unpacked) if isinstance(unpacked, str) else unpacked
-            except Exception:
-                payload = None
-        except Exception as exc:
-            raise RuntimeError(
-                "Pude descargar el mapa pero no descifrarlo "
-                f"(formato={envelope_version!r}, modelo-key={MODEL[-16:]!r}/16): {exc}"
-            ) from exc
-
-        raw_robot, raw_base, raw_path = self._payload_telemetry(payload)
-
-        # El parser aporta imagen/habitaciones, pero la telemetría cruda de arriba
-        # ya alcanza para mover el robot. Si falla el render, no perdemos posición.
-        map_data = None
+        decoder_family = "unknown"
+        crypto_mode = "unknown"
         parser_error = None
-        try:
-            map_data = parser.parse(unpacked)
-        except Exception as exc:
-            parser_error = str(exc).strip() or type(exc).__name__
-
+        map_data = None
         image = None
-        try:
-            if map_data and map_data.image and not map_data.image.is_empty and map_data.image.data is not None:
-                image = map_data.image.data.convert("RGBA")
-        except Exception:
-            image = None
+        transformer = None
+        raw_robot = None
+        raw_base = None
+        raw_path: list[tuple[float, float]] = []
+        map_id = None
+        resolution = None
+        wifi_sn = None
+        mac = None
 
-        # Si el parser sí interpretó posiciones y el JSON crudo no las tenía,
-        # conservamos también ese fallback.
-        if map_data is not None:
-            if raw_robot is None:
+        errors = []
+
+        # b112 es IJAI. Para blobs sin envelope JSON intentamos primero IJAI.
+        if MODEL in _IJAI_MODELS and envelope_version is None:
+            try:
+                parser, map_data, image, raw_robot, raw_base, raw_path, wifi_sn, mac = self._decode_ijai(downloaded)
+                transformer = getattr(parser, "coord_transformer", None)
+                decoder_family = "ijai"
+                crypto_mode = "ijai-aes-ecb-zlib"
+            except Exception as exc:
+                errors.append("IJAI: " + (str(exc).strip() or type(exc).__name__))
+
+        # Xiaomi JSON v2 (otras familias o fallback si Xiaomi cambia el blob).
+        if map_data is None and envelope_version in (2, "2"):
+            try:
+                unpacked = self.decrypt_xiaomi_v2(downloaded, MODEL, self.did)
+                decoder_family = "xiaomi-json-v2"
+                crypto_mode = "xiaomi-home-v2-suffix16"
+                payload = json.loads(unpacked)
+                raw_robot, raw_base, raw_path = self._payload_telemetry(payload)
+                map_id = payload.get("map_id") if isinstance(payload, dict) else None
+                resolution = payload.get("resolution") if isinstance(payload, dict) else None
+                parser = self._xiaomi_parser()
+                transformer = getattr(parser, "coord_transformer", None)
                 try:
-                    p = map_data.vacuum_position
-                    raw_robot = (float(p.x), float(p.y)) if p is not None else None
-                except Exception:
-                    pass
-            if raw_base is None:
-                try:
-                    p = map_data.charger
-                    raw_base = (float(p.x), float(p.y)) if p is not None else None
-                except Exception:
-                    pass
+                    map_data = parser.parse(unpacked)
+                except Exception as exc:
+                    parser_error = str(exc).strip() or type(exc).__name__
+                if map_data is not None:
+                    if raw_robot is None:
+                        raw_robot = self._point_xy(getattr(map_data, "vacuum_position", None))
+                    if raw_base is None:
+                        raw_base = self._point_xy(getattr(map_data, "charger", None))
+                    if not raw_path:
+                        raw_path = self._flatten_path_points(getattr(map_data, "path", None))
+                    try:
+                        if map_data.image and not map_data.image.is_empty and map_data.image.data is not None:
+                            image = map_data.image.data.convert("RGBA")
+                    except Exception:
+                        pass
+            except Exception as exc:
+                errors.append("Xiaomi JSON v2: " + (str(exc).strip() or type(exc).__name__))
+
+        # Último fallback: parser Xiaomi antiguo, sólo para aportar diagnóstico.
+        if map_data is None and envelope_version is None and MODEL not in _IJAI_MODELS:
+            try:
+                parser = self._xiaomi_parser()
+                unpacked = parser.unpack_map(downloaded.hex(), model=MODEL[-16:], device_id=self.did)
+                map_data = parser.parse(unpacked)
+                decoder_family = "xiaomi-legacy"
+                crypto_mode = "legacy-parser-suffix16"
+                transformer = getattr(parser, "coord_transformer", None)
+                raw_robot = self._point_xy(getattr(map_data, "vacuum_position", None))
+                raw_base = self._point_xy(getattr(map_data, "charger", None))
+                raw_path = self._flatten_path_points(getattr(map_data, "path", None))
+            except Exception as exc:
+                errors.append("Xiaomi legacy: " + (str(exc).strip() or type(exc).__name__))
+
+        if map_data is None and raw_robot is None and not raw_path:
+            detail = " | ".join(errors) if errors else "formato de mapa no reconocido"
+            raise RuntimeError(
+                f"Pude descargar el mapa ({raw_size} bytes) pero no descifrarlo. {detail}"
+            )
 
         if raw_robot is None and raw_path:
             raw_robot = raw_path[-1]
@@ -302,15 +441,20 @@ class XiaomiE10MapClient:
         return MapSnapshot(
             image=image,
             map_data=map_data,
-            transformer=getattr(parser, "coord_transformer", None),
+            transformer=transformer,
             map_name=map_name,
             crypto_mode=crypto_mode,
             raw_size=raw_size,
             envelope_version=envelope_version,
-            map_id=payload.get("map_id") if isinstance(payload, dict) else None,
-            resolution=payload.get("resolution") if isinstance(payload, dict) else None,
+            map_id=map_id,
+            resolution=resolution,
             raw_robot=raw_robot,
             raw_base=raw_base,
             raw_path=raw_path,
             parser_error=parser_error,
+            decoder_family=decoder_family,
+            wifi_sn_found=bool(wifi_sn),
+            wifi_sn_length=len(wifi_sn or ""),
+            mac_found=bool(mac),
+            raw_prefix_hex=raw_prefix_hex,
         )
