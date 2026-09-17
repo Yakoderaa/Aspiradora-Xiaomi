@@ -10,6 +10,10 @@ from pathlib import Path
 import tkinter as tk
 from tkinter import messagebox, ttk
 
+from backup_bundle import auto_backup
+from cleaning_plan import CleaningPlanStore
+from local_mapping import LocalMapStore
+
 APPDATA_DIR = Path(os.environ.get("LOCALAPPDATA", Path.home())) / "Aspiradora Xiaomi"
 LOG_PATH = APPDATA_DIR / "update.log"
 SCHEDULER_EXE_NAME = "Aspiradora Xiaomi Scheduler.exe"
@@ -60,6 +64,27 @@ def stop_scheduler():
         log(f"No pude detener el programador: {exc}")
 
 
+def backup_user_data():
+    """Crea un .xvac antes de tocar los binarios instalados."""
+    try:
+        maps = LocalMapStore(APPDATA_DIR)
+        plan = CleaningPlanStore(APPDATA_DIR)
+        target = auto_backup(
+            APPDATA_DIR,
+            maps.library_snapshot(),
+            plan.snapshot_all(),
+            prefix="antes-de-actualizar",
+            keep=8,
+        )
+        log(f"Respaldo previo creado: {target}")
+        return target
+    except Exception as exc:
+        # El backup adicional nunca debe impedir una actualización; los JSON
+        # originales igualmente viven fuera de la carpeta de instalación.
+        log(f"No pude crear respaldo previo adicional: {exc}")
+        return None
+
+
 class UpdateWindow(tk.Tk):
     def __init__(self, parent_pid: int, installer: Path, app_exe: Path, version: str):
         super().__init__()
@@ -107,6 +132,12 @@ class UpdateWindow(tk.Tk):
             self._set_status("Cerrando la versión anterior…")
             wait_for_process(self.parent_pid)
             stop_scheduler()
+
+            self._set_status(
+                "Guardando mapas y programaciones…",
+                "Creando un respaldo automático antes de instalar la nueva versión.",
+            )
+            backup_user_data()
 
             if not self.installer.exists():
                 raise FileNotFoundError(f"No se encontró el instalador: {self.installer}")
