@@ -59,10 +59,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V52 para Windows 10/11 x64. Prueba una vez por sesión la acción documentada 10/12 get-cur-path con el rango uint32 completo 0..4294967295, que las versiones anteriores nunca alcanzaban cuando 10/15 y 10/16 no eran legibles. Sólo acepta la salida como trayectoria si contiene al menos dos X/Y distintos; si está vacía, falla o es una muestra aislada vuelve al sondeo heredado. No toca map-privacy ni reactiva acciones de upload; conserva todas las guardas de seguridad de V51/V45."
+          $notes = "V53 para Windows 10/11 x64. Tras confirmar en V52 que 10/12 get-cur-path no devuelve trayectoria ni con el rango uint32 completo, V53 se concentra en el slot 0 clásico de get_interim_file_url. F12 muestra fingerprint seguro del blob (tamaño/hash/prefijo/entropía/bloques repetidos/magic) y prueba únicamente las dos derivaciones IJAI publicadas: MD5 central de 16 caracteres ASCII y MD5 hexadecimal completo convertido a 16 bytes. Informa padding/hex/JSON/protobuf por modo y la versión/modo real del parser instalado. No ejecuta acciones ni modifica propiedades del robot y conserva todas las guardas de V51/V45."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V52" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V53" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
