@@ -29,6 +29,12 @@ class MapSnapshot:
     crypto_mode: str = "unknown"
     raw_size: int = 0
     envelope_version: Any = None
+    map_id: Any = None
+    resolution: Any = None
+    raw_robot: tuple[float, float] | None = None
+    raw_base: tuple[float, float] | None = None
+    raw_path: list[tuple[float, float]] | None = None
+    parser_error: str | None = None
 
 
 class XiaomiE10MapClient:
@@ -136,15 +142,11 @@ class XiaomiE10MapClient:
 
     @staticmethod
     def decrypt_xiaomi_v2(raw_map: bytes, model: str, device_id: str) -> str:
-        """Replica el descifrado usado por Xiaomi Home para mapas JSON v2.
-
-        Xiaomi Home usa ``model.slice(-16)`` como clave AES-128 inicial. La
-        librería genérica que usábamos recibía ``mi.vacuum.b112`` (14 bytes),
-        de ahí el error exacto ``Incorrect AES key length (14 bytes)``.
-        """
+        """Replica el descifrado usado por Xiaomi Home para mapas JSON v2."""
         envelope = json.loads(raw_map)
-        if not isinstance(envelope, dict) or int(envelope.get("version", -1)) != 2:
-            raise ValueError(f"El archivo no es un mapa Xiaomi v2: version={getattr(envelope, 'get', lambda *_: None)('version')!r}")
+        version = envelope.get("version") if isinstance(envelope, dict) else None
+        if not isinstance(envelope, dict) or int(version if version is not None else -1) != 2:
+            raise ValueError(f"El archivo no es un mapa Xiaomi v2: version={version!r}")
         data = envelope.get("data")
         if not data:
             raise ValueError("El mapa Xiaomi v2 no contiene el campo data.")
@@ -190,6 +192,40 @@ class XiaomiE10MapClient:
             [],
         )
 
+    @staticmethod
+    def _xy_dict(value) -> tuple[float, float] | None:
+        if not isinstance(value, dict):
+            return None
+        try:
+            return float(value["x"]), float(value["y"])
+        except (KeyError, TypeError, ValueError):
+            return None
+
+    @classmethod
+    def _payload_telemetry(cls, payload: Any):
+        """Extrae posición/base/recorrido sin depender del renderer del parser."""
+        if not isinstance(payload, dict):
+            return None, None, []
+
+        robot = cls._xy_dict(payload.get("position"))
+        base = None
+        if payload.get("have_pile"):
+            try:
+                base = (float(payload.get("pile_x", 0)), float(payload.get("pile_y", 0)))
+            except (TypeError, ValueError):
+                base = None
+
+        source = payload.get("paths")
+        if isinstance(source, dict):
+            source = source.get("points")
+        path: list[tuple[float, float]] = []
+        if isinstance(source, list):
+            for item in source:
+                point = cls._xy_dict(item)
+                if point is not None:
+                    path.append(point)
+        return robot, base, path
+
     def load(self) -> MapSnapshot:
         map_name = self.vacuum.current_map_name()
         url = self._map_download_url(map_name)
@@ -201,45 +237,80 @@ class XiaomiE10MapClient:
 
         parser = self._parser()
         crypto_mode = "legacy-parser"
+        payload = None
         try:
             if envelope_version in (2, "2"):
-                # No pasamos por vacuum-map-parser-xiaomi.unpack_map: su versión
-                # actual usa el model string como clave AES sin recortarlo.
+                # Xiaomi Home usa model.slice(-16). La ruta genérica de la
+                # librería es la que provocaba "AES key length (14 bytes)".
                 unpacked = self.decrypt_xiaomi_v2(downloaded, MODEL, self.did)
                 crypto_mode = "xiaomi-home-v2-suffix16"
             else:
                 raw_map = self._normalize_raw_map(downloaded)
-                # Fallback conservador para mapas anteriores: incluso aquí la
-                # clave debe tener una longitud AES válida.
-                model_key = MODEL[-16:]
                 unpacked = parser.unpack_map(
                     raw_map.hex(),
-                    model=model_key,
+                    model=MODEL[-16:],
                     device_id=self.did,
                 )
                 crypto_mode = "legacy-parser-suffix16"
-            map_data = parser.parse(unpacked)
+            try:
+                payload = json.loads(unpacked) if isinstance(unpacked, str) else unpacked
+            except Exception:
+                payload = None
         except Exception as exc:
             raise RuntimeError(
-                "Pude descargar el mapa pero no decodificarlo "
+                "Pude descargar el mapa pero no descifrarlo "
                 f"(formato={envelope_version!r}, modelo-key={MODEL[-16:]!r}/16): {exc}"
             ) from exc
 
-        # Para seguir la posición no exigimos que el renderer haya podido crear
-        # una imagen. vacuum_position y charger son suficientes para el mapa local.
+        raw_robot, raw_base, raw_path = self._payload_telemetry(payload)
+
+        # El parser aporta imagen/habitaciones, pero la telemetría cruda de arriba
+        # ya alcanza para mover el robot. Si falla el render, no perdemos posición.
+        map_data = None
+        parser_error = None
+        try:
+            map_data = parser.parse(unpacked)
+        except Exception as exc:
+            parser_error = str(exc).strip() or type(exc).__name__
+
         image = None
         try:
-            if map_data.image and not map_data.image.is_empty and map_data.image.data is not None:
+            if map_data and map_data.image and not map_data.image.is_empty and map_data.image.data is not None:
                 image = map_data.image.data.convert("RGBA")
         except Exception:
             image = None
 
+        # Si el parser sí interpretó posiciones y el JSON crudo no las tenía,
+        # conservamos también ese fallback.
+        if map_data is not None:
+            if raw_robot is None:
+                try:
+                    p = map_data.vacuum_position
+                    raw_robot = (float(p.x), float(p.y)) if p is not None else None
+                except Exception:
+                    pass
+            if raw_base is None:
+                try:
+                    p = map_data.charger
+                    raw_base = (float(p.x), float(p.y)) if p is not None else None
+                except Exception:
+                    pass
+
+        if raw_robot is None and raw_path:
+            raw_robot = raw_path[-1]
+
         return MapSnapshot(
             image=image,
             map_data=map_data,
-            transformer=parser.coord_transformer,
+            transformer=getattr(parser, "coord_transformer", None),
             map_name=map_name,
             crypto_mode=crypto_mode,
             raw_size=raw_size,
             envelope_version=envelope_version,
+            map_id=payload.get("map_id") if isinstance(payload, dict) else None,
+            resolution=payload.get("resolution") if isinstance(payload, dict) else None,
+            raw_robot=raw_robot,
+            raw_base=raw_base,
+            raw_path=raw_path,
+            parser_error=parser_error,
         )
