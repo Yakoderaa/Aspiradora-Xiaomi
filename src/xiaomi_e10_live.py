@@ -8,16 +8,9 @@ from xiaomi_e10_edge import XiaomiE10Edge
 class XiaomiE10Live(XiaomiE10Edge):
     """EDGE estable + trayectoria/posición MIoT del B112.
 
-    El firmware no siempre devuelve el path dentro de la respuesta de
-    get-current-path. Por eso usamos varias fuentes, en este orden:
-      1) propiedad 10/5 current-path;
-      2) acción 10/12 y relectura inmediata de 10/5;
-      3) salida embebida de la acción, si existe;
-      4) posición 10/24 como fallback oportunista.
-
-    10/22 y 10/24 no aparecen en todos los perfiles públicos del B112, pero
-    algunas revisiones de firmware sí responden. Se consultan de forma opcional
-    y nunca hacen fallar el sondeo si el robot las rechaza.
+    El firmware puede entregar el recorrido por 10/5 o sólo la posición 10/24.
+    Todas las propiedades dinámicas se leen juntas mediante get_properties para
+    evitar valores cacheados en get_property_by durante una limpieza activa.
     """
 
     @classmethod
@@ -60,10 +53,21 @@ class XiaomiE10Live(XiaomiE10Edge):
             return value.decode("utf-8", errors="ignore") if isinstance(value, bytes) else value
         return None
 
-    def _optional_value(self, siid: int, piid: int):
-        """Lee una propiedad no garantizada sin convertirla en error de mapa."""
+    def _fresh_optional_values(self):
+        """Lee base/robot sin caché. Si el firmware las rechaza, devuelve None."""
         try:
-            return self._value(siid, piid)
+            values = self._get_many([
+                ("charging_base", 10, 22),
+                ("robot", 10, 24),
+            ])
+            return values.get("charging_base"), values.get("robot")
+        except Exception:
+            return None, None
+
+    def _fresh_current_path(self):
+        try:
+            values = self._get_many([("path", 10, 5)])
+            return values.get("path")
         except Exception:
             return None
 
@@ -72,6 +76,8 @@ class XiaomiE10Live(XiaomiE10Edge):
             ("path", 10, 5),
             ("path_start", 10, 15),
             ("path_end", 10, 16),
+            ("charging_base", 10, 22),
+            ("robot", 10, 24),
         ])
 
         direct_raw = values.get("path")
@@ -89,17 +95,11 @@ class XiaomiE10Live(XiaomiE10Edge):
                 response = self.device.call_action_by(10, 12, [start, end])
                 action_raw = self._extract_action_output(response, 5)
                 action_path = self.parse_trajectory(action_raw)
-
-                # Muchos firmwares escriben el resultado en current-path pero
-                # la respuesta de la acción no contiene el payload. Releer 10/5
-                # inmediatamente es esencial para poder dibujar en vivo.
-                reread_raw = self._optional_value(10, 5)
+                reread_raw = self._fresh_current_path()
                 reread_path = self.parse_trajectory(reread_raw)
             except Exception as exc:
                 action_error = str(exc)
 
-        # Preferimos la fuente con más puntos válidos. Si todas tienen el mismo
-        # tamaño, priorizamos la relectura post-acción por ser la más reciente.
         candidates = [
             ("current-path post-acción", reread_path, reread_raw),
             ("get-current-path", action_path, action_raw),
@@ -109,12 +109,12 @@ class XiaomiE10Live(XiaomiE10Edge):
         if not path:
             source = "esperando telemetría"
 
-        # Fallback oportunista: algunas unidades B112 entregan posición/base en
-        # 10/24 y 10/22 aun cuando current-path está vacío durante EDGE.
-        raw_robot = self._optional_value(10, 24)
-        raw_base = self._optional_value(10, 22)
-        robot = self.parse_position(raw_robot)
+        # 10/22 y 10/24 se toman del mismo get_properties fresco que el path.
+        # Esto evita la lectura cacheada que dejaba el robot pegado a la base.
+        raw_base = values.get("charging_base")
+        raw_robot = values.get("robot")
         base = self.parse_position(raw_base)
+        robot = self.parse_position(raw_robot)
         position_source = None
 
         if path:
@@ -135,13 +135,15 @@ class XiaomiE10Live(XiaomiE10Edge):
             position_source = "trayectoria"
         elif robot is not None:
             source = "posición instantánea 10/24"
-            position_source = "10/24"
+            position_source = "10/24 fresco"
 
         return {
             "path": path,
             "charging_base": base,
             "robot": robot,
             "raw_path": selected_raw,
+            "raw_robot": raw_robot,
+            "raw_base": raw_base,
             "path_source": source,
             "position_source": position_source,
             "path_start": start,
