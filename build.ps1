@@ -13,24 +13,36 @@ python -m pip install pyinstaller==6.22.3
 # Genera el icono multi-resolución desde el icono de Xiaomi Home.
 python scripts\make_mihome_icon.py
 
-# Helper independiente: sigue vivo cuando la app principal se cierra para
-# instalar la actualización y volver a abrir la versión nueva.
+# Helper independiente de actualizaciones.
 pyinstaller --noconfirm --clean --windowed --onefile `
     --name "Aspiradora Xiaomi Updater" `
     --icon "assets\mi_home.ico" `
     src\update_helper.py
 
+# Agente de programaciones. Corre en segundo plano al iniciar Windows.
+pyinstaller --noconfirm --clean --windowed --onefile `
+    --name "Aspiradora Xiaomi Scheduler" `
+    --icon "assets\mi_home.ico" `
+    --collect-all miio `
+    src\scheduler_agent.py
+
+# Aplicación principal.
 pyinstaller --noconfirm --clean --windowed --onedir `
     --name "Aspiradora Xiaomi" `
     --icon "assets\mi_home.ico" `
     --collect-all miio `
     --collect-all micloud `
     --collect-all PIL `
-    src\app_v16.py
+    src\app_v18.py
 
 Copy-Item `
     "dist\Aspiradora Xiaomi Updater.exe" `
     "dist\Aspiradora Xiaomi\Aspiradora Xiaomi Updater.exe" `
+    -Force
+
+Copy-Item `
+    "dist\Aspiradora Xiaomi Scheduler.exe" `
+    "dist\Aspiradora Xiaomi\Aspiradora Xiaomi Scheduler.exe" `
     -Force
 
 $pf86 = ${env:ProgramFiles(x86)}
