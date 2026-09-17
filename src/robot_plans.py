@@ -57,10 +57,12 @@ def configure_mode(vacuum, mode, suction=1, water=0):
     raise ValueError(f"Modo de limpieza desconocido: {mode}")
 
 
-def sync_virtual_walls(vacuum, plan):
+def sync_virtual_walls(vacuum, plan, force=False):
     plan = plan or {}
     walls = list(plan.get("no_go", []) or [])
-    if not plan.get("virtual_walls_managed", False):
+    # Si la app nunca administró bloqueos no mandamos una lista vacía, porque
+    # eso podría borrar restricciones creadas desde Mi Home.
+    if not force and not plan.get("virtual_walls_managed", False):
         return None
 
     origin = plan.get("device_origin")
@@ -70,12 +72,10 @@ def sync_virtual_walls(vacuum, plan):
     encoded = []
     for index, wall in enumerate(walls, start=1):
         rect = local_rect_to_device(wall, plan)
-        # El E10 usa tipo 1 para rectángulos: id_tipo_x1_y1_x2_y2.
         encoded.append(
             f"{index}_1_{_fmt(rect['x0'])}_{_fmt(rect['y1'])}_{_fmt(rect['x1'])}_{_fmt(rect['y0'])}"
         )
 
-    # La propiedad es string aunque su contenido sea una matriz serializada.
     payload = json.dumps([len(encoded), *encoded], separators=(",", ":"))
     return vacuum.device.call_action_by(9, 6, [payload])
 
