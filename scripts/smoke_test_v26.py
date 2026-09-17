@@ -26,13 +26,22 @@ class FakeDevice:
         return {"code": 0}
 
 
-class FakeEdge:
-    from xiaomi_e10_edge import XiaomiE10Edge
+class FakeLiveDevice:
+    def __init__(self):
+        self.action_called = False
+
+    def call_action_by(self, siid, aiid, params=None):
+        check((siid, aiid) == (10, 12), "Se esperaba get-current-path 10/12")
+        self.action_called = True
+        # Caso real que queremos soportar: la acción responde OK pero no incluye
+        # el path. El firmware actualiza 10/5 y hay que releer la propiedad.
+        return {"code": 0}
 
 
 def main():
     import app_v26
     from xiaomi_e10_edge import XiaomiE10Edge
+    from xiaomi_e10_live import XiaomiE10Live
 
     # -4 fue el valor visto físicamente en el E10. No es un status MIoT válido
     # y nunca debe interpretarse como reposo, error o motivo para detener.
@@ -59,10 +68,26 @@ def main():
     check((2, 8, 2) in edge.device.properties, "Mapeo debe preseleccionar EDGE=2")
     check(not any(a[:2] == (2, 3) for a in edge.device.actions), "No debe volver a usarse start-only-sweep 2/3 en Paso 1")
 
+    # Simula la telemetría observada: current-path directo vacío y acción sin
+    # payload, pero la propiedad 10/5 se llena al terminar la acción.
+    live = object.__new__(XiaomiE10Live)
+    live.device = FakeLiveDevice()
+    live._get_many = lambda _defs: {"path": "", "path_start": 1, "path_end": 3}
+    def fake_optional(siid, piid):
+        if (siid, piid) == (10, 5):
+            # first_pose_id=1 y dos poses: x,y,phi,update.
+            return "1,0,0,0,1,10,0,0,1"
+        return None
+    live._optional_value = fake_optional
+    state = live.local_map_state()
+    check(len(state.get("path") or []) == 2, "Debe recuperar puntos desde la relectura post-acción de 10/5")
+    check(state.get("reread_path_count") == 2, "El contador post-acción debe reflejar los puntos recuperados")
+    check(state.get("path_source") == "current-path post-acción", "Debe priorizar la relectura más reciente")
+
     check("_watch_edge_only" in app_v26.App.__dict__, "v26 debe reemplazar el watchdog EDGE")
     check("start_new_mapping" in app_v26.App.__dict__, "v26 debe mostrar el nuevo arranque EDGE")
 
-    print("SMOKE TEST V26 OK: acción EDGE 7/3, ECO y telemetría -4 ignorada")
+    print("SMOKE TEST V26 OK: EDGE nativo, -4 ignorado y current-path post-acción en vivo")
 
 
 if __name__ == "__main__":
