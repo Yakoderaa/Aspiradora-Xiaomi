@@ -3,3 +3,4 @@ micloud
 requests>=2.31,<3
 Pillow>=10,<13
 pystray>=0.19.5,<1
+vacuum-map-parser-xiaomi>=0.1.4,<1
