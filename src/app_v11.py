@@ -5,7 +5,7 @@ from pathlib import Path
 from tkinter import messagebox
 
 import app_v10
-from xiaomi_e10_edge import XiaomiE10Edge
+from xiaomi_e10_live import XiaomiE10Live
 
 
 class App(app_v10.App):
@@ -28,7 +28,7 @@ class App(app_v10.App):
         except Exception:
             pass
 
-    # -------------------------------------------- conexión con clase EDGE nueva
+    # ---------------------------------------- conexión EDGE + trayectoria live
     def connect_device(self, ip, token, quiet=False):
         self._set_banner("Conectando con el robot…")
         ip = str(ip).strip()
@@ -36,7 +36,11 @@ class App(app_v10.App):
 
         def worker():
             try:
-                vacuum = XiaomiE10Edge(ip, token)
+                # IMPORTANTE: XiaomiE10Live hereda del controlador EDGE, pero
+                # además consulta current-path / get-current-path. La UI de
+                # paredes en vivo depende de esta clase; XiaomiE10Edge solo no
+                # aporta la trayectoria incremental necesaria.
+                vacuum = XiaomiE10Live(ip, token)
                 info = vacuum.info()
                 model = getattr(info, "model", "")
                 if model and model != "xiaomi.vacuum.b112":
