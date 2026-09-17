@@ -10,7 +10,7 @@ python -m pip install pyinstaller==6.22.3
 
 "VERSION = `"$($env:APP_VERSION)`"" | Set-Content -Encoding UTF8 src\_build_version.py
 
-# Genera el icono multi-resolución desde el icono oficial actual de Xiaomi Home.
+# Genera el icono multi-resolución desde el icono de Xiaomi Home.
 python scripts\make_mihome_icon.py
 
 # Helper independiente: sigue vivo cuando la app principal se cierra para
@@ -26,7 +26,7 @@ pyinstaller --noconfirm --clean --windowed --onedir `
     --collect-all miio `
     --collect-all micloud `
     --collect-all PIL `
-    src\app_v13.py
+    src\app_v14.py
 
 Copy-Item `
     "dist\Aspiradora Xiaomi Updater.exe" `
