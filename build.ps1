@@ -32,7 +32,7 @@ pyinstaller --noconfirm --clean --windowed --onefile `
     --collect-all miio `
     src\scheduler_agent.py
 
-# Aplicación principal v22: interfaz nueva + backend existente.
+# Aplicación principal v23: interfaz nueva + navegación mejorada + Programar renovado.
 pyinstaller --noconfirm --clean --windowed --onedir `
     --name "Aspiradora Xiaomi" `
     --icon "assets\mi_home.ico" `
@@ -42,7 +42,7 @@ pyinstaller --noconfirm --clean --windowed --onedir `
     --collect-all micloud `
     --collect-all PIL `
     --collect-all pystray `
-    src\app_v22.py
+    src\app_v23.py
 
 Copy-Item `
     "dist\Aspiradora Xiaomi Updater.exe" `
@@ -84,13 +84,13 @@ foreach ($target in $iconTargets) {
     $icon.Dispose()
 }
 
-# Smoke runtime: la UI nueva y el agente deben seguir vivos unos segundos.
+# Smoke runtime: la UI v23 y el agente deben seguir vivos unos segundos.
 $appExe = (Resolve-Path "dist\Aspiradora Xiaomi\Aspiradora Xiaomi.exe").Path
 $appProcess = Start-Process -FilePath $appExe -ArgumentList "--tray" -PassThru
 Start-Sleep -Seconds 6
 $appProcess.Refresh()
 if ($appProcess.HasExited) {
-    throw "La aplicación v22 se cerró durante el smoke test de arranque. Código: $($appProcess.ExitCode)"
+    throw "La aplicación v23 se cerró durante el smoke test de arranque. Código: $($appProcess.ExitCode)"
 }
 Stop-Process -Id $appProcess.Id -Force -ErrorAction SilentlyContinue
 
