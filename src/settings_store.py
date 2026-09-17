@@ -85,8 +85,12 @@ class SettingsStore:
             "device_did": "",
             "device_region": "",
             "cloud_session": "",
+            "xiaomi_login_method": "",
+            "xiaomi_user_id": "",
+            "xiaomi_user_name": "",
             "mop_enabled": False,
             "mop_water_level": 1,
+            "suction": 2,
             "auto_update": True,
             "poll_seconds": 5,
             # Integración con Windows / bandeja de sistema.
