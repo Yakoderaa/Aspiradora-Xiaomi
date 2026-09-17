@@ -25,7 +25,9 @@ Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
 CloseApplications=yes
-RestartApplications=yes
+; El helper de actualización relanza explícitamente la app. Evitamos que Inno
+; cree una segunda instancia o reabra una ventana antes de restaurar geometría.
+RestartApplications=no
 UninstallDisplayIcon={app}\{#MyAppExeName}
 VersionInfoVersion={#MyAppVersion}
 VersionInfoProductName={#MyAppName}
