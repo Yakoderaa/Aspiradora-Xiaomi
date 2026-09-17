@@ -51,34 +51,20 @@ jobs:
             installer_output/Aspiradora-Xiaomi-Setup.exe.sha256
 
       - name: Publish GitHub Release
-        shell: pwsh
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: Aspiradora Xiaomi ${{ env.APP_VERSION }} · V46
+          target_commitish: ${{ github.sha }}
+          body: |
+            V46 para Windows 10/11 x64.
+            Incluye lectura de historial Xiaomi Cloud para 10.5/10.24 y protección contra movimientos falsos por chargingbase.
+            La aplicación instalada detecta esta release, verifica el SHA-256 y actualiza silenciosamente.
+          draft: false
+          prerelease: false
+          fail_on_unmatched_files: true
+          files: |
+            installer_output/Aspiradora-Xiaomi-Setup.exe
+            installer_output/Aspiradora-Xiaomi-Setup.exe.sha256
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          $ErrorActionPreference = "Stop"
-          $notes = "V46 para Windows 10/11 x64. Incluye lectura del historial Xiaomi Cloud para 10.5/10.24 y protección contra movimientos falsos por chargingbase. La aplicación instalada detecta esta release, verifica el SHA-256 y actualiza silenciosamente."
-
-          # Crear primero la release como borrador evita dejar una release pública
-          # incompleta si la subida del instalador grande se demora o falla.
-          gh release create $env:RELEASE_TAG `
-            --draft `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V46" `
-            --notes $notes `
-            --target $env:GITHUB_SHA
-
-          gh release upload $env:RELEASE_TAG `
-            "installer_output/Aspiradora-Xiaomi-Setup.exe" `
-            "installer_output/Aspiradora-Xiaomi-Setup.exe.sha256" `
-            --clobber
-
-          # Verificar que ambos assets existen antes de hacerla pública.
-          $assets = gh release view $env:RELEASE_TAG --json assets | ConvertFrom-Json
-          $names = @($assets.assets | ForEach-Object { $_.name })
-          if (-not ($names -contains "Aspiradora-Xiaomi-Setup.exe")) {
-            throw "La release no contiene el instalador EXE."
-          }
-          if (-not ($names -contains "Aspiradora-Xiaomi-Setup.exe.sha256")) {
-            throw "La release no contiene el SHA-256."
-          }
-
-          gh release edit $env:RELEASE_TAG --draft=false
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
