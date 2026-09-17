@@ -7,10 +7,13 @@ from tkinter import messagebox
 
 import app_v13
 
-CARD = app_v13.app_v12.app_v11.app_v10.app_v9.CARD
-GREEN = app_v13.app_v12.app_v11.app_v10.app_v9.GREEN
-MUTED = app_v13.app_v12.app_v11.app_v10.app_v9.MUTED
-ACCENT = app_v13.app_v12.app_v11.app_v10.app_v9.ACCENT
+# Las constantes visuales viven en app_v8; los módulos intermedios no reexportan
+# todas ellas. Usamos esa fuente estable para evitar errores al arrancar.
+_PALETTE = app_v13.app_v12.app_v11.app_v10.app_v9.app_v8
+CARD = _PALETTE.CARD
+GREEN = _PALETTE.GREEN
+MUTED = _PALETTE.MUTED
+ACCENT = _PALETTE.ACCENT
 
 
 class App(app_v13.App):
@@ -255,7 +258,6 @@ class App(app_v13.App):
             b = float(b)
         except Exception:
             return False
-        # La telemetría puede venir en radianes o grados según firmware.
         max_abs = max(abs(a), abs(b))
         threshold = 0.08 if max_abs <= math.tau * 2.0 else 5.0
         return abs(a - b) >= threshold
@@ -331,7 +333,6 @@ class App(app_v13.App):
         ).start()
 
     def _anti_stall_recovery_worker(self, vacuum, attempt, phase):
-        """Retrocede, gira y avanza; luego restaura la tarea que estaba activa."""
         try:
             values = vacuum._get_many([
                 ("status", 2, 1),
@@ -345,9 +346,6 @@ class App(app_v13.App):
                 self._post_ui("unstick_done", attempt)
                 return
 
-            # Cambiamos temporalmente a control remoto. El watchdog EDGE de v14
-            # se pausa mientras _anti_stall_worker=True para no confundirlo con
-            # una transición a limpieza global.
             try:
                 vacuum.set_sweep_type(5)
             except Exception:
@@ -358,19 +356,19 @@ class App(app_v13.App):
             forward_time = 0.45 + (attempt * 0.12)
             turn = 2 if attempt % 2 else 3
 
-            vacuum.manual(4)  # Back
+            vacuum.manual(4)
             time.sleep(back_time)
-            vacuum.manual(5)  # Stop
+            vacuum.manual(5)
             time.sleep(0.15)
-            vacuum.manual(turn)  # alterna Left / Right entre intentos
+            vacuum.manual(turn)
             time.sleep(turn_time)
             vacuum.manual(5)
             time.sleep(0.15)
-            vacuum.manual(1)  # Forward
+            vacuum.manual(1)
             time.sleep(forward_time)
             vacuum.manual(5)
             time.sleep(0.15)
-            vacuum.manual(10)  # Exit remote mode
+            vacuum.manual(10)
 
             target_sweep = 2 if phase == 1 else (0 if phase == 2 else sweep_type)
             if target_sweep in (0, 2, 4):
@@ -402,128 +400,16 @@ class App(app_v13.App):
     def _anti_stall_abort_worker(self, vacuum):
         try:
             try:
-                vacuum.manual(5)
-                vacuum.manual(10)
-            except Exception:
-                pass
-            try:
                 vacuum.stop()
             except Exception:
                 pass
-            time.sleep(0.5)
-            try:
-                vacuum.dock()
-            except Exception:
-                pass
-        finally:
             self._post_ui(
                 "unstick_abort",
-                "El E10 siguió sin desplazarse después de 3 maniobras automáticas. "
-                "Detuve la limpieza y le ordené volver a la base para que no quede empujando indefinidamente. "
-                "Si está físicamente atrapado, necesita liberarse manualmente.",
+                "El E10 sigue sin avanzar después de 3 maniobras automáticas. "
+                "Detuve el mapeo para no dejar las ruedas forzando contra un obstáculo.",
             )
-
-    # ------------------------------------------ EDGE tolerante a recuperación
-    def _watch_edge_only(self, session):
-        vacuum = self.vacuum
-        if not vacuum:
-            return
-
-        started_at = time.monotonic()
-        deadline = started_at + 45 * 60
-        seen_edge = False
-        seen_moving = False
-        errors = 0
-        last_state = None
-
-        while time.monotonic() < deadline:
-            if session != self._edge_session or self.mapping_phase != 1:
-                return
-            if self._anti_stall_worker:
-                # Durante la maniobra el sweep_type pasa temporalmente a REMOTE=5.
-                # No lo interpretamos como fin del recorrido EDGE.
-                time.sleep(0.18)
-                continue
-            vacuum = self.vacuum
-            if not vacuum:
-                return
-
-            try:
-                values = vacuum._get_many([
-                    ("status", 2, 1),
-                    ("sweep_type", 2, 8),
-                ])
-                status = int(values.get("status", -1) if values.get("status") is not None else -1)
-                sweep_type = int(values.get("sweep_type", -1) if values.get("sweep_type") is not None else -1)
-                errors = 0
-            except Exception as exc:
-                errors += 1
-                if errors >= 12:
-                    self._edge_log(f"Telemetría EDGE perdida: {exc}")
-                    self._post_ui(
-                        "edge_only_error",
-                        "Perdí la comunicación mientras vigilaba el modo EDGE. Detuve el Paso 1 por seguridad.",
-                    )
-                    try:
-                        vacuum.stop()
-                    except Exception:
-                        pass
-                    return
-                time.sleep(0.25)
-                continue
-
-            state = (status, sweep_type)
-            if state != last_state:
-                self._edge_log(f"status={status} sweep_type={sweep_type}")
-                last_state = state
-
-            if sweep_type == 2:
-                seen_edge = True
-            if status in (5, 6, 7):
-                seen_moving = True
-
-            if seen_edge and sweep_type != 2:
-                self._edge_log(
-                    f"Firmware intentó salir de EDGE: status={status}, sweep_type={sweep_type}. STOP inmediato."
-                )
-                try:
-                    vacuum.stop()
-                except Exception:
-                    pass
-                self._post_ui(
-                    "edge_only_complete",
-                    "Paso 1 terminado · perímetro guardado. Bloqueé la transición automática a limpieza global.",
-                )
-                return
-
-            if seen_edge and seen_moving and status in (0, 1, 2, 4):
-                self._edge_log(f"EDGE finalizado normalmente con status={status}")
-                self._post_ui(
-                    "edge_only_complete",
-                    "Paso 1 terminado · recorrido de bordes guardado.",
-                )
-                return
-
-            if time.monotonic() - started_at > 8.0 and not seen_edge:
-                try:
-                    vacuum.stop()
-                except Exception:
-                    pass
-                self._edge_log(f"EDGE no confirmado. status={status}, sweep_type={sweep_type}")
-                self._post_ui(
-                    "edge_only_error",
-                    f"El E10 no confirmó el modo de bordes (sweep_type={sweep_type}). "
-                    "Cancelé la tarea para que no aspire toda la vivienda.",
-                )
-                return
-
-            time.sleep(0.25)
-
-        try:
-            vacuum.stop()
-        except Exception:
-            pass
-        self._post_ui("edge_only_error", "El Paso 1 superó el tiempo máximo y fue detenido.")
+        except Exception as exc:
+            self._post_ui("unstick_error", str(exc).strip() or "no pude detener el robot")
 
 
 if __name__ == "__main__":
