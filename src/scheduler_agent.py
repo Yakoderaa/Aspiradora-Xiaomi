@@ -72,9 +72,9 @@ def connect_robot():
     return vacuum
 
 
-def execute_schedule(schedule, plan):
+def execute_schedule(schedule, plan, force_wall_sync=False):
     vacuum = connect_robot()
-    sync_virtual_walls(vacuum, plan)
+    sync_virtual_walls(vacuum, plan, force=bool(force_wall_sync))
 
     mode = str(schedule.get("mode", "vacuum"))
     passes = ["vacuum", "mop"] if mode == "vacuum_then_mop" else [mode]
@@ -111,6 +111,9 @@ def main():
             all_plan = store.snapshot_all()
             schedules = list(all_plan.get("schedules", []) or [])
             last_runs = dict(all_plan.get("last_runs", {}) or {})
+            # Si la app administró paredes en algún mapa, cada tarea debe enviar
+            # el conjunto del mapa que va a ejecutar, incluso si es vacío.
+            any_managed_walls = any(bool(v) for v in (all_plan.get("virtual_walls_managed_maps", {}) or {}).values())
 
             for schedule in schedules:
                 due, run_key = schedule_due(schedule, now)
@@ -128,9 +131,8 @@ def main():
                 store.mark_run(schedule_id, run_key, "started")
                 log(f"Ejecutando {name} ({schedule_id}) en mapa {map_id}")
                 try:
-                    # Releemos el mapa específico justo antes de limpiar.
                     fresh_plan = store.snapshot(map_id)
-                    execute_schedule(schedule, fresh_plan)
+                    execute_schedule(schedule, fresh_plan, force_wall_sync=any_managed_walls)
                     store.mark_run(schedule_id, run_key, "success")
                     log(f"Completada {name}")
                 except Exception as exc:
