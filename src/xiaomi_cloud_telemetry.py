@@ -48,20 +48,39 @@ class XiaomiCloudTelemetry:
 
     @staticmethod
     def decode_response(response: Any) -> dict[str, Any]:
-        if isinstance(response, str):
+        # micloud.request_country() devuelve el payload RC4 ya descifrado, pero
+        # dependiendo de la versión de pycryptodome/micloud puede llegar como bytes.
+        # Aceptamos ambas variantes antes de intentar json.loads().
+        if isinstance(response, (bytes, bytearray, memoryview)):
             try:
-                response = json.loads(response)
+                response = bytes(response).decode("utf-8-sig")
+            except UnicodeDecodeError as exc:
+                preview = bytes(response)[:80].hex()
+                raise RuntimeError(
+                    f"Xiaomi Cloud devolvió bytes no UTF-8 (primeros bytes: {preview})."
+                ) from exc
+
+        if isinstance(response, str):
+            text = response.lstrip("\ufeff \t\r\n")
+            if text.startswith("&&&START&&&"):
+                text = text[len("&&&START&&&"):]
+            try:
+                response = json.loads(text)
             except Exception as exc:
-                raise RuntimeError("Xiaomi Cloud devolvió una respuesta no JSON.") from exc
+                preview = text[:220].replace("\r", " ").replace("\n", " ")
+                raise RuntimeError(f"Xiaomi Cloud devolvió una respuesta no JSON: {preview!r}") from exc
+
         if not isinstance(response, dict):
             raise RuntimeError(f"Respuesta MIoT Cloud inesperada: {type(response).__name__}")
         code = response.get("code", 0)
         if code not in (0, "0", None):
-            message = response.get("message") or response.get("description") or "sin detalle"
+            message = response.get("message") or response.get("description") or response.get("msg") or "sin detalle"
             raise RuntimeError(f"MIoT Cloud rechazó la consulta: código {code} · {message}")
         result = response.get("result")
         if not isinstance(result, list):
-            raise RuntimeError("MIoT Cloud no devolvió una lista de propiedades.")
+            raise RuntimeError(
+                f"MIoT Cloud no devolvió una lista de propiedades. result={type(result).__name__}: {result!r}"
+            )
 
         values: dict[str, Any] = {}
         meta: dict[str, dict[str, Any]] = {}
