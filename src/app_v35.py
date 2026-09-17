@@ -1,20 +1,77 @@
+import ctypes
 import math
 
 import app_v34
 
 
 class App(app_v34.App):
-    """v35: no usa el delta fijo 10/24-10/22 como desplazamiento real.
-
-    Mientras no exista movimiento X/Y confirmado, la posición visual del robot
-    permanece sobre la base. El delta MIoT crudo sigue disponible en Diagnóstico,
-    pero no se convierte en geometría ni en desplazamiento visual.
-    """
+    """v35: origen visual seguro + ventana principal centrada en Windows."""
 
     def __init__(self):
         self._v35_raw_relative = None
         super().__init__()
+        # Conservamos el tamaño elegido por la app, pero corregimos su posición
+        # después de que Tk haya calculado el tamaño real de todos los widgets.
+        self.after_idle(self._center_initial_window)
 
+    # ------------------------------------------------ ventana principal
+    def _usable_work_area(self):
+        """Devuelve el área útil de Windows, excluyendo la barra de tareas."""
+        try:
+            class RECT(ctypes.Structure):
+                _fields_ = [
+                    ("left", ctypes.c_long),
+                    ("top", ctypes.c_long),
+                    ("right", ctypes.c_long),
+                    ("bottom", ctypes.c_long),
+                ]
+
+            rect = RECT()
+            SPI_GETWORKAREA = 0x0030
+            ok = ctypes.windll.user32.SystemParametersInfoW(
+                SPI_GETWORKAREA,
+                0,
+                ctypes.byref(rect),
+                0,
+            )
+            if ok:
+                return int(rect.left), int(rect.top), int(rect.right), int(rect.bottom)
+        except Exception:
+            pass
+
+        try:
+            return 0, 0, int(self.winfo_screenwidth()), int(self.winfo_screenheight())
+        except Exception:
+            return 0, 0, 1280, 720
+
+    def _center_initial_window(self):
+        """Centra la app sin permitir que quede debajo de la barra de tareas."""
+        try:
+            self.update_idletasks()
+
+            left, top, right, bottom = self._usable_work_area()
+            usable_w = max(1, int(right - left))
+            usable_h = max(1, int(bottom - top))
+
+            width = max(int(self.winfo_width()), int(self.winfo_reqwidth()))
+            height = max(int(self.winfo_height()), int(self.winfo_reqheight()))
+
+            # Normalmente no cambia el tamaño. Sólo lo limita si una resolución
+            # o escala de Windows hace que literalmente no entre en el área útil.
+            margin = 16
+            width = min(width, max(640, usable_w - margin * 2))
+            height = min(height, max(520, usable_h - margin * 2))
+
+            x = int(left + (usable_w - width) / 2)
+            y = int(top + (usable_h - height) / 2)
+            x = max(left, min(x, right - width))
+            y = max(top, min(y, bottom - height))
+
+            self.geometry(f"{width}x{height}+{x}+{y}")
+        except Exception:
+            pass
+
+    # ------------------------------------------------ estado -> mapa
     def _apply_map_state(self, state):
         original = dict(state or {})
         self._v35_raw_relative = self._relative_robot_from_state(original)
@@ -51,12 +108,12 @@ class App(app_v34.App):
                 pass
         return result
 
+    # ------------------------------------------------ render
     def _render_map_canvas(self, canvas, snapshot):
         source = dict(snapshot or {})
 
-        # Garantía adicional de render: si aún no existe movimiento real, el
-        # robot debe dibujarse exactamente sobre la base, aunque haya quedado
-        # una pose vieja persistida en el snapshot.
+        # Garantía adicional: sin movimiento real, el robot aparece sobre la
+        # base aunque haya quedado una pose vieja persistida en el snapshot.
         if (
             self.mapping_active
             and not bool(getattr(self, "_v34_motion_confirmed", False))
@@ -71,12 +128,10 @@ class App(app_v34.App):
             }
 
         # Saltamos sólo el renderer de v34, que redibujaba base + rótulo Base.
-        # Ejecutamos toda la cadena anterior para conservar mapa, zonas, paredes,
-        # base y robot estándar.
+        # Conservamos toda la cadena previa y reponemos únicamente el robot al
+        # final para que siempre quede por encima de paredes/zonas.
         result = super(app_v34.App, self)._render_map_canvas(canvas, source)
 
-        # Las capas modernas posteriores pueden dibujar paredes sobre el robot.
-        # Redibujamos únicamente el robot al final; la base NO se vuelve a crear.
         transform = self._map_transforms.get(canvas)
         robot = source.get("robot")
         if not transform or not isinstance(robot, dict):
@@ -121,6 +176,7 @@ class App(app_v34.App):
             pass
         return result
 
+    # ------------------------------------------------ diagnóstico
     def _diagnostic_text(self):
         inherited = super()._diagnostic_text()
         raw = self._v35_raw_relative or {}
@@ -136,7 +192,8 @@ class App(app_v34.App):
             f"delta MIoT crudo: {delta}\n"
             f"movimiento confirmado: {bool(getattr(self, '_v34_motion_confirmed', False))}\n"
             "regla visual: sin movimiento confirmado, robot = base = (0,0)\n"
-            "base: una sola capa / un solo rótulo\n\n"
+            "base: una sola capa / un solo rótulo\n"
+            "ventana: centrada dentro del área útil de Windows\n\n"
             + inherited
         )
 
