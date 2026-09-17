@@ -5,9 +5,11 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import urllib.error
 import urllib.request
 from pathlib import Path
 
+from settings_store import SettingsStore
 from version import GITHUB_REPO, VERSION
 
 API_URL = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
@@ -26,22 +28,52 @@ def _version_tuple(value: str):
     return tuple((parts + [0, 0, 0])[:3])
 
 
+def _github_token():
+    try:
+        return str(SettingsStore().load().get("github_token") or "").strip()
+    except Exception:
+        return ""
+
+
+def _headers(*, binary=False):
+    headers = {
+        "User-Agent": f"Aspiradora-Xiaomi/{VERSION}",
+        "Accept": "application/octet-stream" if binary else "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+    }
+    token = _github_token()
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+    return headers
+
+
 def _request_json(url: str):
-    req = urllib.request.Request(
-        url,
-        headers={
-            "User-Agent": f"Aspiradora-Xiaomi/{VERSION}",
-            "Accept": "application/vnd.github+json",
-        },
-    )
-    with urllib.request.urlopen(req, timeout=15) as response:
-        return json.loads(response.read().decode("utf-8"))
+    req = urllib.request.Request(url, headers=_headers(binary=False))
+    try:
+        with urllib.request.urlopen(req, timeout=15) as response:
+            return json.loads(response.read().decode("utf-8"))
+    except urllib.error.HTTPError as exc:
+        if exc.code == 404 and not _github_token():
+            raise RuntimeError(
+                "El repositorio de actualizaciones es privado. Configurá el acceso a GitHub en Ajustes para buscar actualizaciones privadas."
+            ) from None
+        if exc.code in (401, 403, 404) and _github_token():
+            raise RuntimeError(
+                "GitHub rechazó el acceso al repositorio privado. Revisá el token guardado en Ajustes y asegurate de que tenga acceso de lectura al repositorio."
+            ) from None
+        raise
 
 
 def _download(url: str, destination: Path, progress_callback=None):
     callback = progress_callback or (lambda _percent, _done, _total: None)
-    req = urllib.request.Request(url, headers={"User-Agent": f"Aspiradora-Xiaomi/{VERSION}"})
-    with urllib.request.urlopen(req, timeout=90) as response, destination.open("wb") as out:
+    req = urllib.request.Request(url, headers=_headers(binary=True))
+    try:
+        response = urllib.request.urlopen(req, timeout=90)
+    except urllib.error.HTTPError as exc:
+        if exc.code in (401, 403, 404):
+            raise RuntimeError("GitHub no permitió descargar el archivo de la release privada.") from None
+        raise
+    with response, destination.open("wb") as out:
         try:
             total = int(response.headers.get("Content-Length") or 0)
         except (TypeError, ValueError):
@@ -74,12 +106,14 @@ def check_for_update():
     latest = release.get("tag_name", "").lstrip("vV")
     if not latest or _version_tuple(latest) <= _version_tuple(VERSION):
         return None
-    assets = {
-        asset.get("name"): asset.get("browser_download_url")
-        for asset in release.get("assets", [])
-    }
-    installer_url = assets.get(INSTALLER_NAME)
-    checksum_url = assets.get(CHECKSUM_NAME)
+
+    # Para repos privados usamos el endpoint API del asset, no browser_download_url.
+    # Con Accept: application/octet-stream GitHub entrega el binario autenticado.
+    assets = {asset.get("name"): asset for asset in release.get("assets", [])}
+    installer = assets.get(INSTALLER_NAME) or {}
+    checksum = assets.get(CHECKSUM_NAME) or {}
+    installer_url = installer.get("url") or installer.get("browser_download_url")
+    checksum_url = checksum.get("url") or checksum.get("browser_download_url")
     if not installer_url or not checksum_url:
         return None
     return {
