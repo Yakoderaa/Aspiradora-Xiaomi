@@ -36,7 +36,7 @@ def acquire_single_instance():
     handle = kernel32.CreateMutexW(None, False, "Local\\AspiradoraXiaomiScheduler")
     if not handle:
         return False
-    if kernel32.GetLastError() == 183:  # ERROR_ALREADY_EXISTS
+    if kernel32.GetLastError() == 183:
         kernel32.CloseHandle(handle)
         return False
     acquire_single_instance._handle = handle
@@ -108,9 +108,9 @@ def main():
     while True:
         try:
             now = datetime.now()
-            plan = store.snapshot()
-            schedules = list(plan.get("schedules", []) or [])
-            last_runs = dict(plan.get("last_runs", {}) or {})
+            all_plan = store.snapshot_all()
+            schedules = list(all_plan.get("schedules", []) or [])
+            last_runs = dict(all_plan.get("last_runs", {}) or {})
 
             for schedule in schedules:
                 due, run_key = schedule_due(schedule, now)
@@ -124,11 +124,12 @@ def main():
                     continue
 
                 name = schedule.get("name") or "Programación"
+                map_id = str(schedule.get("map_id") or all_plan.get("active_map_id") or "legacy")
                 store.mark_run(schedule_id, run_key, "started")
-                log(f"Ejecutando {name} ({schedule_id})")
+                log(f"Ejecutando {name} ({schedule_id}) en mapa {map_id}")
                 try:
-                    # Releemos justo antes de limpiar por si la UI cambió zonas/bloqueos.
-                    fresh_plan = store.snapshot()
+                    # Releemos el mapa específico justo antes de limpiar.
+                    fresh_plan = store.snapshot(map_id)
                     execute_schedule(schedule, fresh_plan)
                     store.mark_run(schedule_id, run_key, "success")
                     log(f"Completada {name}")
