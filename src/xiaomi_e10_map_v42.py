@@ -6,34 +6,27 @@ from typing import Any
 
 import requests
 from vacuum_map_parser_base.config.color import ColorsPalette
-from vacuum_map_parser_base.config.drawable import Drawable
 from vacuum_map_parser_base.config.image_config import ImageConfig
 from vacuum_map_parser_base.config.size import Sizes
 from vacuum_map_parser_ijai.map_data_parser import IjaiMapDataParser
 
 from xiaomi_e10 import MODEL
-from xiaomi_e10_map_v41 import ExhaustiveMapSnapshot, XiaomiE10MapV41
+from xiaomi_e10_map_v41 import XiaomiE10MapV41
 
 
 class XiaomiE10MapV42(XiaomiE10MapV41):
-    """v42: usa el formato binario IJAI real que consume el parser 0.1.1.
+    """v42: descifra el B112 con el propio parser IJAI 0.1.1.
 
-    V41 podía derivar correctamente una clave y aun así descartar el mapa porque
-    validaba el resultado como ``RobotMap_pb2``. El paquete
-    ``vacuum-map-parser-ijai`` que usamos en producción hace otra cosa: primero
-    ``unpack_map()`` (AES-ECB -> hex -> zlib) y después ``parse()`` sobre su
-    formato binario propio. Esta clase prueba exactamente esa ruta publicada y
-    sólo conserva V41 como último fallback.
+    El hallazgo importante frente a V41 está en la derivación final de clave.
+    ``xiaomi.vacuum.b112`` NO pertenece a los modelos que usan el MD5 completo
+    interpretado como hexadecimal. El paquete 0.1.1 usa los 16 caracteres
+    centrales del MD5, en mayúsculas, como clave AES ASCII. V41 no probaba esa
+    variante y por eso podía descargar el blob correcto pero no abrirlo.
+
+    Después de ``unpack_map`` validamos el protobuf directamente para no perder
+    una decodificación correcta si el renderer de habitaciones de la librería
+    falla. El render visual queda como best-effort; posición/base/historyPose no.
     """
-
-    NATIVE_DRAWABLES = [
-        Drawable.PATH,
-        Drawable.CHARGER,
-        Drawable.VACUUM_POSITION,
-        Drawable.ROOM_NAMES,
-        Drawable.NO_GO_AREAS,
-        Drawable.VIRTUAL_WALLS,
-    ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -77,7 +70,6 @@ class XiaomiE10MapV42(XiaomiE10MapV41):
         wifi, owners, dids, macs = self._key_candidates()
         wifi = sorted(wifi, key=self._wifi_priority)
         owners = sorted(owners, key=self._owner_priority)
-        # No descartamos los candidatos laxos: quedan al final como fallback.
         self.last_key_diagnostics["strict_wifi_count"] = sum(
             1 for value, _ in wifi if self._strict_wifi_serial(str(value))
         )
@@ -87,12 +79,7 @@ class XiaomiE10MapV42(XiaomiE10MapV41):
     # -------------------------------------------------------- blob codificado
     @staticmethod
     def _encoded_variants(raw: bytes):
-        """Devuelve representaciones que ``IjaiMapDataParser.unpack_map`` acepta.
-
-        El decryptor IJAI espera texto Base64. Xiaomi normalmente ya entrega ese
-        texto, pero algunos proxies/backend wrappers pueden entregar JSON, hex o
-        directamente el ciphertext binario.
-        """
+        """Genera entradas compatibles con ``IjaiMapDataParser.unpack_map``."""
         result = []
         seen = set()
 
@@ -121,7 +108,6 @@ class XiaomiE10MapV42(XiaomiE10MapV41):
         except Exception:
             pass
 
-        # Expandimos sólo a formas Base64 válidas para el decryptor del parser.
         for data, label in list(result):
             try:
                 text = data.decode("ascii").strip()
@@ -133,14 +119,12 @@ class XiaomiE10MapV42(XiaomiE10MapV41):
                     add(base64.b64encode(bytes.fromhex(compact)), label + " hex->b64")
                 except Exception:
                     pass
-            # Si ya parece Base64 lo dejamos tal cual. Si es binario alineado a
-            # AES, lo envolvemos en Base64 para respetar el contrato upstream.
             looks_b64 = bool(compact and re.fullmatch(r"[A-Za-z0-9+/=_-]+", compact))
             if not looks_b64 and len(data) >= 16 and len(data) % 16 == 0:
                 add(base64.b64encode(data), label + " bin->b64")
         return result
 
-    # ------------------------------------------------------------- extracción
+    # ---------------------------------------------------- helpers de diagnóstico
     @staticmethod
     def _xy(value):
         if value is None:
@@ -163,6 +147,7 @@ class XiaomiE10MapV42(XiaomiE10MapV41):
 
     @classmethod
     def _path_points(cls, map_data):
+        """Extractor tolerante, conservado para tests y formatos MapData."""
         path_obj = getattr(map_data, "path", None)
         if path_obj is None:
             return []
@@ -190,93 +175,25 @@ class XiaomiE10MapV42(XiaomiE10MapV41):
         return points
 
     @staticmethod
-    def _image_from_map_data(map_data):
-        try:
-            image_data = getattr(map_data, "image", None)
-            if image_data is None or getattr(image_data, "is_empty", False):
-                return None
-            image = getattr(image_data, "data", None)
-            return image.convert("RGBA") if image is not None and hasattr(image, "convert") else image
-        except Exception:
-            return None
-
-    @classmethod
-    def _map_data_quality(cls, map_data):
-        robot = cls._xy(getattr(map_data, "vacuum_position", None))
-        base = cls._xy(getattr(map_data, "charger", None))
-        path = cls._path_points(map_data)
-        image = cls._image_from_map_data(map_data)
-        rooms = getattr(map_data, "rooms", None)
-        score = 1
-        if robot is not None:
-            score += 8
-        if base is not None:
-            score += 5
-        if path:
-            score += min(10, 2 + len(path))
-        if image is not None:
-            score += 5
-        try:
-            if rooms:
-                score += 2
-        except Exception:
-            pass
-        return score, robot, base, path, image
-
-    def _native_snapshot(self, *, raw, slot, endpoint, unpacked, map_data, label, sources):
-        score, robot, base, path, image = self._map_data_quality(map_data)
-        map_id = None
-        resolution = None
-        for attr in ("map_id", "map_index", "map_index_id"):
-            value = getattr(map_data, attr, None)
-            if value is not None:
-                try:
-                    map_id = int(value)
-                    break
-                except Exception:
-                    pass
-
-        return score, ExhaustiveMapSnapshot(
-            image=image,
-            map_data=map_data,
-            transformer=None,
-            map_name=str(slot),
-            crypto_mode="IJAI nativo · parser.unpack_map + parser.parse",
-            raw_size=len(raw),
-            envelope_version="ijai-binary-native",
-            map_id=map_id,
-            resolution=resolution,
-            raw_robot=robot,
-            raw_base=base,
-            raw_path=path,
-            parser_error=None,
-            slot=str(slot),
-            endpoint=endpoint,
-            decrypted_size=len(unpacked),
-            raw_prefix_hex=bytes(raw[:24]).hex(),
-            blob_sha256=hashlib.sha256(raw).hexdigest(),
-            blob_kind=label,
-            wifi_sn_source=sources.get("wifi_source", ""),
-            wifi_sn_length=int(sources.get("wifi_len", 0) or 0),
-            mac_source=sources.get("mac_source", ""),
-            mac_available=bool(sources.get("mac_source")),
-            owner_source=sources.get("owner_source", ""),
-            did_source=sources.get("did_source", ""),
-            pose_id=None,
-            upload_date=None,
-            decode_attempts=int(self.last_native_diagnostics.get("attempts", 0) or 0),
-            candidate_counts={k: int(v) for k, v in self.last_key_diagnostics.items() if k.endswith("_count")},
-        )
+    def _safe_http_error(exc):
+        response = getattr(exc, "response", None)
+        status = getattr(response, "status_code", None)
+        if status is not None:
+            return f"HTTP {int(status)}"
+        text = str(exc).strip() or type(exc).__name__
+        text = re.sub(r"https?://\S+", "<URL omitida>", text)
+        return text[:240]
 
     # ----------------------------------------------------------- parser nativo
     def _decode_native(self, raw, wifi, owners, dids, macs, slot, endpoint):
         variants = self._encoded_variants(raw)
         attempts = 0
         unpack_ok = 0
-        parse_ok = 0
-        best = None
+        protobuf_ok = 0
+        render_ok = 0
         last_unpack_error = None
-        last_parse_error = None
+        last_validation_error = None
+        last_render_error = None
 
         for wifi_sn, wifi_source in wifi:
             for owner, owner_source in owners:
@@ -285,9 +202,11 @@ class XiaomiE10MapV42(XiaomiE10MapV41):
                         for encoded, label in variants:
                             attempts += 1
                             parser = IjaiMapDataParser(
-                                ColorsPalette(), Sizes(), self.NATIVE_DRAWABLES, ImageConfig(), []
+                                ColorsPalette(), Sizes(), [], ImageConfig(), []
                             )
                             try:
+                                # Ruta exacta del paquete 0.1.1. En B112 aplica
+                                # internamente MD5[8:-8].upper() como AES ASCII.
                                 unpacked = parser.unpack_map(
                                     encoded,
                                     wifi_sn=str(wifi_sn),
@@ -301,13 +220,12 @@ class XiaomiE10MapV42(XiaomiE10MapV41):
                                 last_unpack_error = type(exc).__name__
                                 continue
 
-                            unpack_hash = hashlib.sha256(bytes(unpacked)).hexdigest()[:12]
-                            try:
-                                map_data = parser.parse(unpacked)
-                                parse_ok += 1
-                            except Exception as exc:
-                                last_parse_error = type(exc).__name__
+                            quality = self._protobuf_quality(unpacked)
+                            if not quality:
+                                last_validation_error = "protobuf-no-coherente"
                                 continue
+                            protobuf_ok += 1
+                            score, robot_map = quality
 
                             sources = {
                                 "wifi_source": wifi_source,
@@ -316,73 +234,65 @@ class XiaomiE10MapV42(XiaomiE10MapV41):
                                 "did_source": did_source,
                                 "mac_source": mac_source,
                             }
-                            score, snapshot = self._native_snapshot(
-                                raw=raw,
-                                slot=slot,
-                                endpoint=endpoint,
-                                unpacked=unpacked,
-                                map_data=map_data,
-                                label=label,
-                                sources=sources,
+                            # Extrae pose/base/history antes del renderer; un bug
+                            # de rooms/imagen no puede invalidar el movimiento.
+                            snapshot = self._snapshot_from_payload(
+                                str(slot), endpoint, raw, unpacked, robot_map,
+                                "IJAI 0.1.1 · clave B112 ASCII-MD5 central",
+                                "parser nativo",
+                                sources,
                             )
-                            candidate = (score, snapshot, unpack_hash, sources, label)
-                            if best is None or score > best[0]:
-                                best = candidate
-                            # Robot/base/path es suficiente para el objetivo en
-                            # vivo; no tiene sentido seguir probando claves una
-                            # vez que el parser validó contenido útil.
-                            if score >= 6:
-                                break
-                        if best is not None and best[0] >= 6:
-                            break
-                    if best is not None and best[0] >= 6:
-                        break
-                if best is not None and best[0] >= 6:
-                    break
-            if best is not None and best[0] >= 6:
-                break
+                            if not snapshot.parser_error:
+                                render_ok += 1
+                            else:
+                                last_render_error = snapshot.parser_error[:180]
 
-        diag = {
+                            snapshot.blob_kind = label
+                            snapshot.decode_attempts = attempts
+                            snapshot.crypto_mode = "IJAI 0.1.1 · unpack_map exacto · B112 ASCII-MD5 central"
+
+                            diag = {
+                                "attempts": attempts,
+                                "encoded_variants": [name for _, name in variants],
+                                "unpack_ok": unpack_ok,
+                                "protobuf_ok": protobuf_ok,
+                                "parse_ok": render_ok,
+                                "last_unpack_error": last_unpack_error,
+                                "last_validation_error": last_validation_error,
+                                "last_render_error": last_render_error,
+                                "score": int(score),
+                                "unpacked_sha12": hashlib.sha256(bytes(unpacked)).hexdigest()[:12],
+                                "winner_sources": sources,
+                                "winner_blob_variant": label,
+                                "robot": snapshot.raw_robot,
+                                "base": snapshot.raw_base,
+                                "path_count": len(snapshot.raw_path or []),
+                                "image": bool(snapshot.image is not None),
+                                "decrypted_bytes": len(unpacked),
+                            }
+                            return snapshot, diag
+
+        return None, {
             "attempts": attempts,
-            "encoded_variants": [label for _, label in variants],
+            "encoded_variants": [name for _, name in variants],
             "unpack_ok": unpack_ok,
-            "parse_ok": parse_ok,
+            "protobuf_ok": protobuf_ok,
+            "parse_ok": render_ok,
             "last_unpack_error": last_unpack_error,
-            "last_parse_error": last_parse_error,
+            "last_validation_error": last_validation_error,
+            "last_render_error": last_render_error,
         }
-        if best is not None:
-            diag.update({
-                "score": best[0],
-                "unpacked_sha12": best[2],
-                "winner_sources": best[3],
-                "winner_blob_variant": best[4],
-                "robot": best[1].raw_robot,
-                "base": best[1].raw_base,
-                "path_count": len(best[1].raw_path or []),
-                "image": bool(best[1].image is not None),
-                "decrypted_bytes": int(best[1].decrypted_size or 0),
-            })
-        return (best[1] if best is not None else None), diag
 
-    @staticmethod
-    def _safe_http_error(exc):
-        response = getattr(exc, "response", None)
-        status = getattr(response, "status_code", None)
-        if status is not None:
-            return f"HTTP {int(status)}"
-        text = str(exc).strip() or type(exc).__name__
-        # Nunca volcamos URLs firmadas de FDS en Diagnóstico.
-        text = re.sub(r"https?://\S+", "<URL omitida>", text)
-        return text[:240]
-
+    # --------------------------------------------------------------- descarga
     def load(self):
         wifi, owners, dids, macs = self._ordered_key_material()
+        # Métrica comparativa con V41. V42 NO usa estas claves reimplementadas.
         self.last_key_diagnostics["derived_key_count"] = len(self._derive_keys(wifi, owners, dids, macs))
 
         slot_diag = {}
         errors = {}
         best = None
-        total_attempts = total_unpack_ok = total_parse_ok = 0
+        total_attempts = total_unpack_ok = total_protobuf_ok = total_parse_ok = 0
 
         for slot in self.CLOUD_SLOTS:
             try:
@@ -403,16 +313,19 @@ class XiaomiE10MapV42(XiaomiE10MapV41):
                 )
                 total_attempts += int(diag.get("attempts", 0) or 0)
                 total_unpack_ok += int(diag.get("unpack_ok", 0) or 0)
+                total_protobuf_ok += int(diag.get("protobuf_ok", 0) or 0)
                 total_parse_ok += int(diag.get("parse_ok", 0) or 0)
                 slot_diag[str(slot)]["native"] = {
                     "attempts": diag.get("attempts", 0),
                     "unpack_ok": diag.get("unpack_ok", 0),
+                    "protobuf_ok": diag.get("protobuf_ok", 0),
                     "parse_ok": diag.get("parse_ok", 0),
                     "score": diag.get("score"),
                     "unpacked_sha12": diag.get("unpacked_sha12"),
                     "variant": diag.get("winner_blob_variant"),
                     "last_unpack_error": diag.get("last_unpack_error"),
-                    "last_parse_error": diag.get("last_parse_error"),
+                    "last_validation_error": diag.get("last_validation_error"),
+                    "last_render_error": diag.get("last_render_error"),
                 }
                 if snapshot is not None:
                     score = int(diag.get("score", 0) or 0)
@@ -425,6 +338,7 @@ class XiaomiE10MapV42(XiaomiE10MapV41):
         self.last_native_diagnostics = {
             "attempts": total_attempts,
             "unpack_ok": total_unpack_ok,
+            "protobuf_ok": total_protobuf_ok,
             "parse_ok": total_parse_ok,
             "slots": slot_diag,
             "errors": errors,
@@ -445,12 +359,12 @@ class XiaomiE10MapV42(XiaomiE10MapV41):
                 "base": winning_diag.get("base"),
                 "path_count": winning_diag.get("path_count", 0),
                 "image": winning_diag.get("image", False),
+                "renderer_error": winning_diag.get("last_render_error"),
             })
             self.decode_attempts = total_attempts
             return selected
 
-        # Último recurso: mantenemos todas las variantes de V41. Si tampoco
-        # funcionan, devolvemos un error compacto y sin URL firmada.
+        # Último recurso: variantes antiguas de V41, con error saneado.
         legacy_error = None
         try:
             fallback = super().load()
@@ -463,7 +377,7 @@ class XiaomiE10MapV42(XiaomiE10MapV41):
         self.decode_attempts = total_attempts
         details = ", ".join(f"slot {slot}: {error}" for slot, error in errors.items()) or "sin error HTTP"
         raise RuntimeError(
-            "IJAI nativo no produjo un mapa utilizable "
-            f"({total_attempts} intentos, unpack correctos={total_unpack_ok}, parse correctos={total_parse_ok}); "
+            "IJAI 0.1.1 no produjo un mapa utilizable "
+            f"({total_attempts} intentos, unpack={total_unpack_ok}, protobuf={total_protobuf_ok}, render={total_parse_ok}); "
             f"{details}. Fallback V41: {legacy_error or 'sin resultado'}"
         )
