@@ -57,6 +57,7 @@ pyinstaller --noconfirm --clean --windowed --onedir `
     --collect-all Crypto `
     --collect-all PIL `
     --collect-all pystray `
+    --collect-all google.protobuf `
     --collect-all vacuum_map_parser_base `
     --collect-all vacuum_map_parser_xiaomi `
     --collect-all vacuum_map_parser_ijai `
@@ -89,6 +90,20 @@ foreach ($target in @(
 }
 
 $appExe = (Resolve-Path "dist\Aspiradora Xiaomi\Aspiradora Xiaomi.exe").Path
+
+# Prueba de imports DENTRO del ejecutable empaquetado. Una excepción de
+# PyInstaller abre un diálogo y deja el proceso vivo; por eso exigimos que este
+# modo de prueba termine por sí mismo con código 0 en menos de 15 segundos.
+$probeProcess = Start-Process -FilePath $appExe -ArgumentList "--packaging-smoke-test" -PassThru
+$probeExited = $probeProcess.WaitForExit(15000)
+if (-not $probeExited) {
+    Stop-Process -Id $probeProcess.Id -Force -ErrorAction SilentlyContinue
+    throw "El EXE no superó el self-test de imports empaquetados (posible diálogo de excepción o dependencia faltante)."
+}
+if ($probeProcess.ExitCode -ne 0) {
+    throw "El self-test del EXE terminó con código $($probeProcess.ExitCode)."
+}
+
 $appProcess = Start-Process -FilePath $appExe -ArgumentList "--tray" -PassThru
 Start-Sleep -Seconds 6
 $appProcess.Refresh()
