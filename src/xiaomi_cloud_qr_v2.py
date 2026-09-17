@@ -13,13 +13,13 @@ SERVERS = ["us", "de", "sg", "cn", "ru", "tw", "in", "i2"]
 
 
 class XiaomiQrLogin(_BaseQrLogin):
-    """Versión corregida del login QR.
+    """Versión corregida del login QR."""
 
-    Xiaomi usa un verdadero long-poll: la petición queda abierta hasta que el usuario
-    confirma el acceso. La versión anterior cortaba esa petición cada 10 segundos y la
-    volvía a abrir, algo que en algunas cuentas deja el QR aprobado en el teléfono pero
-    la aplicación de escritorio esperando indefinidamente.
-    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.account_display = None
+        self.account_email = None
+        self.account_phone = None
 
     def wait_for_login(self) -> None:
         if not self._long_poll_url:
@@ -62,6 +62,21 @@ class XiaomiQrLogin(_BaseQrLogin):
         self.pass_token = data.get("passToken")
         self.location = data.get("location")
 
+        # Xiaomi no siempre devuelve correo/nickname en este endpoint. Guardamos
+        # el mejor identificador disponible para mostrarlo en Configuración.
+        self.account_email = str(data.get("email") or "").strip() or None
+        self.account_phone = str(data.get("phone") or data.get("phoneNumber") or "").strip() or None
+        display = (
+            data.get("userName")
+            or data.get("username")
+            or data.get("nickName")
+            or data.get("nickname")
+            or self.account_email
+            or self.account_phone
+            or self.user_id
+        )
+        self.account_display = str(display).strip() if display is not None else None
+
         if not self.user_id or not self.ssecurity or not self.location:
             raise RuntimeError("Xiaomi aceptó el QR pero no devolvió una sesión completa.")
 
@@ -79,7 +94,6 @@ class XiaomiQrLogin(_BaseQrLogin):
         except requests.RequestException as exc:
             raise RuntimeError(f"Xiaomi aceptó el QR pero no pude terminar de crear la sesión: {exc}") from exc
 
-        # Algunas respuestas dejan serviceToken en Response.cookies y otras en el jar de la Session.
         self.service_token = token_response.cookies.get("serviceToken") or _cookie_value(self.session, "serviceToken")
         if not self.cuser_id:
             self.cuser_id = token_response.cookies.get("cUserId") or _cookie_value(self.session, "cUserId")
@@ -134,7 +148,6 @@ def discover_e10_from_qr(login: XiaomiQrLogin, locale: str = "all") -> list[dict
                 "did": did,
             }
 
-        # En cuanto encontramos el robot no hace falta seguir consultando regiones.
         if found:
             break
 
