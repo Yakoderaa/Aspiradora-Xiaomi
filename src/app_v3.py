@@ -26,7 +26,6 @@ def _show_qr(self, login, info):
 
     def worker():
         try:
-            # Esta llamada espera hasta que Xiaomi confirme de verdad el QR.
             login.wait_for_login()
             self.after(0, lambda: _qr_authenticated(self))
 
@@ -38,6 +37,17 @@ def _show_qr(self, login, info):
                 )
 
             device = devices[0]
+
+            # Guardamos únicamente identidad/metadatos de la vinculación QR. El
+            # token local del robot se persiste por el flujo normal de conexión.
+            self.app.settings["xiaomi_login_method"] = "qr"
+            self.app.settings["xiaomi_user_id"] = str(login.user_id or "")
+            self.app.settings["xiaomi_user_name"] = str(login.account_display or login.user_id or "Cuenta Xiaomi")
+            self.app.settings["device_name"] = str(device.get("name") or "Xiaomi Robot Vacuum E10")
+            self.app.settings["device_did"] = str(device.get("did") or "")
+            self.app.settings["device_region"] = str(device.get("locale") or "")
+            self.app.store.save(self.app.settings)
+
             self.after(0, lambda: self._qr_success(device, len(devices)))
         except Exception as exc:
             msg = str(exc).strip() or "No se pudo completar el inicio de sesión por QR."
