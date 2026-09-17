@@ -58,8 +58,12 @@ def configure_mode(vacuum, mode, suction=1, water=0):
 
 
 def sync_virtual_walls(vacuum, plan):
-    walls = list((plan or {}).get("no_go", []) or [])
-    origin = (plan or {}).get("device_origin")
+    plan = plan or {}
+    walls = list(plan.get("no_go", []) or [])
+    if not plan.get("virtual_walls_managed", False):
+        return None
+
+    origin = plan.get("device_origin")
     if walls and not origin:
         raise RuntimeError("No puedo sincronizar bloqueos hasta calibrar la base en el mapa.")
 
