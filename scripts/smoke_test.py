@@ -13,13 +13,58 @@ def check(condition, message):
         raise AssertionError(message)
 
 
+class FakePointDevice:
+    def __init__(self, owner):
+        self.owner = owner
+        self.actions = []
+
+    def call_action_by(self, siid, aiid, params=None):
+        self.actions.append((siid, aiid, list(params or [])))
+        # Simula el firmware que salta a Turbo al entrar en limpieza puntual.
+        if siid == 9:
+            self.owner.suction = 4
+        return {"code": 0}
+
+    def set_property_by(self, siid, piid, value):
+        return {"code": 0}
+
+
+class FakePointVacuum:
+    def __init__(self):
+        self.device = FakePointDevice(self)
+        self.suction = 1
+        self.water = 0
+        self.mode = 0
+        self.sweep_type = 0
+        self.calls = []
+
+    def set_suction(self, value):
+        self.suction = int(value)
+        self.calls.append(("suction", int(value)))
+
+    def set_water(self, value):
+        self.water = int(value)
+        self.calls.append(("water", int(value)))
+
+    def set_mode(self, value):
+        self.mode = int(value)
+        self.calls.append(("mode", int(value)))
+
+    def set_sweep_type(self, value):
+        self.sweep_type = int(value)
+        self.calls.append(("sweep", int(value)))
+
+    def _get_many(self, _props):
+        return {"status": 5, "suction": self.suction}
+
+
 def main():
-    # Todos los módulos críticos deben importar sin ejecutar la interfaz.
     import app_v20
     import pystray
     from backup_bundle import read_bundle, write_bundle
     from cleaning_plan import CleaningPlanStore
     from local_mapping import LocalMapStore
+    from robot_plans import start_point_clean
     from scheduler_agent import schedule_due
     from xiaomi_e10_edge import XiaomiE10Edge
     from xiaomi_e10_live import XiaomiE10Live
@@ -28,11 +73,21 @@ def main():
     check(hasattr(app_v20.App, "_start_tray_icon"), "Falta integración de bandeja")
     check(hasattr(app_v20.App, "open_quick_actions_config"), "Falta configuración de acciones rápidas")
     check(hasattr(app_v20.App, "_sync_no_go_async"), "Falta sincronización de bloqueos por mapa")
+    check(hasattr(app_v20.App, "_map_double_click"), "Falta objetivo por doble clic")
+    check(hasattr(app_v20.App, "_map_drag"), "Falta desplazamiento/pan del mapa")
+    check(hasattr(app_v20.App, "logout_xiaomi_account"), "Falta desconexión de cuenta Xiaomi")
     check(bool(getattr(pystray.Icon, "HAS_DEFAULT_ACTION", False)), "La bandeja no expone acción primaria")
 
     parsed = XiaomiE10Live.parse_trajectory([10, 0.0, 0.0, 0.0, 1, 1.0, 2.0, 0.25, 1])
     check(len(parsed) == 2, "El parser de trayectoria no interpretó dos poses")
     check(parsed[-1]["x"] == 1.0 and parsed[-1]["y"] == 2.0, "Coordenadas de trayectoria incorrectas")
+
+    fake = FakePointVacuum()
+    point_plan = {"device_origin": {"x": 10.0, "y": 20.0}}
+    start_point_clean(fake, {"x": 1.0, "y": 2.0}, point_plan, suction=2)
+    check(fake.suction == 2, "La limpieza puntual quedó en Turbo en vez de restaurar la succión elegida")
+    check(fake.sweep_type == 4, "La limpieza puntual no configuró sweep_type=4")
+    check(fake.device.actions and fake.device.actions[0][0] == 9, "No se envió la acción de limpieza puntual")
 
     with tempfile.TemporaryDirectory() as temp:
         folder = Path(temp)
@@ -87,7 +142,7 @@ def main():
         maps_restored.replace_library(restored["maps"])
         check(len(maps_restored.list_maps()) == 4, "La importación no restauró los mapas")
 
-    print("SMOKE TEST OK: imports, EDGE+live, trayectoria, 4 mapas, planes, scheduler, bandeja y .xvac")
+    print("SMOKE TEST OK: imports, EDGE+live, punto/succión, 4 mapas, planes, scheduler, bandeja, pan y .xvac")
 
 
 if __name__ == "__main__":
