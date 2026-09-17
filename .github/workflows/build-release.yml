@@ -59,10 +59,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V51 para Windows 10/11 x64. Corrige una regresión de V50 restaurando la herencia segura V47/V45, por lo que 10/18, 10/15 y 10/6 vuelven a quedar bloqueados con map_id=0. La sonda get_interim_file_url_pro ahora inspecciona el esquema real de la respuesta, detecta URLs bajo claves arbitrarias, descarga el blob sin exponer la URL y mantiene IJAI/Xiaomi JSON como decoders. F12 muestra sólo nombres de claves, tipos, tamaños, códigos y mensajes saneados."
+          $notes = "V52 para Windows 10/11 x64. Prueba una vez por sesión la acción documentada 10/12 get-cur-path con el rango uint32 completo 0..4294967295, que las versiones anteriores nunca alcanzaban cuando 10/15 y 10/16 no eran legibles. Sólo acepta la salida como trayectoria si contiene al menos dos X/Y distintos; si está vacía, falla o es una muestra aislada vuelve al sondeo heredado. No toca map-privacy ni reactiva acciones de upload; conserva todas las guardas de seguridad de V51/V45."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V51" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V52" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
