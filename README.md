@@ -125,6 +125,7 @@ Ver **[Roadmap completo](docs/ROADMAP.md)**.
 | [Mapeo](docs/MAPPING.md) | Estado del mapeo propio y comportamiento B112 |
 | [Arquitectura](docs/ARCHITECTURE.md) | Capas, datos, build y decisiones técnicas |
 | [Roadmap](docs/ROADMAP.md) | Windows, estabilización y futuro móvil |
+| [FAQ](docs/FAQ.md) | Preguntas frecuentes |
 | [Changelog](CHANGELOG.md) | Hitos importantes del desarrollo |
 | [Contribuir](CONTRIBUTING.md) | Cómo reportar, probar y aportar cambios |
 | [Seguridad](SECURITY.md) | Vulnerabilidades y manejo de secretos |
