@@ -120,7 +120,7 @@ for required in (
     "robot se renderiza exactamente en la base (0,0)",
     "status=4 inicial antes de que el robot salga del dock no finaliza",
     "V74, V81, V83 y el render comparten el mismo estado físico V84",
-    "relectura final obligatoria ANTES de tocar las ruedas",
+    "Relectura final obligatoria ANTES de tocar las ruedas",
 ):
     assert required in source, required
 
