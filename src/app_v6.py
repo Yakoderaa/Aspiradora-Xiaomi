@@ -308,7 +308,7 @@ class App(app_v5.App):
                     )
 
         # Leyenda y pulso visual del robot en la vista principal del mapa.
-        if canvas is getattr(self, "map_canvas", None):
+        if canvas is getattr(self, "map_canvas", None) and not bool(getattr(self, "_fixed_map_legend", False)):
             canvas.create_rectangle(12, 12, 210, 42, fill=CARD, outline="#e8eaed")
             canvas.create_line(24, 27, 46, 27, fill=ACCENT, width=3)
             canvas.create_text(52, 27, text="Perímetro", anchor="w", fill=MUTED, font=("Segoe UI", 8, "bold"))

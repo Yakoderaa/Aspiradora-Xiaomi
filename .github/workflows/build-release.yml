@@ -68,10 +68,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V71 para Windows 10/11 x64. Corrige el mapeo observado en V70 sin cambiar la base MIoT de V69: elimina por completo la confirmación stale-return que podía iniciar Paso 2 a mitad del regreso. Paso 2 sólo se arma con status=4, subida real de batería o retorno de 10/24 al origen de sesión capturado al comenzar el Paso 1 y revalidado antes de START. Paso 1 y Paso 2 comparten un único origen local; el recorrido 10/24 se guarda una sola vez, evitando la duplicación histórica crudo + relocalizado que deformaba el plano, y la base visual queda fija en (0,0) aunque 10/22 pase a 255_255. V71 vigila el Paso 2: al detectar regreso a base lo cierra y reafirma dock; si después de un interior real el firmware intenta iniciar otro EDGE/perímetro, lo detiene y manda a base. La galería de cuatro mapas deja de destruir/recrear widgets durante cada actualización: las tarjetas son permanentes y sólo actualizan contenido, eliminando el parpadeo de layout. F12 añade origen, distancia al origen, umbral, puntos por fase y motivo de cierre de Paso 2. El pipeline mantiene smoke tests estrictos hasta V71."
+          $notes = "V72 para Windows 10/11 x64. Mejora exclusivamente la navegación de la pestaña Mapa sin modificar la geometría ni la lógica de mapeo V71: la leyenda Perímetro/Interior queda fija en la esquina superior izquierda del visor; la rueda del mouse hace zoom in/out manteniendo estable el punto bajo el cursor; doble clic con la rueda ejecuta Zoom Extents y encuadra el mapa completo; al abrir o cambiar de mapa la vista se centra por defecto en la base y ajusta la escala para mantener el contenido alrededor. El pan sigue funcionando con arrastre y, una vez que el usuario mueve o amplía la vista, la cámara deja de autocentrarse para no pelear con la navegación manual. La galería de cuatro mapas y la transición V71 quedan intactas. El pipeline mantiene smoke tests estrictos hasta V72."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V71" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V72" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
