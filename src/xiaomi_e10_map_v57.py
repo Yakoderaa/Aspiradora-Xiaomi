@@ -1,3 +1,4 @@
+import io
 import json
 import math
 import time
@@ -6,7 +7,9 @@ from typing import Any
 from urllib.parse import urlparse
 
 import requests
+from PIL import Image
 
+from xiaomi_e10_ijai_map import IjaiMapSnapshot
 from xiaomi_e10_map_v56 import XiaomiE10MapV56
 
 
@@ -330,6 +333,34 @@ class XiaomiE10MapV57(XiaomiE10MapV56):
     # ----------------------------------------------------------- decoders
     def _decode_any_map(self, raw: bytes, label: str, endpoint: str):
         decoder_diag = []
+
+        # 0) Algunos record-map-url ya apuntan a una imagen renderizada.
+        try:
+            with Image.open(io.BytesIO(raw)) as image:
+                image.load()
+                rgba = image.convert("RGBA")
+            decoder_diag.append({
+                "name": "image",
+                "ok": True,
+                "format": getattr(image, "format", None),
+                "size": list(rgba.size),
+            })
+            return IjaiMapSnapshot(
+                image=rgba,
+                map_name=str(label),
+                crypto_mode="record-map-image",
+                raw_size=len(raw),
+                envelope_version="image",
+                raw_robot=None,
+                raw_base=None,
+                raw_path=[],
+                slot=str(label),
+                endpoint=str(endpoint),
+                decrypted_size=len(raw),
+                raw_prefix_hex=bytes(raw[:16]).hex(),
+            ), decoder_diag
+        except Exception:
+            decoder_diag.append({"name": "image", "ok": False})
 
         # 1) B112 exact/grid
         try:
