@@ -23,21 +23,34 @@ def main():
     live._live_robot_raw_key = None
     live._live_robot_same_reads = 0
     calls = []
-    samples = [
-        {"path": "", "path_start": None, "path_end": None, "charging_base": "0,0,0", "robot": "0,0,0"},
-        {"path": "", "path_start": None, "path_end": None, "charging_base": "0,0,0", "robot": "1.5,0,0"},
-    ]
+    robot_reads = iter(["0,0,0", "1.5,0,0"])
 
     def fake_get_many(defs):
         calls.append(list(defs))
-        return samples[min(len(calls) - 1, 1)]
+        names = [item[0] for item in defs]
+        if names == ["path"]:
+            return {"path": ""}
+        if names == ["charging_base", "robot"]:
+            return {
+                "charging_base": "0,0,0",
+                "robot": next(robot_reads),
+            }
+        if names == ["robot"]:
+            return {"robot": "1.5,0,0"}
+        return {}
+
+    class Device:
+        def call_action_by(self, siid, aiid, params):
+            check((siid, aiid) == (10, 12), "El fallback debe usar get-cur-path 10/12")
+            return {"code": 0, "out": [{"piid": 5, "value": ""}]}
 
     live._get_many = fake_get_many
+    live.device = Device()
     s1 = live.local_map_state()
     s2 = live.local_map_state()
     check(s1["robot"]["x"] == 0.0, "Primera posición robot incorrecta")
     check(s2["robot"]["x"] == 1.5, "10/24 debe refrescarse entre sondeos")
-    check(any(item[1:] == (10, 24) for item in calls[0]), "El sondeo fresco debe incluir 10/24")
+    check(any(any(item[1:] == (10, 24) for item in call) for call in calls), "El sondeo fresco debe incluir 10/24")
 
     check("_choose_suction" in app_v27.App.__dict__, "v27 debe implementar succión en caliente")
     check("github_token" not in SettingsStore.PROTECTED_FIELDS, "No debe quedar soporte de token GitHub privado")
