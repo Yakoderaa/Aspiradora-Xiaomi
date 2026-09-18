@@ -59,10 +59,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V59 para Windows 10/11 x64. Integra una competencia total de métodos para obtener el mapa real del Xiaomi E10/B112. Prueba en paralelo propiedades MIoT 7/30 map_url, 7/33 current_map, 10/2 cur-map-id y 10/4 map-list por LAN y Cloud datasource 1/2; get-map-list 10/1 y uploads por cada map-id válido mediante 10/14 y 10/2; realtime 10/18, 10/15(0), 10/6(0) por LAN/Cloud; eventos 10.2/10.4/10.6 y clean-end 7.1; device log; slot clásico; compatibilidad MiIO get_map_v1/v2, get_map, get_fresh_map/v2, get_persist_map/v2, get_multi_map, get_recover_maps y clean-record; construcción de referencias FDS incluyendo user_id/did/map; resolvers getmapfileurl/getfileurl/interim/_pro; y decoders imagen/B112/IJAI/Xiaomi JSON. El primer mapa válido gana, se cachea y F12 muestra una tabla OK/FAIL/TIMEOUT con el método GANADOR."
+          $notes = "V60 para Windows 10/11 x64. Corrige el diagnóstico V59 que confundía metadatos MIoT con map-id y nombres FDS. En B112, 10/1 sólo interpreta el valor de PIID 4 como map-list cuando realmente parsea como una lista de mapas; 10/2 y 10/14 sólo interpretan PIID 6 map-id, 7 map-type, 18 timestamp y 21 renew-map. Las llamadas LAN se serializan para evitar -30012 busy y los comandos legacy que bloqueaban 80+ segundos salen del camino crítico. Cloud/FDS sigue probando candidatos estructurados derivados de record-map-url, map-id/timestamp/map-type y clean-end 7.1. El slot clásico conocido 0a0ad83e5049 se trata como stale y no vuelve a generar cuadrados falsos. F12 muestra PIID exactos, map-id válidos y errores FDS saneados sin URLs firmadas ni identificadores de ruta."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V59" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V60" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
