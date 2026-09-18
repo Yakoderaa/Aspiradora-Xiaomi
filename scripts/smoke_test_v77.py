@@ -72,6 +72,6 @@ sweep_idx = source.index("vacuum.start_mapping_interior()")
 assert start_idx < sweep_idx
 
 print(
-    "SMOKE TEST V77 OK: base 10/22 + raw→metros + filtro de giro + "
+    "SMOKE TEST V77 OK: base 10/22 + raw-to-metros + filtro de giro + "
     "corredor repetido + cierre status=4"
 )
