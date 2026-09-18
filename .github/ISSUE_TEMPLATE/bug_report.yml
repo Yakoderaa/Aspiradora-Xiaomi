@@ -1,7 +1,6 @@
 name: Reportar un bug
 description: Informar un problema reproducible de la aplicación
 title: "[Bug] "
-labels: ["bug"]
 body:
   - type: markdown
     attributes:
