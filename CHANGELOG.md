@@ -4,13 +4,26 @@ Este archivo resume **hitos importantes**, no cada build interno. Para el detall
 
 ## Unreleased
 
-### Documentación
+### Presentación
 
-- Nueva portada del proyecto.
-- Documentación separada de instalación, mapeo, arquitectura y roadmap.
-- Plantillas de issues y Pull Requests.
-- Política de seguridad y guía de contribución.
-- Builds de release excluidos para cambios exclusivamente documentales.
+- Portada profesional con galería de fotografías oficiales del Xiaomi E10.
+- Badges de release, build y CodeQL.
+- Documentación separada de instalación, mapeo, arquitectura, roadmap y FAQ.
+
+### Seguridad
+
+- CodeQL para Python.
+- Dependabot para Python y GitHub Actions.
+- CODEOWNERS con el mantenedor como propietario.
+- Modelo de amenazas y guía de endurecimiento de GitHub.
+- Política de divulgación coordinada de vulnerabilidades.
+- Builds de release excluidos para cambios exclusivamente documentales/de seguridad del repositorio.
+
+### Propiedad intelectual
+
+- Aviso de copyright.
+- Guía de DNDA, marca y evaluación de patentabilidad.
+- Política temporal para mantener una cadena clara de titularidad de contribuciones.
 
 ## V68 · 0.1.295
 
