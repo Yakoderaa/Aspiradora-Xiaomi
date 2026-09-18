@@ -16,18 +16,9 @@ def _blank_live():
     from xiaomi_e10_live import XiaomiE10Live
 
     live = object.__new__(XiaomiE10Live)
-    live._live_path_cursor = None
-    live._live_path_probe_index = 0
-    live._live_path_cache = {}
-    live._live_path_last_signature = None
-    live._live_path_empty_reads = 0
-    live._live_path_source = "esperando trayectoria"
+    live.reset_live_path_session()
     live._live_robot_raw_key = None
     live._live_robot_same_reads = 0
-    live._live_stream_seq = 0
-    live._live_stream_protocol_id = None
-    live._live_stream_last = None
-    live._live_stream_mode = False
     return live
 
 

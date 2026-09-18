@@ -19,6 +19,9 @@ def main():
     from xiaomi_e10_live import XiaomiE10Live
 
     live = object.__new__(XiaomiE10Live)
+    live.reset_live_path_session()
+    live._live_robot_raw_key = None
+    live._live_robot_same_reads = 0
     calls = []
     samples = [
         {"path": "", "path_start": None, "path_end": None, "charging_base": "0,0,0", "robot": "0,0,0"},
