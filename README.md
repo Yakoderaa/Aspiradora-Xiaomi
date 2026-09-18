@@ -169,6 +169,7 @@ Ver **[Roadmap completo](docs/ROADMAP.md)**.
 | [Contribuir](CONTRIBUTING.md) | Cómo reportar, probar y aportar cambios |
 | [Seguridad](SECURITY.md) | Vulnerabilidades, secretos y divulgación responsable |
 | [Modelo de seguridad](docs/SECURITY_MODEL.md) | Amenazas, límites de confianza y mitigaciones |
+| [Endurecimiento de GitHub](docs/GITHUB_HARDENING.md) | Branch protection, reportes privados y cuenta |
 | [Propiedad intelectual](docs/INTELLECTUAL_PROPERTY.md) | Copyright, DNDA, marca y evaluación de patente |
 | [Copyright](COPYRIGHT.md) | Aviso de autoría y terceros |
 | [Third-party notices](THIRD_PARTY_NOTICES.md) | Dependencias y avisos de terceros |
