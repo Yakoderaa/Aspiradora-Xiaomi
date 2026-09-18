@@ -59,10 +59,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V62 para Windows 10/11 x64. Repara el fallo real de V61 en _result_rows y hace legible otra vez el estado B112. El inicio de mapeo ahora cambia 10/1 remember-state mediante set_properties, lee 10/1 de vuelta y sólo continúa si confirma valor 1; si Xiaomi rechaza el setter o la lectura sigue en 0, el recorrido se cancela antes de mover el robot y F12 muestra código, estrategia y readback. Se mantienen map-uploads 10/23, cur-map-id, map-num, build-map y has-new-map como señales de estado. El pipeline de publicación también queda estricto: cualquier smoke test, compileall, PyInstaller o Inno Setup con código de error cancela el build, evitando repetir la publicación defectuosa de V61."
+          $notes = "V63 para Windows 10/11 x64. Corrige el bypass real detectado en V62: Paso 1 usa XiaomiE10Live -> XiaomiE10Edge.start_mapping_perimeter, y esa sobrescritura preparaba el robot directamente sin pasar por _prepare_mapping_vacuum, por lo que remember-state nunca se intentaba aunque mapping_active quedara activo. Ahora EDGE llama primero al gate central: 10/1 debe escribirse a 1 y confirmarse por lectura antes de tocar agua, succión, modo, sweep-type o ejecutar la acción 7/3. Si falla, la acción EDGE queda inalcanzable. F12 V63 lee además el diagnóstico de persistencia directamente desde el controlador activo, y el bloque heredado V47 identifica 10/23 correctamente como map-uploads (0=Upload, 1=Do Not Upload). El smoke V63 reproduce el XiaomiE10Live real y bloquea la release si vuelve a existir este bypass."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V62" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V63" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }

@@ -141,7 +141,7 @@ class App(app_v46.App):
                 self._v47_privacy_ready = False
                 if not ok:
                     self._v47_privacy_error = (
-                        f"No se pudo habilitar map-privacy 10/23 (antes={info.get('before')!r}, "
+                        f"No se pudo habilitar map-uploads 10/23 (antes={info.get('before')!r}, "
                         f"después={info.get('after')!r})."
                     )
             return
@@ -150,7 +150,7 @@ class App(app_v46.App):
             self._v47_privacy_worker = False
             info = payload[0] if payload else {}
             self._v47_privacy_ready = False
-            self._v47_privacy_error = str(info.get("error") or "Error al preparar map-privacy 10/23")
+            self._v47_privacy_error = str(info.get("error") or "Error al preparar map-uploads 10/23")
             return
 
         return super()._handle_ui_event(kind, payload)
@@ -162,9 +162,9 @@ class App(app_v46.App):
         original = getattr(client, "privacy_original", None) if client else None
         temporary = bool(getattr(client, "privacy_temporarily_enabled", False)) if client else False
         return (
-            "DIAGNÓSTICO V47 ACTIVO · permiso Cloud temporal 10/23\n"
+            "DIAGNÓSTICO V47 ACTIVO · subida Cloud temporal 10/23\n"
             "===================================================\n"
-            "regla B112: map-privacy 0=Enable · 1=DisEnable\n"
+            "regla B112: map-uploads 0=Upload · 1=Do Not Upload\n"
             f"fase preparada: {self._v47_privacy_phase!r} · listo para historial: {self._v47_privacy_ready}\n"
             f"10/23 antes: {self._v47_privacy_before!r} · después: {self._v47_privacy_after!r}\n"
             f"valor original preservado: {original!r} · cambio temporal activo: {temporary}\n"
