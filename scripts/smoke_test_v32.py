@@ -21,6 +21,7 @@ def test_robot_uses_charging_base_as_origin():
     app._coord_prev_local = {}
     app._coord_last_change = {}
     app._charging_confirmed = False
+    app.mapping_phase = 0
 
     state = {
         "robot": {"x": 59.0, "y": 60.0, "angle": 3.009508},
