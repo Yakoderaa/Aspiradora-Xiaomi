@@ -1,0 +1,9 @@
+# Propietario del repositorio
+* @Yakoderaa
+
+# Cambios especialmente sensibles
+/.github/ @Yakoderaa
+/src/ @Yakoderaa
+/installer/ @Yakoderaa
+/build.ps1 @Yakoderaa
+/requirements.txt @Yakoderaa
