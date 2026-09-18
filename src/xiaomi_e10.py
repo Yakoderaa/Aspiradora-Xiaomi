@@ -332,6 +332,39 @@ class XiaomiE10:
         return False
 
     @classmethod
+    def _miot_b112_empty_result_ack(cls, response) -> bool:
+        """Reconoce el quirk de respuesta vacía documentado para xiaomi.vacuum.b112.
+
+        python-miio incluye un test específico para este modelo donde el robot
+        responde con JSON inválido equivalente a:
+            {"id":2,"result":,"exe_time":0}
+        Tras el repair del parser, call_action_by() recibe un dict con id y
+        exe_time pero sin result/code. Como los errores MIoT son elevados antes
+        por MiIOProtocol, esta forma concreta es un ACK de resultado vacío.
+        """
+        if not isinstance(response, dict):
+            return False
+        if "error" in response:
+            return False
+        if "id" not in response or "exe_time" not in response:
+            return False
+        if "code" in response:
+            try:
+                if int(response.get("code")) != 0:
+                    return False
+            except Exception:
+                return False
+        # Este ACK específico no debe aceptar un result sustantivo ambiguo.
+        if "result" in response and response.get("result") not in (None, "", [], {}):
+            return False
+        try:
+            int(response.get("id"))
+            exe_time = float(response.get("exe_time"))
+        except Exception:
+            return False
+        return exe_time >= 0
+
+    @classmethod
     def _miot_action_response_summary(cls, response) -> str:
         """Resume la forma de la respuesta sin volcar payloads extensos."""
         if response is None:
@@ -385,7 +418,7 @@ class XiaomiE10:
 
         xiaomi.vacuum.b112 define 10/17 build-map-ii con PIID 14 como entrada y
         PIID 18 (timestamp) como salida. También conserva 10/11 build-new-map
-        como variante anterior. V65 usa 10/17 primero y sólo cae a 10/11 si la
+        como variante anterior. V66 usa 10/17 primero y sólo cae a 10/11 si la
         acción nueva es rechazada.
 
         Importante: 10/1 remember-state deja de ser un gate. En el B112 real
@@ -417,9 +450,11 @@ class XiaomiE10:
                 response = self.device.call_action_by(10, aiid, [mode])
                 code = self._miot_action_code(response)
                 ack = self._miot_action_ack(response)
+                b112_empty_ack = self._miot_b112_empty_result_ack(response)
                 timestamp = self._miot_output_value(response, 18)
                 item["code"] = code
                 item["ack"] = bool(ack)
+                item["b112_empty_ack"] = bool(b112_empty_ack)
                 item["response_type"] = type(response).__name__
                 item["response_summary"] = self._miot_action_response_summary(response)
                 item["timestamp"] = timestamp
@@ -443,17 +478,17 @@ class XiaomiE10:
             item["has_new_map_readback"] = final_state.get("has_new_map")
             item["map_privacy_readback"] = final_state.get("map_privacy")
 
-            # V65: python-miio puede devolver el ACK de una acción como ["ok"]
-            # porque MiIOProtocol ya extrajo payload["result"]. Un code negativo
-            # sigue siendo rechazo explícito. Si no hay code, sólo aceptamos ACK
-            # "ok", timestamp de salida o readback build-map=mode; None/vacío por
-            # sí solo nunca autoriza mover el robot.
+            # V66: además del ACK ["ok"] de V65, xiaomi.vacuum.b112 tiene un
+            # quirk documentado por python-miio: result vacío/malformado que se
+            # repara como {"id": ..., "exe_time": ...}. Esa forma exacta cuenta
+            # como ACK fuerte del B112. Un code negativo sigue mandando.
             explicit_reject = code is not None and code != 0
             accepted = (
                 not explicit_reject
                 and (
                     code == 0
                     or bool(ack)
+                    or bool(b112_empty_ack)
                     or timestamp is not None
                     or self._numeric_values(final_state.get("build_map"))[:1] == [float(mode)]
                 )
@@ -481,7 +516,8 @@ class XiaomiE10:
                     if x.get("error")
                     else (
                         f"{x.get('action')}: code={x.get('code')!r}, "
-                        f"ack={bool(x.get('ack'))}, resp={x.get('response_summary') or '—'}"
+                        f"ack={bool(x.get('ack'))}, b112-empty={bool(x.get('b112_empty_ack'))}, "
+                        f"resp={x.get('response_summary') or '—'}"
                     )
                 )
                 for x in attempts

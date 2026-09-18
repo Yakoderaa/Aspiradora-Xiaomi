@@ -59,10 +59,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V65 para Windows 10/11 x64. Corrige la interpretación de la respuesta de acciones MIoT. python-miio call_action_by devuelve directamente el result de MiIOProtocol, y una acción exitosa puede llegar como ['ok'] sin code ni timestamp; V64 confundía ese ACK con rechazo y disparaba además el fallback 10/11. V65 acepta exclusivamente confirmaciones fuertes: code=0, ACK ok, timestamp de salida o readback build-map=modo. Un code negativo siempre rechaza, incluso si hay un ok anidado; None o respuesta vacía por sí solos no autorizan movimiento. Si 10/17 build-map-ii devuelve ACK válido, 10/11 no se ejecuta y recién entonces se prepara el robot y arranca EDGE 7/3. F12 V65 muestra code, ack, tipo/resumen de respuesta y accepted. El pipeline mantiene smoke tests estrictos hasta V65."
+          $notes = "V66 para Windows 10/11 x64. Corrige el quirk específico de xiaomi.vacuum.b112 documentado en python-miio: algunas acciones responden con un result vacío/malformado y, tras el repair del parser, call_action_by devuelve un diccionario con id + exe_time pero sin code/result. V65 lo interpretaba como rechazo. V66 reconoce exactamente esa forma como ACK fuerte sólo si contiene id y exe_time válidos, no trae error ni código negativo y no incluye un result sustantivo. Si 10/17 build-map-ii devuelve ese ACK, 10/11 no se ejecuta; recién entonces se prepara el robot y se inicia EDGE 7/3. Códigos negativos, error o respuestas ambiguas siguen bloqueando movimiento. F12 V66 muestra b112-empty, resumen de respuesta y accepted. El pipeline mantiene smoke tests estrictos hasta V66."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V65" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V66" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
