@@ -50,6 +50,8 @@ Información oficial:
 
 Antes de solicitar una marca se recomienda buscar disponibilidad y elegir correctamente las clases aplicables.
 
+> **Nombre actual del repositorio:** no se recomienda presentar “Aspiradora Xiaomi” como marca propia sin asesoramiento profesional. “Xiaomi” identifica a un tercero y el uso comercial de una denominación que lo incorpore puede generar conflictos o confusión. Para una etapa comercial conviene crear un nombre distintivo independiente y usar “compatible con Xiaomi Robot Vacuum E10” sólo como referencia de compatibilidad.
+
 ## 5. Licencias de software
 
 Este repositorio no debe adoptar una licencia propietaria incompatible con las obligaciones de sus dependencias.
