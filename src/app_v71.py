@@ -467,12 +467,14 @@ class App(app_v70.App):
                     return
 
                 diag = dict(self._v69_transition_diag or {})
+                confirmed_battery = self._v67_int(diag.get("last_battery"))
                 if (
                     mode == "battery-rise"
                     and fault == 0
                     and status in (3, 4)
                     and battery is not None
-                    and battery >= self._v67_int(diag.get("last_battery"))
+                    and confirmed_battery is not None
+                    and battery >= confirmed_battery
                 ):
                     self._post_ui(
                         "v67_start_step2",
