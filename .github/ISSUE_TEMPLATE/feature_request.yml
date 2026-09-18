@@ -1,7 +1,6 @@
 name: Proponer una función
 description: Sugerir una mejora o nueva capacidad
 title: "[Feature] "
-labels: ["enhancement"]
 body:
   - type: textarea
     id: problem
