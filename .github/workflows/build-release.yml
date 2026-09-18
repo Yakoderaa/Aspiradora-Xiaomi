@@ -59,10 +59,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V66 para Windows 10/11 x64. Corrige el quirk específico de xiaomi.vacuum.b112 documentado en python-miio: algunas acciones responden con un result vacío/malformado y, tras el repair del parser, call_action_by devuelve un diccionario con id + exe_time pero sin code/result. V65 lo interpretaba como rechazo. V66 reconoce exactamente esa forma como ACK fuerte sólo si contiene id y exe_time válidos, no trae error ni código negativo y no incluye un result sustantivo. Si 10/17 build-map-ii devuelve ese ACK, 10/11 no se ejecuta; recién entonces se prepara el robot y se inicia EDGE 7/3. Códigos negativos, error o respuestas ambiguas siguen bloqueando movimiento. F12 V66 muestra b112-empty, resumen de respuesta y accepted. El pipeline mantiene smoke tests estrictos hasta V66."
+          $notes = "V67 para Windows 10/11 x64. Corrige el encadenado automático Paso 1 -> base -> Paso 2. La transición heredada dependía de recibir exactamente edge_only_complete y luego un status_ok con status=4; en el E10 real el Paso 1 podía quedar en fase 0 sin que el Paso 2 arrancara. V67 arma un watchdog LAN propio ante cualquier cierre válido de Paso 1 (edge_only_complete o perimeter_complete), consulta directamente status 2/1 y battery charging-state 3/2, envía dock una sola vez si el robot todavía no está regresando y exige dos confirmaciones consecutivas de base más una revalidación final antes de iniciar el interior. status=4 o charging-state=1 cuentan como confirmación física. El arranque es one-shot: aunque coincidan la lógica heredada y el watchdog nuevo, Paso 2 sólo se lanza una vez. F12 muestra evento de cierre, status, charging-state, retorno, dock, confirmación de base y estado del Paso 2. El pipeline mantiene smoke tests estrictos hasta V67."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V66" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V67" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
