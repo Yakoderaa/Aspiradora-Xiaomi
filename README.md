@@ -9,16 +9,18 @@ Una aplicación de escritorio independiente para controlar, observar y ampliar l
 [English](README.en.md) · [Descargar](https://github.com/Yakoderaa/Aspiradora-Xiaomi/releases/latest) · [Documentación](docs/INSTALLATION.md) · [Roadmap](docs/ROADMAP.md)
 
 [![Release](https://img.shields.io/github/v/release/Yakoderaa/Aspiradora-Xiaomi?display_name=tag&sort=semver)](https://github.com/Yakoderaa/Aspiradora-Xiaomi/releases/latest)
-[![Build](https://github.com/Yakoderaa/Aspiradora-Xiaomi/actions/workflows/build-release.yml/badge.svg)](https://github.com/Yakoderaa/Aspiradora-Xiaomi/actions/workflows/build-release.yml)
+[![Windows Build](https://github.com/Yakoderaa/Aspiradora-Xiaomi/actions/workflows/build-release.yml/badge.svg)](https://github.com/Yakoderaa/Aspiradora-Xiaomi/actions/workflows/build-release.yml)
+[![CodeQL](https://github.com/Yakoderaa/Aspiradora-Xiaomi/actions/workflows/codeql.yml/badge.svg)](https://github.com/Yakoderaa/Aspiradora-Xiaomi/actions/workflows/codeql.yml)
 ![Windows](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D4?logo=windows11&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
 ![Model](https://img.shields.io/badge/Xiaomi%20E10-xiaomi.vacuum.b112-ff6900)
+![Copyright](https://img.shields.io/badge/Copyright-2026%20Yakoderaa-111111)
 
 <br>
 
-<img src="https://i02.appmifile.com/mi-com-product/fly-birds/pc/xiaomi-robot-vacuum-e10/bc5c450703d2d8faee7d609f00997da4.jpg" alt="Xiaomi Robot Vacuum E10" width="720">
+<img src="https://i02.appmifile.com/mi-com-product/fly-birds/pc/xiaomi-robot-vacuum-e10/bc5c450703d2d8faee7d609f00997da4.jpg" alt="Xiaomi Robot Vacuum E10" width="760">
 
-<sub>Imagen oficial del producto publicada por Xiaomi. Este proyecto no está afiliado, patrocinado ni aprobado por Xiaomi.</sub>
+<sub>Imagen oficial del producto publicada por Xiaomi. Proyecto independiente: no afiliado, patrocinado ni aprobado por Xiaomi.</sub>
 
 </div>
 
@@ -32,6 +34,27 @@ El objetivo no es copiar Mi Home. La aplicación construye su propia experiencia
 
 > [!IMPORTANT]
 > El proyecto está en **desarrollo activo**. El control básico del robot es utilizable, mientras que el mapeo propio y el sistema antiatasco continúan en fase experimental y se validan específicamente sobre `xiaomi.vacuum.b112`.
+
+### El hardware que estamos llevando más lejos
+
+<table>
+  <tr>
+    <td width="33%" align="center">
+      <img src="https://i02.appmifile.com/mi-com-product/fly-birds/pc/xiaomi-robot-vacuum-e10/f13e2b37b5b59a38d76f6e75937d1c3d.jpg" alt="Planificación de ruta del Xiaomi E10" width="100%">
+      <br><sub>Planificación y recorrido</sub>
+    </td>
+    <td width="33%" align="center">
+      <img src="https://i02.appmifile.com/mi-com-product/fly-birds/pc/xiaomi-robot-vacuum-e10/de5171c41c39a5a6540c19fd21dc850d.jpg" alt="Sensores del Xiaomi E10" width="100%">
+      <br><sub>Sensores y entorno</sub>
+    </td>
+    <td width="33%" align="center">
+      <img src="https://i02.appmifile.com/mi-com-product/fly-birds/pc/xiaomi-robot-vacuum-e10/bb17a6f6e2222dd8b7632866e97f2d7f.jpg" alt="Xiaomi E10 bajo muebles" width="100%">
+      <br><sub>Diseño compacto</sub>
+    </td>
+  </tr>
+</table>
+
+<p align="center"><sub>Fotografías oficiales de Xiaomi utilizadas únicamente como referencia del dispositivo compatible.</sub></p>
 
 ## Estado actual
 
@@ -101,15 +124,31 @@ La aplicación está escrita actualmente en **Python 3.12 + Tkinter**. La comuni
 
 Ver **[Arquitectura del proyecto](docs/ARCHITECTURE.md)**.
 
-## Privacidad y seguridad
+## Propiedad intelectual y seguridad
 
-- La contraseña de Xiaomi **no se guarda**.
-- El token local se protege con **Windows DPAPI**.
-- Los diagnósticos están diseñados para no imprimir tokens, firmas FDS ni credenciales completas.
-- Los datos del mapa local se almacenan en el perfil del usuario.
-- Nunca publiques un token, contraseña, cookie o archivo de configuración personal en un issue.
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <h3>Propiedad del proyecto</h3>
+      <p>El código y documentación originales están identificados con aviso de copyright. El repositorio incluye una estrategia explícita para DNDA, marca y evaluación de patentabilidad técnica.</p>
+      <p><strong>No se afirma ninguna patente ni “patent pending” que no exista.</strong></p>
+      <p>→ <a href="COPYRIGHT.md">Copyright</a><br>
+      → <a href="docs/INTELLECTUAL_PROPERTY.md">Propiedad intelectual</a></p>
+    </td>
+    <td width="50%" valign="top">
+      <h3>Seguridad por diseño</h3>
+      <p>El repositorio incorpora CodeQL, Dependabot, CODEOWNERS, smoke tests y una política de divulgación responsable para reducir riesgos en un software que controla un dispositivo físico.</p>
+      <p>→ <a href="SECURITY.md">Política de seguridad</a><br>
+      → <a href="docs/SECURITY_MODEL.md">Modelo de amenazas</a></p>
+    </td>
+  </tr>
+</table>
 
-Ver **[SECURITY.md](SECURITY.md)**.
+La contraseña de Xiaomi **no se guarda**. El token local se protege con **Windows DPAPI** cuando corresponde y los diagnósticos están diseñados para no imprimir material sensible completo.
+
+> [!CAUTION]
+> Nunca publiques tokens miIO, contraseñas, cookies, claves derivadas ni URLs FDS firmadas completas. Las vulnerabilidades con impacto real deben reportarse de forma privada.
+
 
 ## Roadmap
 
@@ -128,7 +167,10 @@ Ver **[Roadmap completo](docs/ROADMAP.md)**.
 | [FAQ](docs/FAQ.md) | Preguntas frecuentes |
 | [Changelog](CHANGELOG.md) | Hitos importantes del desarrollo |
 | [Contribuir](CONTRIBUTING.md) | Cómo reportar, probar y aportar cambios |
-| [Seguridad](SECURITY.md) | Vulnerabilidades y manejo de secretos |
+| [Seguridad](SECURITY.md) | Vulnerabilidades, secretos y divulgación responsable |
+| [Modelo de seguridad](docs/SECURITY_MODEL.md) | Amenazas, límites de confianza y mitigaciones |
+| [Propiedad intelectual](docs/INTELLECTUAL_PROPERTY.md) | Copyright, DNDA, marca y evaluación de patente |
+| [Copyright](COPYRIGHT.md) | Aviso de autoría y terceros |
 | [Third-party notices](THIRD_PARTY_NOTICES.md) | Dependencias y avisos de terceros |
 
 ## Desarrollo
