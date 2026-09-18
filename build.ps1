@@ -48,6 +48,7 @@ python scripts\smoke_test_v52.py
 python scripts\smoke_test_v53.py
 python scripts\smoke_test_v54.py
 python scripts\smoke_test_v55.py
+python scripts\smoke_test_v56.py
 
 pyinstaller --noconfirm --clean --windowed --onefile `
     --name "Aspiradora Xiaomi Updater" `
@@ -77,7 +78,7 @@ pyinstaller --noconfirm --clean --windowed --onedir `
     --collect-all vacuum_map_parser_base `
     --collect-all vacuum_map_parser_xiaomi `
     --collect-all vacuum_map_parser_ijai `
-    src\main_v55.py
+    src\main_v56.py
 
 Copy-Item "dist\Aspiradora Xiaomi Updater.exe" "dist\Aspiradora Xiaomi\Aspiradora Xiaomi Updater.exe" -Force
 Copy-Item "dist\Aspiradora Xiaomi Scheduler.exe" "dist\Aspiradora Xiaomi\Aspiradora Xiaomi Scheduler.exe" -Force
@@ -123,7 +124,7 @@ if ($probeProcess.ExitCode -ne 0) {
 $appProcess = Start-Process -FilePath $appExe -ArgumentList "--tray" -PassThru
 Start-Sleep -Seconds 6
 $appProcess.Refresh()
-if ($appProcess.HasExited) { throw "La aplicación v55 se cerró durante el smoke test de arranque. Código: $($appProcess.ExitCode)" }
+if ($appProcess.HasExited) { throw "La aplicación v56 se cerró durante el smoke test de arranque. Código: $($appProcess.ExitCode)" }
 Stop-Process -Id $appProcess.Id -Force -ErrorAction SilentlyContinue
 
 $schedulerExe = (Resolve-Path "dist\Aspiradora Xiaomi\Aspiradora Xiaomi Scheduler.exe").Path
