@@ -68,10 +68,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V72 para Windows 10/11 x64. Mejora exclusivamente la navegación de la pestaña Mapa sin modificar la geometría ni la lógica de mapeo V71: la leyenda Perímetro/Interior queda fija en la esquina superior izquierda del visor; la rueda del mouse hace zoom in/out manteniendo estable el punto bajo el cursor; doble clic con la rueda ejecuta Zoom Extents y encuadra el mapa completo; al abrir o cambiar de mapa la vista se centra por defecto en la base y ajusta la escala para mantener el contenido alrededor. El pan sigue funcionando con arrastre y, una vez que el usuario mueve o amplía la vista, la cámara deja de autocentrarse para no pelear con la navegación manual. La galería de cuatro mapas y la transición V71 quedan intactas. El pipeline mantiene smoke tests estrictos hasta V72."
+          $notes = "V73 para Windows 10/11 x64. Corrige la contaminación de fases observada en V71/V72: el track acumulado 10/24 se consume de forma incremental y cada punto se asigna una sola vez a la fase vigente; el regreso a base se registra como tránsito y ya no puede reaparecer como Interior. El inicio de cada Paso reinicia el track vivo para evitar arrastrar IDs y puntos de la fase anterior. La distancia de retorno ahora parsea también el 10/24 crudo tipo x_y_ángulo, eliminando el None visto en diagnóstico. Paso 2 incorpora detección de giro sin avance y repetición prolongada de un sector, con una maniobra limitada de retroceso/giro y reanudación; el watchdog de fin se pausa durante esa maniobra para no producir falsos finales. La proximidad al origen ya no autoriza Paso 2: se exige carga real status=4 o subida de batería. Además, los retornos vigilados detectan acople sin carga en la rampa, retroceden y reintentan hasta dos veces y, si no logran contacto, detienen las ruedas para proteger la batería. Conserva íntegro el viewport V72: leyenda fija, zoom, Zoom Extents y centrado en base. El pipeline mantiene smoke tests estrictos hasta V73."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V72" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V73" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
