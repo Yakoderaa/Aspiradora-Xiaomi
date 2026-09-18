@@ -283,6 +283,147 @@ class XiaomiE10:
                     return None
         return None
 
+    @classmethod
+    def _miot_action_code(cls, response):
+        """Extrae el code principal de una respuesta MIoT de acción."""
+        if isinstance(response, dict):
+            if "code" in response:
+                try:
+                    return int(response.get("code"))
+                except Exception:
+                    return None
+            for key in ("result", "data"):
+                if key in response:
+                    code = cls._miot_action_code(response.get(key))
+                    if code is not None:
+                        return code
+            return None
+        if isinstance(response, (list, tuple)):
+            for item in response:
+                code = cls._miot_action_code(item)
+                if code is not None:
+                    return code
+        return None
+
+    @classmethod
+    def _miot_output_value(cls, response, target_piid: int):
+        """Busca recursivamente un valor de salida por PIID."""
+        if isinstance(response, dict):
+            if "value" in response:
+                try:
+                    piid = int(response.get("piid"))
+                except Exception:
+                    piid = None
+                if piid == int(target_piid):
+                    return response.get("value")
+            for key in ("out", "result", "data"):
+                if key in response:
+                    found = cls._miot_output_value(response.get(key), target_piid)
+                    if found is not None:
+                        return found
+        elif isinstance(response, (list, tuple)):
+            for item in response:
+                found = cls._miot_output_value(item, target_piid)
+                if found is not None:
+                    return found
+        return None
+
+    def arm_new_map(self, build_mode: int = 1):
+        """Arma la creación de un mapa nuevo usando las acciones B112 oficiales.
+
+        xiaomi.vacuum.b112 define 10/17 build-map-ii con PIID 14 como entrada y
+        PIID 18 (timestamp) como salida. También conserva 10/11 build-new-map
+        como variante anterior. V64 usa 10/17 primero y sólo cae a 10/11 si la
+        acción nueva es rechazada.
+
+        Importante: 10/1 remember-state deja de ser un gate. En el B112 real
+        observado puede rechazar el valor 1 aunque la acción de creación de
+        mapa exista y esté documentada.
+        """
+        import time
+
+        mode = int(build_mode)
+        if mode not in (1, 2):
+            raise ValueError("Modo build-map inválido")
+
+        try:
+            before = self._get_many([
+                ("build_map", 10, 14),
+                ("has_new_map", 10, 19),
+                ("map_privacy", 10, 23),
+            ])
+        except Exception:
+            before = {}
+
+        attempts = []
+        success = False
+        winner = None
+        final_state = {}
+        for aiid, name in ((17, "build-map-ii"), (11, "build-new-map")):
+            item = {"aiid": aiid, "action": name, "mode": mode}
+            try:
+                response = self.device.call_action_by(10, aiid, [mode])
+                code = self._miot_action_code(response)
+                timestamp = self._miot_output_value(response, 18)
+                item["code"] = code
+                item["timestamp"] = timestamp
+            except Exception as exc:
+                item["error"] = str(exc).strip() or type(exc).__name__
+                attempts.append(item)
+                continue
+
+            time.sleep(0.22)
+            try:
+                final_state = self._get_many([
+                    ("build_map", 10, 14),
+                    ("has_new_map", 10, 19),
+                    ("map_privacy", 10, 23),
+                ])
+            except Exception as exc:
+                item["readback_error"] = str(exc).strip() or type(exc).__name__
+                final_state = {}
+
+            item["build_map_readback"] = final_state.get("build_map")
+            item["has_new_map_readback"] = final_state.get("has_new_map")
+            item["map_privacy_readback"] = final_state.get("map_privacy")
+
+            # MIoT code=0 es confirmación explícita de la acción. Para wrappers
+            # que no exponen code, aceptamos la salida timestamp de 10/17 o el
+            # readback build-map=mode.
+            accepted = (
+                code == 0
+                or (code is None and timestamp is not None)
+                or self._numeric_values(final_state.get("build_map"))[:1] == [float(mode)]
+            )
+            item["accepted"] = bool(accepted)
+            attempts.append(item)
+            if accepted:
+                success = True
+                winner = name
+                break
+
+        self.last_map_build_diag = {
+            "requested_mode": mode,
+            "before": dict(before or {}),
+            "after": dict(final_state or {}),
+            "success": bool(success),
+            "winner": winner,
+            "attempts": attempts,
+        }
+
+        if not success:
+            detail = "; ".join(
+                f"{x.get('action')}: {x.get('error') or ('code=' + repr(x.get('code')))}"
+                for x in attempts
+            ) or "sin respuesta"
+            raise RuntimeError(
+                "El E10 no aceptó la orden oficial de crear un mapa nuevo "
+                "(10/17 build-map-ii ni 10/11 build-new-map). "
+                "Cancelé el recorrido antes de mover el robot. "
+                + detail
+            )
+        return dict(self.last_map_build_diag)
+
     def set_map_remembering(self, enabled: bool = True, verify: bool = True, retries: int = 3):
         """Cambia 10/1 remember-state y verifica que el B112 lo haya aplicado.
 
@@ -378,10 +519,11 @@ class XiaomiE10:
         return final_value
 
     def _prepare_mapping_vacuum(self):
-        """Prepara el robot para mapear, verificando persistencia antes de mover."""
-        # Esta llamada DEBE completarse antes de cualquier acción de limpieza.
-        # Si falla, la excepción llega a la UI y el recorrido no se inicia.
-        self.set_map_remembering(True, verify=True, retries=3)
+        """Prepara el robot físicamente para mapear en ECO.
+
+        V64 ya no escribe 10/1 remember-state. La creación del mapa se arma de
+        forma explícita mediante 10/17 build-map-ii antes del Paso 1.
+        """
         self.set_water(0)
         self.set_suction(1)
         self.set_mode(0)
@@ -407,6 +549,7 @@ class XiaomiE10:
         Usamos esta acción específica para no ejecutar start-sweep/start-only-sweep,
         que el firmware puede interpretar como una limpieza global después del borde.
         """
+        self.arm_new_map(1)
         self._prepare_mapping_vacuum()
         return self.device.call_action_by(7, 3, ["", 2, 1])
 

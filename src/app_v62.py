@@ -3,7 +3,7 @@ from xiaomi_e10_map_v62 import XiaomiE10MapV62
 
 
 class App(app_v61.App):
-    """V62: estado B112 legible + remember-state verificado antes de mover."""
+    """V62 histórico: diagnóstico de una hipótesis de remember-state, supersedida por V64."""
 
     def __init__(self):
         self._v62_diag = {}
@@ -28,8 +28,8 @@ class App(app_v61.App):
         attempts = list(write.get("attempts") or [])
 
         lines = [
-            "DIAGNÓSTICO V62 ACTIVO · persistencia verificada / build estricto",
-            "=================================================================",
+            "DIAGNÓSTICO V62 HISTÓRICO · hipótesis remember-state supersedida por V64",
+            "===========================================================================",
             f"fix parser V61 _result_rows: {bool(diag.get('v62_result_rows_fixed'))}",
             f"remember-state solicitado: {write.get('desired')!r} · antes={write.get('before')!r} · después={write.get('after')!r}",
             f"remember-state verificado: {bool(write.get('success')) if write else '—'}",
@@ -52,7 +52,7 @@ class App(app_v61.App):
             lines.append("    — todavía no se intentó cambiar 10/1 en esta sesión")
 
         lines.extend([
-            "regla V62: si remember-state=1 no se confirma por lectura, el recorrido NO se inicia",
+            "corrección V64: 10/1 ya NO es gate; Paso 1 usa build-map-ii 10/17",
             "regla CI V62: cualquier smoke test con código distinto de 0 cancela el build y bloquea la release",
             "",
             "",

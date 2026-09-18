@@ -3,7 +3,7 @@ from xiaomi_e10_map_v62 import XiaomiE10MapV62
 
 
 class App(app_v62.App):
-    """V63: la ruta EDGE real también queda detrás del gate de persistencia."""
+    """V63 histórico: confirmó el bypass EDGE, pero V64 cambia el gate a build-map."""
 
     def __init__(self):
         self._v63_diag = {}
@@ -19,8 +19,8 @@ class App(app_v62.App):
         inherited = super()._diagnostic_text()
 
         lines = [
-            "DIAGNÓSTICO V63 ACTIVO · gate remember-state en EDGE real",
-            "=========================================================",
+            "DIAGNÓSTICO V63 HISTÓRICO · gate remember-state descartado por V64",
+            "=================================================================",
             f"controlador activo: {type(vacuum).__name__ if vacuum is not None else '—'}",
             "ruta Paso 1: XiaomiE10Live → XiaomiE10Edge.start_mapping_perimeter → _prepare_mapping_vacuum",
             f"remember-state solicitado: {write.get('desired')!r} · antes={write.get('before')!r} · después={write.get('after')!r}",
@@ -44,9 +44,9 @@ class App(app_v62.App):
             lines.append("    — todavía no hubo un intento de Paso 1 en esta sesión")
 
         lines.extend([
-            "regla V63: la acción EDGE 7/3 es inalcanzable hasta que 10/1 lea exactamente 1",
-            "regla V63: si 10/1 falla, tampoco se tocan agua/succión/modo ni sweep-type para iniciar el recorrido",
-            "corrección diagnóstico: 10/23 se muestra como map-uploads (0=Upload, 1=Do Not Upload)",
+            "corrección V64: EDGE 7/3 queda detrás de build-map-ii 10/17, no de 10/1",
+            "corrección V64: remember-state queda informativo; no se escribe al iniciar mapa",
+            "corrección diagnóstico: 10/23 es map-privacy (0=Enable, 1=DisEnable) en B112",
             "",
             "",
         ])

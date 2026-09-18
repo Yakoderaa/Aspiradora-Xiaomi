@@ -46,13 +46,13 @@ class XiaomiE10Edge(XiaomiE10):
         }
 
     def start_mapping_perimeter(self):
-        # V63: esta clase sobrescribe XiaomiE10.start_mapping_perimeter(), por
-        # lo que DEBE invocar explícitamente la preparación central. V62 había
-        # endurecido la clase base, pero EDGE la saltaba y podía ejecutar 7/3
-        # con remember-state todavía en 0.
-        #
-        # _prepare_mapping_vacuum() verifica 10/1=1 por lectura antes de tocar
-        # agua/succión/modo. Si falla, lanza y jamás llegamos a la acción EDGE.
+        # V64: antes de mover el robot armamos un mapa nuevo mediante la acción
+        # oficial del servicio Map (10/17 build-map-ii; fallback 10/11).
+        # remember-state 10/1 ya no bloquea el recorrido.
+        self.arm_new_map(1)
+
+        # Sólo después de que el robot acepta la creación del mapa preparamos
+        # el recorrido ECO. Si arm_new_map falla, no se toca ni se mueve nada.
         self._prepare_mapping_vacuum()
 
         # Evita una repetición heredada de una limpieza anterior.

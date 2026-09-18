@@ -59,10 +59,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V63 para Windows 10/11 x64. Corrige el bypass real detectado en V62: Paso 1 usa XiaomiE10Live -> XiaomiE10Edge.start_mapping_perimeter, y esa sobrescritura preparaba el robot directamente sin pasar por _prepare_mapping_vacuum, por lo que remember-state nunca se intentaba aunque mapping_active quedara activo. Ahora EDGE llama primero al gate central: 10/1 debe escribirse a 1 y confirmarse por lectura antes de tocar agua, succión, modo, sweep-type o ejecutar la acción 7/3. Si falla, la acción EDGE queda inalcanzable. F12 V63 lee además el diagnóstico de persistencia directamente desde el controlador activo, y el bloque heredado V47 identifica 10/23 correctamente como map-uploads (0=Upload, 1=Do Not Upload). El smoke V63 reproduce el XiaomiE10Live real y bloquea la release si vuelve a existir este bypass."
+          $notes = "V64 para Windows 10/11 x64. Corrige el flujo de creación de mapa usando la especificación exacta de xiaomi.vacuum.b112. El E10 probado rechaza remember-state 10/1=1, por lo que V64 deja de escribir esa propiedad y la trata sólo como telemetría. Paso 1 ahora arma un mapa nuevo mediante la acción documentada 10/17 build-map-ii con build-map=1; si esa variante es rechazada, usa el fallback documentado 10/11 build-new-map. Sólo después de una respuesta aceptada prepara agua/succión/modo y ejecuta EDGE 7/3. También corrige 10/23 a map-privacy (0=Enable, 1=DisEnable) para este modelo y permite la búsqueda realtime mientras build-map está activo o la orden de build fue aceptada, aunque cur-map-id todavía sea 0. F12 muestra acción, code, timestamp, readback y estado de privacidad. El pipeline mantiene smoke tests estrictos hasta V64."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V63" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V64" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
