@@ -418,7 +418,7 @@ class XiaomiE10:
 
         xiaomi.vacuum.b112 define 10/17 build-map-ii con PIID 14 como entrada y
         PIID 18 (timestamp) como salida. También conserva 10/11 build-new-map
-        como variante anterior. V65 usa 10/17 primero y sólo cae a 10/11 si la
+        como variante anterior. V66 usa 10/17 primero y sólo cae a 10/11 si la
         acción nueva es rechazada.
 
         Importante: 10/1 remember-state deja de ser un gate. En el B112 real
