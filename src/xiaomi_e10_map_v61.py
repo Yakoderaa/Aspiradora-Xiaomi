@@ -124,33 +124,38 @@ class XiaomiE10MapV61(XiaomiE10MapV60):
         }
 
     def _read_state_cloud(self) -> tuple[dict[str, Any], dict[str, Any]]:
-        payload = [
-            {"did": name, "siid": siid, "piid": piid}
-            for name, siid, piid in self.STATE_PROPS
-        ]
         started = time.monotonic()
         error = None
-        raw = None
+        decoded = None
         try:
-            cloud = self._cloud()
-            body = {
+            payload = {
+                "params": [
+                    {"did": self.did, "siid": siid, "piid": piid}
+                    for _name, siid, piid in self.STATE_PROPS
+                ],
                 "datasource": 1,
-                "params": payload,
             }
-            response = cloud.request_country(
+            response = self._cloud().request_country(
                 "/miotspec/prop/get",
                 self.region,
-                {"data": __import__("json").dumps(body, separators=(",", ":"))},
+                {"data": __import__("json").dumps(payload, separators=(",", ":"))},
             )
-            raw = response.get("result") if isinstance(response, dict) else response
+            decoded = self._extract_result_any(response)
         except Exception as exc:
             error = self._sanitize_error(exc)
 
-        rows = self._result_rows(raw)
+        rows = []
+        if isinstance(decoded, dict):
+            rows = decoded.get("result") or decoded.get("data") or []
+        elif isinstance(decoded, list):
+            rows = decoded
+
         values: dict[str, Any] = {}
         by_pair = {(siid, piid): name for name, siid, piid in self.STATE_PROPS}
         ok_count = 0
-        for row in rows:
+        for row in rows if isinstance(rows, list) else []:
+            if not isinstance(row, dict):
+                continue
             try:
                 pair = (int(row.get("siid")), int(row.get("piid")))
             except Exception:
