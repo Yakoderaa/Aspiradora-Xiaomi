@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Última Release
+    url: https://github.com/Yakoderaa/Aspiradora-Xiaomi/releases/latest
+    about: Descargá primero la versión pública más reciente.
+  - name: Política de seguridad
+    url: https://github.com/Yakoderaa/Aspiradora-Xiaomi/blob/main/SECURITY.md
+    about: No publiques vulnerabilidades o secretos como issues normales.

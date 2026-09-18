@@ -1,0 +1,36 @@
+name: Proponer una función
+description: Sugerir una mejora o nueva capacidad
+title: "[Feature] "
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problema que querés resolver
+      description: Explicá primero la necesidad, no sólo la solución.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Propuesta
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternativas consideradas
+  - type: dropdown
+    id: area
+    attributes:
+      label: Área
+      options:
+        - Control del robot
+        - Mapa
+        - Antiatasco
+        - Automatización
+        - Interfaz
+        - Instalación / actualización
+        - Android / iOS
+        - Otro
+    validations:
+      required: true

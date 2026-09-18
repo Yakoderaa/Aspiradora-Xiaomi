@@ -1,0 +1,46 @@
+name: Reporte de mapeo E10
+description: Compartir un caso reproducible del pipeline de mapa
+title: "[Map] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Esta plantilla es para el mapeo experimental del E10. No adjuntes tokens, cookies ni URLs FDS firmadas completas.
+  - type: input
+    id: version
+    attributes:
+      label: Versión de la aplicación
+    validations:
+      required: true
+  - type: dropdown
+    id: stage
+    attributes:
+      label: Momento del fallo
+      options:
+        - Inicio de Paso 1
+        - Durante Paso 1
+        - Regreso a base
+        - Inicio automático de Paso 2
+        - Durante Paso 2
+        - Final del mapeo
+        - Carga / visualización del mapa
+    validations:
+      required: true
+  - type: textarea
+    id: behaviour
+    attributes:
+      label: Qué hizo físicamente el robot
+    validations:
+      required: true
+  - type: textarea
+    id: diag
+    attributes:
+      label: F12 saneado
+      render: text
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Privacidad
+      options:
+        - label: Revisé el diagnóstico y no contiene secretos.
+          required: true

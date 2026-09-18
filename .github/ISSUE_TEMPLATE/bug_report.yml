@@ -1,0 +1,70 @@
+name: Reportar un bug
+description: Informar un problema reproducible de la aplicación
+title: "[Bug] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Gracias por reportar el problema. No publiques tokens, contraseñas, cookies ni URLs FDS firmadas.
+  - type: input
+    id: version
+    attributes:
+      label: Versión
+      description: Versión visible en la aplicación o en la Release.
+      placeholder: "0.1.xxx"
+    validations:
+      required: true
+  - type: dropdown
+    id: windows
+    attributes:
+      label: Windows
+      options:
+        - Windows 11
+        - Windows 10
+        - Otro
+    validations:
+      required: true
+  - type: input
+    id: model
+    attributes:
+      label: Modelo del robot
+      value: "xiaomi.vacuum.b112"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Pasos para reproducir
+      placeholder: |
+        1. Abrí...
+        2. Pulsé...
+        3. El robot...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Resultado esperado
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Resultado real
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnóstico saneado
+      description: Pegá F12 sólo si revisaste que no contenga información sensible añadida manualmente.
+      render: text
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Confirmaciones
+      options:
+        - label: Revisé issues existentes.
+          required: true
+        - label: No incluí contraseñas, tokens, cookies ni secretos.
+          required: true

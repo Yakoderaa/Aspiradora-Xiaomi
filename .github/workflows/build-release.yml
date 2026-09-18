@@ -3,6 +3,12 @@ name: Build Windows installer and release
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - "**/*.md"
+      - "docs/**"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".github/PULL_REQUEST_TEMPLATE.md"
+      - ".github/workflows/build-release.yml"
   workflow_dispatch:
 
 permissions:
