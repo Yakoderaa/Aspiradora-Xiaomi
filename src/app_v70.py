@@ -129,12 +129,13 @@ class App(app_v69.App):
         return cards
 
     def _v70_refresh_map_overview(self, force=False):
-        if not self.local_map or self._v70_overview_frame is None:
+        local_map = getattr(self, "local_map", None)
+        if not local_map or self._v70_overview_frame is None:
             self._v70_update_active_map_labels()
             return
 
         now = time.monotonic()
-        active_id = str(getattr(self.local_map, "active_map_id", "") or "")
+        active_id = str(getattr(local_map, "active_map_id", "") or "")
         if (
             not force
             and active_id == self._v70_last_overview_active
@@ -147,7 +148,7 @@ class App(app_v69.App):
         self._v70_last_overview_active = active_id
 
         try:
-            library = self.local_map.library_snapshot()
+            library = local_map.library_snapshot()
         except Exception:
             return
 
@@ -233,9 +234,10 @@ class App(app_v69.App):
                 info_text = "Creá otro mapa sin salir de esta pestaña"
             else:
                 plan = {}
-                if self.plan_store:
+                plan_store = getattr(self, "plan_store", None)
+                if plan_store:
                     try:
-                        plan = self.plan_store.snapshot(model["id"])
+                        plan = plan_store.snapshot(model["id"])
                     except Exception:
                         plan = {}
                 self._v70_render_thumbnail(preview, model["snapshot"], plan, active)
@@ -419,10 +421,11 @@ class App(app_v69.App):
 
     # ------------------------------------------------------- selección mapas
     def _v70_active_map_name(self):
-        if not self.local_map:
+        local_map = getattr(self, "local_map", None)
+        if not local_map:
             return "—"
         try:
-            snapshot = self.local_map.snapshot()
+            snapshot = local_map.snapshot()
             return str(snapshot.get("name") or "Mapa")
         except Exception:
             return "—"
@@ -437,10 +440,11 @@ class App(app_v69.App):
             self._v70_global_map_badge.configure(text=f"MAPA · {name}")
 
     def _v70_select_map(self, map_id):
-        if not self.local_map:
+        local_map = getattr(self, "local_map", None)
+        if not local_map:
             return
         try:
-            if str(self.local_map.active_map_id) != str(map_id):
+            if str(local_map.active_map_id) != str(map_id):
                 self._switch_map(map_id)
             self._v70_refresh_map_overview(force=True)
             self._v70_update_active_map_labels()
@@ -448,7 +452,7 @@ class App(app_v69.App):
             messagebox.showerror("Mapas", str(exc), parent=self)
 
     def _v70_create_map_from_overview(self):
-        if not self.local_map:
+        if not getattr(self, "local_map", None):
             return
         self._create_map(lambda: self._v70_refresh_map_overview(force=True))
         self._v70_update_active_map_labels()
@@ -519,7 +523,8 @@ class App(app_v69.App):
         name = self._v70_active_map_name()
         count = 0
         try:
-            count = len(self.local_map.list_maps()) if self.local_map else 0
+            local_map = getattr(self, "local_map", None)
+            count = len(local_map.list_maps()) if local_map else 0
         except Exception:
             pass
         lines = [
