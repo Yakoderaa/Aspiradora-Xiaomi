@@ -106,6 +106,7 @@ See the **[roadmap](docs/ROADMAP.md)**.
 - [Mapping](docs/MAPPING.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Roadmap](docs/ROADMAP.md)
+- [FAQ](docs/FAQ.md)
 - [Changelog](CHANGELOG.md)
 - [Contributing](CONTRIBUTING.md)
 - [Security](SECURITY.md)
