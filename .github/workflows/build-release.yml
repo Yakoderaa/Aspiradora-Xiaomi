@@ -59,10 +59,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V67 para Windows 10/11 x64. Corrige el encadenado automático Paso 1 -> base -> Paso 2. La transición heredada dependía de recibir exactamente edge_only_complete y luego un status_ok con status=4; en el E10 real el Paso 1 podía quedar en fase 0 sin que el Paso 2 arrancara. V67 arma un watchdog LAN propio ante cualquier cierre válido de Paso 1 (edge_only_complete o perimeter_complete), consulta directamente status 2/1 y battery charging-state 3/2, envía dock una sola vez si el robot todavía no está regresando y exige dos confirmaciones consecutivas de base más una revalidación final antes de iniciar el interior. status=4 o charging-state=1 cuentan como confirmación física. El arranque es one-shot: aunque coincidan la lógica heredada y el watchdog nuevo, Paso 2 sólo se lanza una vez. F12 muestra evento de cierre, status, charging-state, retorno, dock, confirmación de base y estado del Paso 2. El pipeline mantiene smoke tests estrictos hasta V67."
+          $notes = "V68 para Windows 10/11 x64. Corrige el falso timeout de Paso 1 observado cuando el E10 termina el recorrido y vuelve físicamente a la base pero sweep-type 2/8 no refleja de forma fiable EDGE=2. El watchdog nuevo, definido en la capa V68, ya no exige sweep-type=2 para declarar finalizado el Paso 1: después de haber visto movimiento o una salida real de base, acepta status=3 (regresando), status=4 (cargando), battery charging-state=1 o un estado inactivo estable como cierre válido. Si alguna vez se vio sweep-type=2, conserva la protección contra una transición persistente a limpieza global. El límite de seguridad se amplía a 2 horas y, antes de emitir timeout, se vuelve a consultar el estado del robot; si ya está regresando/cargando/inactivo tras el recorrido, se convierte en cierre normal y se entrega el control al watchdog V67 base -> Paso 2. F12 V68 muestra movimiento, salida de base, sweep-type observado, último status/charging-state y motivo exacto de finalización. El pipeline mantiene smoke tests estrictos hasta V68."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V67" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V68" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
