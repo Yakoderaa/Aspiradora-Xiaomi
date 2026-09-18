@@ -68,10 +68,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V77 para Windows 10/11 x64. Reestructura el sistema de coordenadas del mapeo a partir del diagnóstico real del B112. La base se captura antes de arrancar mediante varias lecturas estables de 10/22; 255_255 se descarta. La relación observada 60_60 ↔ chargeStation 6.0,6.0 se aplica explícitamente como 1 unidad raw = 0.10 m, por lo que robot, trayectoria, cobertura, retorno y render se guardan en metros desde el origen. Se añade un punto sintético (0,0) para que el recorrido nazca visualmente en la base. Los pequeños saltos XY durante giros fuertes se limitan cinemáticamente para reducir la escalera/deriva lateral ficticia. Además V77 detecta pasadas ida/vuelta repetidas sobre un corredor estrecho: intenta una recuperación y, si reincide, finaliza el mapa y vuelve a base. La cobertura usa celdas de 0.25 m y el fin por ausencia de zona nueva es más razonable para habitaciones pequeñas. Finalmente, status=4 con recorrido real confirma el fin incluso si el retorno fue solicitado manualmente. Conserva antiatasco tolerante V76, recovery cancelable, acople seguro y viewport CAD. El pipeline ejecuta smoke tests estrictos hasta V77."
+          $notes = "V78 para Windows 10/11 x64. Corrige el bloqueo de inicio observado en V77 cuando el E10 está físicamente acoplado y cargando pero 10/22 devuelve temporalmente el sentinela 255_255 o un valor vacío. V78 mantiene 10/22 real y estable como fuente preferida, pero si status=4 se confirma varias veces durante la captura y no hay coordenadas válidas, aplica el fallback específico del xiaomi.vacuum.b112 observado repetidamente en diagnóstico: dock raw 60_60. Ese fallback nunca se habilita si el robot no confirma carga. El diagnóstico V78 informa si se usó 10/22 real o fallback dock B112. Conserva íntegramente V77: coordenadas en metros (1 raw = 0.10 m), base visual (0,0), filtro de deriva en giros, detector de corredor repetido, cobertura de 0.25 m, cierre por status=4, antiatasco tolerante y acople seguro. El pipeline ejecuta smoke tests estrictos hasta V78."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V77" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V78" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
