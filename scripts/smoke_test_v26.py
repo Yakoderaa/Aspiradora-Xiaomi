@@ -80,7 +80,21 @@ def main():
 
     result = edge.start_mapping_perimeter()
     check(result.get("code") == 0, "La acción EDGE falsa no devolvió éxito")
-    check(edge.device.actions == [(7, 3, ["", 2, 1])], "Paso 1 debe usar sólo set-room-clean 7/3 en modo Edge")
+    check(
+        edge.device.actions[:2] == [
+            (10, 17, [1]),
+            (7, 3, ["", 2, 1]),
+        ],
+        "Paso 1 debe armar build-map 10/17 y recién después usar EDGE 7/3",
+    )
+    check(
+        not any(a[:2] == (10, 11) for a in edge.device.actions),
+        "No debe usar fallback 10/11 cuando 10/17 fue aceptado",
+    )
+    check(
+        not any(p[:2] == (10, 1) for p in edge.device.properties),
+        "V64 no debe escribir remember-state 10/1",
+    )
     check((7, 6, 0) in edge.device.properties, "Mapeo debe usar agua 0")
     check((7, 5, 1) in edge.device.properties, "Mapeo debe usar succión mínima")
     check((2, 4, 0) in edge.device.properties, "Mapeo debe usar modo aspirar")
@@ -114,7 +128,7 @@ def main():
     check("_watch_edge_only" in app_v26.App.__dict__, "v26 debe reemplazar el watchdog EDGE")
     check("start_new_mapping" in app_v26.App.__dict__, "v26 debe mostrar el nuevo arranque EDGE")
 
-    print("SMOKE TEST V26 OK: EDGE nativo, -4 ignorado e historial 10/12 actual")
+    print("SMOKE TEST V26/V64 OK: build-map 10/17 antes de EDGE + historial 10/12")
 
 
 if __name__ == "__main__":
