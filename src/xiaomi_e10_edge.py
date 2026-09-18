@@ -46,10 +46,14 @@ class XiaomiE10Edge(XiaomiE10):
         }
 
     def start_mapping_perimeter(self):
-        # Mapeo ECO: sólo aspirar, sin agua y con potencia mínima.
-        self.set_water(0)
-        self.set_suction(1)
-        self.set_mode(0)
+        # V63: esta clase sobrescribe XiaomiE10.start_mapping_perimeter(), por
+        # lo que DEBE invocar explícitamente la preparación central. V62 había
+        # endurecido la clase base, pero EDGE la saltaba y podía ejecutar 7/3
+        # con remember-state todavía en 0.
+        #
+        # _prepare_mapping_vacuum() verifica 10/1=1 por lectura antes de tocar
+        # agua/succión/modo. Si falla, lanza y jamás llegamos a la acción EDGE.
+        self._prepare_mapping_vacuum()
 
         # Evita una repetición heredada de una limpieza anterior.
         try:
