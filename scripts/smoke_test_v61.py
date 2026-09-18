@@ -64,9 +64,12 @@ assert on["uploads_enabled"] is True
 # 5) El mapeo iniciado por el usuario activa remember-state=1.
 calls = []
 class Device:
-    def set_property_by(self, siid, piid, value):
+    def set_property_by(self, siid, piid, value, **kwargs):
         calls.append((siid, piid, value))
-        return {"code": 0}
+        return [{"code": 0}]
+    def get_property_by(self, siid, piid):
+        value = calls[-1][2] if calls else 0
+        return [{"code": 0, "value": value}]
 
 vac = XiaomiE10.__new__(XiaomiE10)
 vac.device = Device()
@@ -78,7 +81,7 @@ assert calls[-1] == (10, 1, 0)
 # 6) _prepare_mapping_vacuum activa persistencia antes de preparar agua/succión/modo.
 vac = XiaomiE10.__new__(XiaomiE10)
 order = []
-vac.set_map_remembering = lambda enabled=True: order.append(("remember", enabled))
+vac.set_map_remembering = lambda enabled=True, **kwargs: order.append(("remember", enabled))
 vac.set_water = lambda level: order.append(("water", level))
 vac.set_suction = lambda level: order.append(("suction", level))
 vac.set_mode = lambda mode: order.append(("mode", mode))
