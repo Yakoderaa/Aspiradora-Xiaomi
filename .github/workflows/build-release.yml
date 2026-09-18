@@ -68,10 +68,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V74 para Windows 10/11 x64. Simplifica el mapeo del Xiaomi Vacuum E10 a un único recorrido: elimina del flujo normal el Paso 1 de perímetro/EDGE y el Paso 2 de interior, porque el diagnóstico real confirmó que robot-location 10/24 permanece congelado durante EDGE. El botón Mapear vivienda ahora arma el mapa y lanza directamente una limpieza normal global en ECO, con agua apagada, usando una sola trayectoria azul Recorrido. Conserva el origen único, centrado en base, zoom/Zoom Extents y leyenda fija. V74 mantiene la recuperación de giro sin avance y el acople seguro de V73; además agrega cobertura espacial por celdas y finaliza el mapeo si, tras un mínimo de 5 minutos, pasan 4 minutos sin descubrir zona nueva y existe cobertura suficiente, evitando que el robot permanezca indefinidamente repitiendo el mismo sector. También detecta el retorno natural del sweep normal y cierra el mapa al volver/cargar. El pipeline ejecuta smoke tests estrictos hasta V74."
+          $notes = "V75 para Windows 10/11 x64. Corrige tres fallos observados en la primera prueba real de V74. Primero, la base ya no se fija con la lectura 10/24 previa al START (que estaba obsoleta: 0,39 frente a posiciones reales cercanas a 59,58); ahora espera dos posiciones distintas del sweep recién iniciado y usa la primera como origen, manteniendo robot/base en 0,0 mientras espera para evitar el salto visual. Segundo, neutraliza la lógica heredada de Paso 2 que cerraba falsamente el mapeo al ver status=1: V75 conserva el mapeo único y sólo su watcher decide el fin; un status=1 debe permanecer estable antes de considerarse final. Tercero, cada recuperación antiatasco queda ligada a una generación y al serial de la sesión: antes de cada maniobra y justo antes de reiniciar el sweep se revalida que el mismo mapeo siga activo; cualquier fin, parada manual o volver-a-base invalida los workers pendientes. Conserva mapeo único ECO, agua apagada, cobertura espacial, antiatasco, acople seguro, zoom/Zoom Extents y centrado en base. El pipeline ejecuta smoke tests estrictos hasta V75."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V74" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V75" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
