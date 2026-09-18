@@ -267,8 +267,26 @@ class XiaomiE10:
             "raw_path": values.get("path"),
         }
 
+    def set_map_remembering(self, enabled: bool = True):
+        """Activa/desactiva el guardado persistente de mapas del servicio Map.
+
+        En la familia B112/IJAI, 10/1 es remember-state:
+        0 = Close, 1 = Open. Sólo lo activamos desde un mapeo iniciado
+        explícitamente por el usuario; los sondeos/diagnósticos nunca lo cambian.
+        """
+        return self.device.set_property_by(10, 1, 1 if enabled else 0)
+
     def _prepare_mapping_vacuum(self):
-        """Prepara el robot para mapear aspirando suave y sin agua."""
+        """Prepara el robot para mapear, guardando el mapa y sin usar agua."""
+        # Sin remember-state=1 el E10 puede recorrer la vivienda pero terminar
+        # con map-num=0/cur-map-id=0, por lo que Xiaomi Cloud no tiene un mapa
+        # persistente que la app pueda recuperar después.
+        try:
+            self.set_map_remembering(True)
+        except Exception:
+            # Mantener el mapeo local como fallback si un firmware no acepta la
+            # propiedad; V61 lo deja visible en diagnóstico.
+            pass
         self.set_water(0)
         self.set_suction(1)
         self.set_mode(0)
