@@ -68,10 +68,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V68 para Windows 10/11 x64. Corrige el falso timeout de Paso 1 observado cuando el E10 termina el recorrido y vuelve físicamente a la base pero sweep-type 2/8 no refleja de forma fiable EDGE=2. El watchdog nuevo, definido en la capa V68, ya no exige sweep-type=2 para declarar finalizado el Paso 1: después de haber visto movimiento o una salida real de base, acepta status=3 (regresando), status=4 (cargando), battery charging-state=1 o un estado inactivo estable como cierre válido. Si alguna vez se vio sweep-type=2, conserva la protección contra una transición persistente a limpieza global. El límite de seguridad se amplía a 2 horas y, antes de emitir timeout, se vuelve a consultar el estado del robot; si ya está regresando/cargando/inactivo tras el recorrido, se convierte en cierre normal y se entrega el control al watchdog V67 base -> Paso 2. F12 V68 muestra movimiento, salida de base, sweep-type observado, último status/charging-state y motivo exacto de finalización. El pipeline mantiene smoke tests estrictos hasta V68."
+          $notes = "V69 para Windows 10/11 x64. Corrige la transición Paso 1 -> Paso 2 con la especificación exacta del Xiaomi E10 B112: el servicio battery sólo expone 3/1 battery-level, por lo que se elimina la consulta inexistente 3/2 charging-state. status=4 sigue siendo la confirmación directa preferida. Si el firmware queda pegado en status=3 aun después de volver físicamente, V69 reafirma dock una sola vez y sólo habilita el fallback después de retorno prolongado, fault=0 y posición 10/24 estable; una subida de batería también cuenta como evidencia fuerte. Además, el diagnóstico clean-end 7/1 deja de contar placeholders como cloud/hello/retry/null como referencias FDS: clasifica PIID30 como placeholder/URL/ruta/objeto, busca referencias de archivo anidadas en el mismo registro y sólo entrega referencias resolubles al probe. F12 V69 muestra retorno, fault, batería, estabilidad de pose y forma real de record-map-url. El pipeline mantiene smoke tests estrictos hasta V69."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V68" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V69" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
