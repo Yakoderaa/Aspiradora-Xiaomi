@@ -6,12 +6,11 @@ from xiaomi_e10_map_v60 import XiaomiE10MapV60
 
 
 class XiaomiE10MapV61(XiaomiE10MapV60):
-    """V61: entiende el estado de persistencia del mapa antes de buscar FDS.
+    """Estado de mapa B112 antes de buscar FDS.
 
-    El hallazgo clave del B112 es que 10/1 es remember-state. Si vale 0, el
-    robot puede recorrer/limpiar sin conservar un mapa administrable, por lo
-    que map-num y cur-map-id siguen en cero. V61 no inventa IDs ni fuerza
-    uploads en ese estado.
+    V64 corrige la interpretación con la especificación exacta de
+    xiaomi.vacuum.b112: 10/23 es map-privacy y 10/1 remember-state queda como
+    dato informativo. La creación de un mapa nuevo se arma con 10/17/10/11.
     """
 
     STATE_PROPS = (
@@ -20,7 +19,7 @@ class XiaomiE10MapV61(XiaomiE10MapV60):
         ("map_num", 10, 3),
         ("build_map", 10, 14),
         ("has_new_map", 10, 19),
-        ("map_uploads", 10, 23),
+        ("map_privacy", 10, 23),
     )
     STATE_CACHE_SECONDS = 2.0
 
@@ -73,11 +72,16 @@ class XiaomiE10MapV61(XiaomiE10MapV60):
         map_num = cls._as_int(values.get("map_num"))
         build_map = cls._as_int(values.get("build_map"))
         has_new_map = cls._as_int(values.get("has_new_map"))
-        map_uploads = cls._as_int(values.get("map_uploads"))
+        map_privacy = cls._as_int(values.get("map_privacy"))
 
         saved = bool((cur_map_id or 0) > 0 or (map_num or 0) > 0)
         pending = bool((has_new_map or 0) == 1)
         building = bool((build_map or 0) in (1, 2))
+        privacy_enabled = (
+            True if map_privacy == 0
+            else False if map_privacy == 1
+            else None
+        )
 
         if saved:
             status = "saved_map_available"
@@ -85,12 +89,17 @@ class XiaomiE10MapV61(XiaomiE10MapV60):
             status = "new_map_waiting_to_save"
         elif building:
             status = "firmware_building_map"
-        elif remember == 0 and cur_map_id == 0 and map_num == 0 and has_new_map == 0:
-            status = "no_saved_map_remember_off"
-        elif remember == 1 and cur_map_id == 0 and map_num == 0 and has_new_map == 0:
-            status = "recording_waiting_for_first_map"
+        elif cur_map_id == 0 and map_num == 0 and has_new_map == 0:
+            status = "no_saved_map_idle"
         else:
             status = "unknown"
+
+        # Durante build-map=1/2 el firmware tiene una referencia de mapa válida
+        # aunque cur-map-id/map-num sigan en cero. Ése es precisamente el
+        # momento en que la ruta realtime puede ser útil.
+        allow_realtime = bool(saved or pending or building)
+        if privacy_enabled is False:
+            allow_realtime = False
 
         return {
             "status": status,
@@ -100,15 +109,12 @@ class XiaomiE10MapV61(XiaomiE10MapV60):
             "map_num": map_num,
             "build_map": build_map,
             "has_new_map": has_new_map,
-            "map_uploads": map_uploads,
-            "uploads_enabled": True if map_uploads == 0 else False if map_uploads == 1 else None,
+            "map_privacy": map_privacy,
+            "privacy_enabled": privacy_enabled,
             "saved_map": saved,
             "pending_map": pending,
             "building": building,
-            # Sin ID/mapa guardado, los upload-by-mapid/maptype no tienen una
-            # referencia fiable. Seguimos buscando clean-end, que sí puede
-            # aparecer al finalizar el recorrido.
-            "allow_realtime_upload": bool(saved or pending),
+            "allow_realtime_upload": allow_realtime,
         }
 
     def _read_state_lan(self) -> tuple[dict[str, Any], dict[str, Any]]:
@@ -227,11 +233,11 @@ class XiaomiE10MapV61(XiaomiE10MapV60):
             "state": state,
             "state_values_present": sorted(values.keys()),
             "transports": transports,
-            "remember_state_fixed_semantics": True,
-            "map_uploads_fixed_semantics": True,
+            "remember_state_informational": True,
+            "map_privacy_exact_b112_semantics": True,
             "skip_realtime_upload": not bool(state.get("allow_realtime_upload")),
             "skip_reason": (
-                "sin mapa guardado/pendiente; se espera el primer mapa o clean-end"
+                "sin mapa guardado/pendiente/build activo o map-privacy bloqueado"
                 if not state.get("allow_realtime_upload")
                 else ""
             ),
@@ -297,7 +303,7 @@ class XiaomiE10MapV61(XiaomiE10MapV60):
 
             return IjaiMapSnapshot(
                 parser_error=(
-                    "V61: esperando primer mapa persistente "
+                    "V64: esperando mapa real del B112 "
                     f"({state.get('status')})"
                 )
             )
