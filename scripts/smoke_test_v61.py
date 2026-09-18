@@ -14,84 +14,75 @@ from xiaomi_e10_ijai_map import IjaiMapSnapshot
 from xiaomi_e10_map_v61 import XiaomiE10MapV61
 
 
-# 1) Semántica de estado: el diagnóstico real V60 (todo en cero +
-# remember-state=0) significa que no hay mapa persistente y el guardado está OFF.
-state = XiaomiE10MapV61._classify_state({
+# 1) En el B112 exacto, remember-state es informativo y 10/23 es map-privacy.
+idle0 = XiaomiE10MapV61._classify_state({
     "remember_state": 0,
     "cur_map_id": 0,
     "map_num": 0,
     "build_map": 0,
     "has_new_map": 0,
-    "map_uploads": 0,
+    "map_privacy": 0,
 })
-assert state["status"] == "no_saved_map_remember_off"
-assert state["remember_enabled"] is False
-assert state["uploads_enabled"] is True
-assert state["allow_realtime_upload"] is False
-
-# 2) Tras activar remember-state, sin mapa todavía esperamos el primer guardado;
-# no inventamos un map-id ni disparamos upload-by-mapid.
-state = XiaomiE10MapV61._classify_state({
+idle1 = XiaomiE10MapV61._classify_state({
     "remember_state": 1,
     "cur_map_id": 0,
     "map_num": 0,
     "build_map": 0,
     "has_new_map": 0,
-    "map_uploads": 0,
+    "map_privacy": 0,
 })
-assert state["status"] == "recording_waiting_for_first_map"
-assert state["allow_realtime_upload"] is False
+assert idle0["status"] == "no_saved_map_idle"
+assert idle1["status"] == "no_saved_map_idle"
+assert idle0["privacy_enabled"] is True
+assert idle0["allow_realtime_upload"] is False
 
-# 3) Un cur-map-id/map-num real habilita la ruta V60/FDS.
-state = XiaomiE10MapV61._classify_state({
-    "remember_state": 1,
+# 2) build-map activo habilita la ruta realtime aunque aún no exista cur-map-id.
+building = XiaomiE10MapV61._classify_state({
+    "remember_state": 0,
+    "cur_map_id": 0,
+    "map_num": 0,
+    "build_map": 1,
+    "has_new_map": 0,
+    "map_privacy": 0,
+})
+assert building["status"] == "firmware_building_map"
+assert building["building"] is True
+assert building["allow_realtime_upload"] is True
+
+# 3) map-privacy=1 bloquea subida incluso durante build.
+private = XiaomiE10MapV61._classify_state({
+    "build_map": 1,
+    "map_privacy": 1,
+})
+assert private["privacy_enabled"] is False
+assert private["allow_realtime_upload"] is False
+
+# 4) Un mapa guardado o pendiente habilita la ruta cuando privacy lo permite.
+saved = XiaomiE10MapV61._classify_state({
     "cur_map_id": 1707156242,
     "map_num": 1,
-    "build_map": 0,
-    "has_new_map": 0,
-    "map_uploads": 0,
+    "map_privacy": 0,
 })
-assert state["status"] == "saved_map_available"
-assert state["saved_map"] is True
-assert state["allow_realtime_upload"] is True
+pending = XiaomiE10MapV61._classify_state({
+    "has_new_map": 1,
+    "map_privacy": 0,
+})
+assert saved["saved_map"] is True and saved["allow_realtime_upload"] is True
+assert pending["pending_map"] is True and pending["allow_realtime_upload"] is True
 
-# 4) 10/23 es map-uploads: 0 Upload, 1 Do Not Upload.
-off = XiaomiE10MapV61._classify_state({"map_uploads": 1})
-on = XiaomiE10MapV61._classify_state({"map_uploads": 0})
-assert off["uploads_enabled"] is False
-assert on["uploads_enabled"] is True
-
-# 5) El mapeo iniciado por el usuario activa remember-state=1.
-calls = []
-class Device:
-    def set_property_by(self, siid, piid, value, **kwargs):
-        calls.append((siid, piid, value))
-        return [{"code": 0}]
-    def get_property_by(self, siid, piid):
-        value = calls[-1][2] if calls else 0
-        return [{"code": 0, "value": value}]
-
-vac = XiaomiE10.__new__(XiaomiE10)
-vac.device = Device()
-vac.set_map_remembering(True)
-assert calls == [(10, 1, 1)]
-vac.set_map_remembering(False)
-assert calls[-1] == (10, 1, 0)
-
-# 6) _prepare_mapping_vacuum activa persistencia antes de preparar agua/succión/modo.
+# 5) La preparación física ya no toca remember-state.
 vac = XiaomiE10.__new__(XiaomiE10)
 order = []
-vac.set_map_remembering = lambda enabled=True, **kwargs: order.append(("remember", enabled))
+vac.set_map_remembering = lambda *args, **kwargs: (_ for _ in ()).throw(
+    AssertionError("V64 no debe escribir remember-state durante _prepare_mapping_vacuum")
+)
 vac.set_water = lambda level: order.append(("water", level))
 vac.set_suction = lambda level: order.append(("suction", level))
 vac.set_mode = lambda mode: order.append(("mode", mode))
 vac._prepare_mapping_vacuum()
-assert order[0] == ("remember", True)
-assert ("water", 0) in order
-assert ("suction", 1) in order
-assert ("mode", 0) in order
+assert order == [("water", 0), ("suction", 1), ("mode", 0)]
 
-# 7) Lectura LAN de estado usa exclusivamente propiedades conocidas.
+# 6) Lectura LAN usa el nombre exacto map_privacy.
 p = XiaomiE10MapV61.__new__(XiaomiE10MapV61)
 p._v60_lan_lock = threading.RLock()
 p.last_v61_diagnostics = {}
@@ -100,45 +91,52 @@ p._v61_last_state_monotonic = 0.0
 p.session_data = {}
 p.did = "DID"
 p.region = "sg"
+
 class StateDevice:
     def send(self, method, payload):
         assert method == "get_properties"
-        pairs = {(int(x["siid"]), int(x["piid"])) for x in payload}
-        assert (10, 1) in pairs and (10, 23) in pairs
-        values = {(10, 1): 0, (10, 2): 0, (10, 3): 0, (10, 14): 0, (10, 19): 0, (10, 23): 0}
+        values = {
+            (10, 1): 0,
+            (10, 2): 0,
+            (10, 3): 0,
+            (10, 14): 1,
+            (10, 19): 0,
+            (10, 23): 0,
+        }
         return [
-            {"siid": siid, "piid": piid, "code": 0, "value": values[(siid, piid)]}
-            for siid, piid in sorted(values)
+            {"siid": siid, "piid": piid, "code": 0, "value": value}
+            for (siid, piid), value in values.items()
         ]
+
 p.vacuum = SimpleNamespace(device=StateDevice())
 values, meta = p._read_state_lan()
-assert values["remember_state"] == 0
-assert values["map_uploads"] == 0
 assert meta["ok"] is True
+assert values["remember_state"] == 0
+assert values["build_map"] == 1
+assert values["map_privacy"] == 0
+assert "map_uploads" not in values
 
-# 8) Sin mapa guardado request_fresh_upload se omite y no llama acciones.
+# 7) Sin mapa/build, request_fresh_upload se omite.
 p._probe_state = lambda force=False: {
-    "status": "no_saved_map_remember_off",
+    "status": "no_saved_map_idle",
     "cur_map_id": 0,
     "allow_realtime_upload": False,
 }
-p.last_v61_diagnostics = {"skip_reason": "sin mapa guardado"}
+p.last_v61_diagnostics = {"skip_reason": "sin mapa/build"}
 info = p.request_fresh_upload()
 assert info["skipped"] is True
 assert info["official_actions"] is False
-assert info["map_id"] == 0
 
-# 9) Sin mapa persistente load sólo permite clean-end final y no entra a V60.
+# 8) Sin mapa/build, load conserva la ruta clean-end y devuelve espera segura.
 p._probe_state = lambda force=False: {
-    "status": "recording_waiting_for_first_map",
+    "status": "no_saved_map_idle",
     "allow_realtime_upload": False,
 }
 p._load_record_map = lambda: (None, {"success": False, "candidates": 0})
 snapshot = p.load()
 assert isinstance(snapshot, IjaiMapSnapshot)
-assert "esperando primer mapa persistente" in str(snapshot.parser_error)
+assert "esperando mapa real" in str(snapshot.parser_error)
 
-# 10) UI V61 conserva toda la cadena anterior y usa cliente V61.
 assert issubclass(app_v61.App, app_v61.app_v60.App)
 
-print("SMOKE TEST V61 OK: remember-state + map-uploads + gating FDS + clean-end seguro")
+print("SMOKE TEST V61/V64 OK: map-privacy exacto + build-map + remember informativo")
