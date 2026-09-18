@@ -50,6 +50,7 @@ class XiaomiE10MapV59(XiaomiE10MapV58):
         self._v59_cached_winner = None
         self._v59_lock = threading.Lock()
         self._v59_stop = threading.Event()
+        self._v59_last_race_monotonic = 0.0
         super().__init__(*args, **kwargs)
 
     # ------------------------------------------------------------- helpers
@@ -470,6 +471,7 @@ class XiaomiE10MapV59(XiaomiE10MapV58):
 
     # ------------------------------------------------------------- race
     def _run_race(self):
+        self._v59_last_race_monotonic = time.monotonic()
         self._v59_stop.clear()
         self.last_v59_diagnostics = {
             "started_at": time.time(),
@@ -574,6 +576,9 @@ class XiaomiE10MapV59(XiaomiE10MapV58):
     def load(self):
         if self._v59_cached_snapshot is not None:
             return self._v59_cached_snapshot
+        # Evita repetir toda la competencia justo después de request_fresh_upload().
+        if time.monotonic() - float(self._v59_last_race_monotonic or 0.0) < 6.0:
+            return super().load()
         snapshot = self._run_race()
         if snapshot is not None:
             return snapshot
