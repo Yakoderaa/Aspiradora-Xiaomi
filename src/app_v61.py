@@ -32,18 +32,18 @@ class App(app_v60.App):
 
         remember = state.get("remember_state")
         remember_text = (
-            "ON / guardar mapas"
+            "1 (informativo; V64 no lo fuerza)"
             if remember == 1
-            else "OFF / no guardar mapas"
+            else "0 (informativo; V64 no lo fuerza)"
             if remember == 0
             else "desconocido"
         )
-        uploads = state.get("map_uploads")
-        uploads_text = (
-            "habilitados"
-            if uploads == 0
-            else "deshabilitados"
-            if uploads == 1
+        privacy = state.get("map_privacy")
+        privacy_text = (
+            "Enable / permite mapa"
+            if privacy == 0
+            else "DisEnable / bloquea mapa"
+            if privacy == 1
             else "desconocido"
         )
 
@@ -54,13 +54,13 @@ class App(app_v60.App):
             f"remember-state 10/1: {remember!r} · {remember_text}",
             f"cur-map-id 10/2: {state.get('cur_map_id')!r} · map-num 10/3: {state.get('map_num')!r}",
             f"build-map 10/14: {state.get('build_map')!r} · has-new-map 10/19: {state.get('has_new_map')!r}",
-            f"map-uploads 10/23: {uploads!r} · {uploads_text}",
+            f"map-privacy 10/23: {privacy!r} · {privacy_text}",
             f"mapa guardado: {bool(state.get('saved_map'))} · pendiente: {bool(state.get('pending_map'))}",
             f"upload realtime permitido: {bool(state.get('allow_realtime_upload'))} · omitido={bool(diag.get('skip_realtime_upload'))}",
             f"motivo omisión: {diag.get('skip_reason') or '—'}",
-            "corrección V61: 10/23 es map-uploads (0=Upload, 1=Do Not Upload), no map-privacy",
-            "regla V61: al iniciar mapeo por decisión del usuario se activa 10/1 remember-state=1; diagnósticos/refrescos nunca cambian esa propiedad",
-            "regla FDS: sin mapa guardado/pendiente no se fuerzan uploads; se conserva la búsqueda final clean-end/record-map-url",
+            "corrección V64: en xiaomi.vacuum.b112, 10/23 es map-privacy (0=Enable, 1=DisEnable)",
+            "corrección V64: remember-state 10/1 queda sólo como telemetría; no se fuerza a 1",
+            "regla FDS: se permite realtime con mapa guardado, pendiente o build-map activo; clean-end sigue como ruta final",
         ]
 
         transports = list(diag.get("transports") or [])
