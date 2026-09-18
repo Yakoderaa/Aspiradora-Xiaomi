@@ -494,8 +494,10 @@ class XiaomiE10MapV56(XiaomiE10MapV54):
             cy * self.GRID_RESOLUTION_M,
         )
 
-        accepted = True
-        if self._v56_last_grid_pose is not None:
+        # Una reescritura masiva del mapa (por ejemplo primer realtime fresco)
+        # no representa la posición del robot.
+        accepted = len(changed) <= 1000
+        if accepted and self._v56_last_grid_pose is not None:
             jump = math.hypot(
                 pose[0] - self._v56_last_grid_pose[0],
                 pose[1] - self._v56_last_grid_pose[1],
@@ -580,6 +582,7 @@ class XiaomiE10MapV56(XiaomiE10MapV54):
             upload_date=header.get("timestamp"),
         )
         snapshot.grid_cells = list(cells)
+        snapshot.grid_blob_sha12 = self._sha12(raw)
         snapshot.grid_side = self.GRID_SIDE
         snapshot.grid_resolution = self.GRID_RESOLUTION_M
         snapshot.grid_base_cell = tuple(base_cell)
