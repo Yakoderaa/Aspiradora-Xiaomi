@@ -1,7 +1,6 @@
 name: Reporte de mapeo E10
 description: Compartir un caso reproducible del pipeline de mapa
 title: "[Map] "
-labels: ["mapping"]
 body:
   - type: markdown
     attributes:
