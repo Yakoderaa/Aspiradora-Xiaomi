@@ -59,10 +59,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V55 para Windows 10/11 x64. Esta versión deja de depender de 10/12 y del blob Cloud para el movimiento principal. Construye una trayectoria persistente directamente a partir de cambios temporales X/Y reales de 10/24 robot-location: la primera muestra aislada no mueve nada; el segundo X/Y distinto confirma movimiento y crea la polilínea con ambas poses, y cada cambio posterior agrega un punto. 10/12 queda fuera del loop vivo para reducir latencia. Los cambios de chargingbase no cuentan como movimiento; se conservan las guardas V45/V51. V54 queda sólo como diagnóstico complementario del blob Cloud."
+          $notes = "V56 para Windows 10/11 x64. Implementa la ruta funcional de mapa del Xiaomi E10/B112: solicita un realtime fresco con las acciones oficiales del spec 10/18 upmapdata, 10/15(type=0) y 10/6(type=0), deteniéndose cuando cambia el blob Cloud. Descifra el slot clásico con la derivación MD5 completa ya validada y reconoce el formato B112 de 3628 bytes como cabecera tipo 0x06/24 + rejilla 120x120 de 2 bits por celda. La rejilla se renderiza directamente, su contorno se persiste como paredes y, si 10/24 queda congelado, las diferencias temporales entre mapas frescos alimentan un fallback de trayectoria sólo después de observar cambios reales entre dos mapas. Conserva las guardas contra sentinelas de base y no usa muestras aisladas como movimiento."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V55" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V56" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
