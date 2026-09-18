@@ -171,6 +171,7 @@ Ver **[Roadmap completo](docs/ROADMAP.md)**.
 | [Modelo de seguridad](docs/SECURITY_MODEL.md) | Amenazas, límites de confianza y mitigaciones |
 | [Endurecimiento de GitHub](docs/GITHUB_HARDENING.md) | Branch protection, reportes privados y cuenta |
 | [Propiedad intelectual](docs/INTELLECTUAL_PROPERTY.md) | Copyright, DNDA, marca y evaluación de patente |
+| [Expediente base DNDA](docs/DNDA_REGISTRATION_PACKAGE.md) | Datos técnicos preparados para registrar un snapshot |
 | [Copyright](COPYRIGHT.md) | Aviso de autoría y terceros |
 | [Third-party notices](THIRD_PARTY_NOTICES.md) | Dependencias y avisos de terceros |
 
