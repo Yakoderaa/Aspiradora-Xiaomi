@@ -267,26 +267,121 @@ class XiaomiE10:
             "raw_path": values.get("path"),
         }
 
-    def set_map_remembering(self, enabled: bool = True):
-        """Activa/desactiva el guardado persistente de mapas del servicio Map.
+    @staticmethod
+    def _miot_set_code(response):
+        """Extrae el primer code MIoT de una respuesta set_properties."""
+        rows = response
+        if isinstance(rows, dict):
+            rows = rows.get("result") or rows.get("data") or rows.get("out") or [rows]
+        if not isinstance(rows, list):
+            return None
+        for row in rows:
+            if isinstance(row, dict) and "code" in row:
+                try:
+                    return int(row.get("code"))
+                except Exception:
+                    return None
+        return None
 
-        En la familia B112/IJAI, 10/1 es remember-state:
-        0 = Close, 1 = Open. Sólo lo activamos desde un mapeo iniciado
-        explícitamente por el usuario; los sondeos/diagnósticos nunca lo cambian.
+    def set_map_remembering(self, enabled: bool = True, verify: bool = True, retries: int = 3):
+        """Cambia 10/1 remember-state y verifica que el B112 lo haya aplicado.
+
+        10/1 es escribible (Switch / set_properties) en la familia IJAI. V61
+        enviaba el setter pero ignoraba por completo su respuesta; un rechazo
+        silencioso permitía iniciar el recorrido con remember-state todavía en 0.
+
+        V62 exige confirmación por lectura antes de mover el robot. Si el
+        firmware no acepta el cambio, el mapeo se aborta antes de arrancar.
         """
-        return self.device.set_property_by(10, 1, 1 if enabled else 0)
+        import time
+
+        desired = 1 if enabled else 0
+        attempts = []
+        try:
+            before = self._value(10, 1)
+        except Exception as exc:
+            before = None
+            attempts.append({
+                "stage": "read-before",
+                "error": str(exc).strip() or type(exc).__name__,
+            })
+
+        strategies = (
+            ("set_property_by", lambda: self.device.set_property_by(
+                10, 1, desired, name="remember-state"
+            )),
+            ("raw_set_properties", lambda: self.device.send(
+                "set_properties",
+                [{"did": "remember-state", "siid": 10, "piid": 1, "value": desired}],
+            )),
+        )
+
+        final_value = before
+        success = False
+        last_error = None
+        total = max(1, int(retries or 1))
+        for index in range(total):
+            strategy_name, setter = strategies[min(index, len(strategies) - 1)]
+            item = {"attempt": index + 1, "strategy": strategy_name}
+            try:
+                response = setter()
+                item["code"] = self._miot_set_code(response)
+            except Exception as exc:
+                item["error"] = str(exc).strip() or type(exc).__name__
+                last_error = item["error"]
+                attempts.append(item)
+                time.sleep(0.18 * (index + 1))
+                continue
+
+            if not verify:
+                success = item.get("code") in (None, 0)
+                final_value = desired if success else before
+                attempts.append(item)
+                if success:
+                    break
+                time.sleep(0.18 * (index + 1))
+                continue
+
+            time.sleep(0.22 + (0.12 * index))
+            try:
+                final_value = self._value(10, 1)
+                item["readback"] = final_value
+                success = int(final_value) == desired
+            except Exception as exc:
+                item["verify_error"] = str(exc).strip() or type(exc).__name__
+                last_error = item["verify_error"]
+                success = False
+
+            item["verified"] = bool(success)
+            attempts.append(item)
+            if success:
+                break
+
+        self.last_map_persistence_diag = {
+            "desired": desired,
+            "before": before,
+            "after": final_value,
+            "success": bool(success),
+            "attempts": attempts,
+        }
+
+        if not success:
+            detail = last_error or (
+                f"lectura final={final_value!r}; respuesta MIoT no confirmó {desired}"
+            )
+            raise RuntimeError(
+                "El E10 no confirmó remember-state="
+                + str(desired)
+                + ". Cancelé el mapeo antes de mover el robot. "
+                + detail
+            )
+        return final_value
 
     def _prepare_mapping_vacuum(self):
-        """Prepara el robot para mapear, guardando el mapa y sin usar agua."""
-        # Sin remember-state=1 el E10 puede recorrer la vivienda pero terminar
-        # con map-num=0/cur-map-id=0, por lo que Xiaomi Cloud no tiene un mapa
-        # persistente que la app pueda recuperar después.
-        try:
-            self.set_map_remembering(True)
-        except Exception:
-            # Mantener el mapeo local como fallback si un firmware no acepta la
-            # propiedad; V61 lo deja visible en diagnóstico.
-            pass
+        """Prepara el robot para mapear, verificando persistencia antes de mover."""
+        # Esta llamada DEBE completarse antes de cualquier acción de limpieza.
+        # Si falla, la excepción llega a la UI y el recorrido no se inicia.
+        self.set_map_remembering(True, verify=True, retries=3)
         self.set_water(0)
         self.set_suction(1)
         self.set_mode(0)

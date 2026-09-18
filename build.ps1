@@ -1,59 +1,68 @@
 $ErrorActionPreference = "Stop"
 
+function Invoke-PythonChecked {
+    param([Parameter(ValueFromRemainingArguments=$true)][string[]]$Arguments)
+    & python @Arguments
+    if ($LASTEXITCODE -ne 0) {
+        throw "Python falló con código $LASTEXITCODE."
+    }
+}
+
 if (-not $env:APP_VERSION) {
     $env:APP_VERSION = "0.1.0"
 }
 
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
-python -m pip install pyinstaller==6.22.3
+Invoke-PythonChecked "-m" "pip" "install" "--upgrade" "pip"
+Invoke-PythonChecked "-m" "pip" "install" "-r" "requirements.txt"
+Invoke-PythonChecked "-m" "pip" "install" "pyinstaller==6.22.3"
 
 "VERSION = `"$($env:APP_VERSION)`"" | Set-Content -Encoding UTF8 src\_build_version.py
 
-python scripts\make_mihome_icon.py
-python scripts\fetch_e10_product_image.py
+Invoke-PythonChecked "scripts\make_mihome_icon.py"
+Invoke-PythonChecked "scripts\fetch_e10_product_image.py"
 
-python -m compileall -q src scripts
-python scripts\smoke_test.py
-python scripts\smoke_test_v24.py
-python scripts\smoke_test_v25.py
-python scripts\smoke_test_v26.py
-python scripts\smoke_test_v27.py
-python scripts\smoke_test_v28.py
-python scripts\smoke_test_v29.py
-python scripts\smoke_test_v30.py
-python scripts\smoke_test_v31.py
-python scripts\smoke_test_v32.py
-python scripts\smoke_test_v33.py
-python scripts\smoke_test_v34.py
-python scripts\smoke_test_v35.py
-python scripts\smoke_test_v36.py
-python scripts\smoke_test_v37.py
-python scripts\smoke_test_v38.py
-python scripts\smoke_test_v39.py
-python scripts\smoke_test_v40.py
-python scripts\smoke_test_v41.py
-python scripts\smoke_test_v41_all.py
-python scripts\smoke_test_v42.py
-python scripts\smoke_test_v43.py
-python scripts\smoke_test_v44.py
-python scripts\smoke_test_v45.py
-python scripts\smoke_test_v46.py
-python scripts\smoke_test_v47.py
-python scripts\smoke_test_v48.py
-python scripts\smoke_test_v49.py
-python scripts\smoke_test_v50.py
-python scripts\smoke_test_v51.py
-python scripts\smoke_test_v52.py
-python scripts\smoke_test_v53.py
-python scripts\smoke_test_v54.py
-python scripts\smoke_test_v55.py
-python scripts\smoke_test_v56.py
-python scripts\smoke_test_v57.py
-python scripts\smoke_test_v58.py
-python scripts\smoke_test_v59.py
-python scripts\smoke_test_v60.py
-python scripts\smoke_test_v61.py
+Invoke-PythonChecked "-m" "compileall" "-q" "src" "scripts"
+Invoke-PythonChecked "scripts\smoke_test.py"
+Invoke-PythonChecked "scripts\smoke_test_v24.py"
+Invoke-PythonChecked "scripts\smoke_test_v25.py"
+Invoke-PythonChecked "scripts\smoke_test_v26.py"
+Invoke-PythonChecked "scripts\smoke_test_v27.py"
+Invoke-PythonChecked "scripts\smoke_test_v28.py"
+Invoke-PythonChecked "scripts\smoke_test_v29.py"
+Invoke-PythonChecked "scripts\smoke_test_v30.py"
+Invoke-PythonChecked "scripts\smoke_test_v31.py"
+Invoke-PythonChecked "scripts\smoke_test_v32.py"
+Invoke-PythonChecked "scripts\smoke_test_v33.py"
+Invoke-PythonChecked "scripts\smoke_test_v34.py"
+Invoke-PythonChecked "scripts\smoke_test_v35.py"
+Invoke-PythonChecked "scripts\smoke_test_v36.py"
+Invoke-PythonChecked "scripts\smoke_test_v37.py"
+Invoke-PythonChecked "scripts\smoke_test_v38.py"
+Invoke-PythonChecked "scripts\smoke_test_v39.py"
+Invoke-PythonChecked "scripts\smoke_test_v40.py"
+Invoke-PythonChecked "scripts\smoke_test_v41.py"
+Invoke-PythonChecked "scripts\smoke_test_v41_all.py"
+Invoke-PythonChecked "scripts\smoke_test_v42.py"
+Invoke-PythonChecked "scripts\smoke_test_v43.py"
+Invoke-PythonChecked "scripts\smoke_test_v44.py"
+Invoke-PythonChecked "scripts\smoke_test_v45.py"
+Invoke-PythonChecked "scripts\smoke_test_v46.py"
+Invoke-PythonChecked "scripts\smoke_test_v47.py"
+Invoke-PythonChecked "scripts\smoke_test_v48.py"
+Invoke-PythonChecked "scripts\smoke_test_v49.py"
+Invoke-PythonChecked "scripts\smoke_test_v50.py"
+Invoke-PythonChecked "scripts\smoke_test_v51.py"
+Invoke-PythonChecked "scripts\smoke_test_v52.py"
+Invoke-PythonChecked "scripts\smoke_test_v53.py"
+Invoke-PythonChecked "scripts\smoke_test_v54.py"
+Invoke-PythonChecked "scripts\smoke_test_v55.py"
+Invoke-PythonChecked "scripts\smoke_test_v56.py"
+Invoke-PythonChecked "scripts\smoke_test_v57.py"
+Invoke-PythonChecked "scripts\smoke_test_v58.py"
+Invoke-PythonChecked "scripts\smoke_test_v59.py"
+Invoke-PythonChecked "scripts\smoke_test_v60.py"
+Invoke-PythonChecked "scripts\smoke_test_v61.py"
+Invoke-PythonChecked "scripts\smoke_test_v62.py"
 
 pyinstaller --noconfirm --clean --windowed --onefile `
     --name "Aspiradora Xiaomi Updater" `
@@ -61,12 +70,14 @@ pyinstaller --noconfirm --clean --windowed --onefile `
     --add-data "assets\mi_home.ico;assets" `
     --add-data "assets\mi_home.png;assets" `
     src\update_helper.py
+if ($LASTEXITCODE -ne 0) { throw "PyInstaller falló con código $LASTEXITCODE." }
 
 pyinstaller --noconfirm --clean --windowed --onefile `
     --name "Aspiradora Xiaomi Scheduler" `
     --icon "assets\mi_home.ico" `
     --collect-all miio `
     src\scheduler_agent.py
+if ($LASTEXITCODE -ne 0) { throw "PyInstaller falló con código $LASTEXITCODE." }
 
 pyinstaller --noconfirm --clean --windowed --onedir `
     --name "Aspiradora Xiaomi" `
@@ -83,7 +94,8 @@ pyinstaller --noconfirm --clean --windowed --onedir `
     --collect-all vacuum_map_parser_base `
     --collect-all vacuum_map_parser_xiaomi `
     --collect-all vacuum_map_parser_ijai `
-    src\main_v61.py
+    src\main_v62.py
+if ($LASTEXITCODE -ne 0) { throw "PyInstaller falló con código $LASTEXITCODE." }
 
 Copy-Item "dist\Aspiradora Xiaomi Updater.exe" "dist\Aspiradora Xiaomi\Aspiradora Xiaomi Updater.exe" -Force
 Copy-Item "dist\Aspiradora Xiaomi Scheduler.exe" "dist\Aspiradora Xiaomi\Aspiradora Xiaomi Scheduler.exe" -Force
@@ -129,7 +141,7 @@ if ($probeProcess.ExitCode -ne 0) {
 $appProcess = Start-Process -FilePath $appExe -ArgumentList "--tray" -PassThru
 Start-Sleep -Seconds 6
 $appProcess.Refresh()
-if ($appProcess.HasExited) { throw "La aplicación v61 se cerró durante el smoke test de arranque. Código: $($appProcess.ExitCode)" }
+if ($appProcess.HasExited) { throw "La aplicación v62 se cerró durante el smoke test de arranque. Código: $($appProcess.ExitCode)" }
 Stop-Process -Id $appProcess.Id -Force -ErrorAction SilentlyContinue
 
 $schedulerExe = (Resolve-Path "dist\Aspiradora Xiaomi\Aspiradora Xiaomi Scheduler.exe").Path
@@ -144,6 +156,7 @@ $inno = @("$pf86\Inno Setup 7\ISCC.exe", "$pf86\Inno Setup 6\ISCC.exe") | Where-
 if (-not $inno) { throw "No se encontró Inno Setup. Instalalo y volvé a ejecutar build.ps1." }
 
 & $inno installer\AspiradoraXiaomi.iss
+if ($LASTEXITCODE -ne 0) { throw "Inno Setup falló con código $LASTEXITCODE." }
 $installer = "installer_output\Aspiradora-Xiaomi-Setup.exe"
 if (-not (Test-Path $installer)) { throw "Inno Setup no generó el instalador esperado." }
 $installerIcon = [System.Drawing.Icon]::ExtractAssociatedIcon((Resolve-Path $installer).Path)

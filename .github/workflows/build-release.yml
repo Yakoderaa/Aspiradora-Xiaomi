@@ -59,10 +59,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V61 para Windows 10/11 x64. Corrige la semántica de persistencia del mapa B112: 10/1 es remember-state (0=Close, 1=Open) y 10/23 es map-uploads (0=Upload, 1=Do Not Upload). Al iniciar un mapeo confirmado por el usuario, la app activa remember-state=1 para que el E10 conserve el mapa; diagnósticos y refrescos nunca cambian esa propiedad. El cliente clasifica cur-map-id, map-num, build-map y has-new-map antes de forzar uploads: mientras no exista mapa guardado o pendiente omite las acciones realtime/FDS sin ID y conserva únicamente la búsqueda segura del mapa final mediante clean-end/record-map-url. F12 muestra el estado de persistencia y el motivo exacto de cualquier omisión. V60 queda como fallback cuando ya existe un mapa real."
+          $notes = "V62 para Windows 10/11 x64. Repara el fallo real de V61 en _result_rows y hace legible otra vez el estado B112. El inicio de mapeo ahora cambia 10/1 remember-state mediante set_properties, lee 10/1 de vuelta y sólo continúa si confirma valor 1; si Xiaomi rechaza el setter o la lectura sigue en 0, el recorrido se cancela antes de mover el robot y F12 muestra código, estrategia y readback. Se mantienen map-uploads 10/23, cur-map-id, map-num, build-map y has-new-map como señales de estado. El pipeline de publicación también queda estricto: cualquier smoke test, compileall, PyInstaller o Inno Setup con código de error cancela el build, evitando repetir la publicación defectuosa de V61."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V61" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V62" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }

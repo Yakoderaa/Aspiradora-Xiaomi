@@ -31,6 +31,33 @@ class XiaomiE10MapV61(XiaomiE10MapV60):
         super().__init__(vacuum, settings)
 
     @staticmethod
+    def _result_rows(raw):
+        """Normaliza respuestas MIoT a una lista de diccionarios."""
+        if raw is None:
+            return []
+        if isinstance(raw, (bytes, bytearray, memoryview)):
+            try:
+                raw = bytes(raw).decode("utf-8-sig")
+            except Exception:
+                return []
+        if isinstance(raw, str):
+            try:
+                raw = __import__("json").loads(raw.lstrip("\ufeff"))
+            except Exception:
+                return []
+        if isinstance(raw, list):
+            return [item for item in raw if isinstance(item, dict)]
+        if not isinstance(raw, dict):
+            return []
+        if "siid" in raw and "piid" in raw:
+            return [raw]
+        for key in ("result", "data", "out"):
+            rows = XiaomiE10MapV61._result_rows(raw.get(key))
+            if rows:
+                return rows
+        return []
+
+    @staticmethod
     def _as_int(value):
         if value is None or isinstance(value, bool):
             return None
