@@ -16,8 +16,7 @@ def test_get_cur_path_without_readable_start_end():
     from xiaomi_e10_live import XiaomiE10Live
 
     live = object.__new__(XiaomiE10Live)
-    live._live_path_cursor = None
-    live._live_path_probe_index = 0
+    live.reset_live_path_session()
     live._live_robot_raw_key = None
     live._live_robot_same_reads = 0
 
