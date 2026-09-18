@@ -68,10 +68,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V84 para Windows 10/11 x64. Corrige el cierre físico del retorno observado en V83. status=4 pasa a ser autoritativo: una sola lectura de carga confirma el dock, anula cualquier timeout pendiente y evita el estado imposible status=4 con confirmado=False/timeout=True. El monitor de retorno hace una relectura final antes de tocar las ruedas, por lo que no ejecuta stop/manual si el robot ya está cargando. status=3 y status=4 invalidan inmediatamente cualquier recovery/antiatasco pendiente y los workers no pueden reiniciar el sweep durante el regreso. Cuando status=4 queda confirmado, el icono del robot se fija exactamente sobre la base (0,0) aunque 10/24 conserve una pose vieja o 10/22 vuelva a 255_255. V74, V81, V83 y el render comparten el mismo estado físico V84. Un status=4 inicial mientras el robot todavía no salió del dock no finaliza una sesión nueva. Conserva la exploración física y la trayectoria de V83, cobertura 2D, retorno de un solo dock y diagnóstico IJAI. El pipeline ejecuta smoke tests estrictos hasta V84."
+          $notes = "V85 para Windows 10/11 x64. Corrige el salto de coordenadas observado en V84: una muestra 10/24 ya no puede teletransportar el robot varios metros ni contaminar cobertura, extensión o completitud. V85 detecta discontinuidades consecutivas físicamente imposibles (umbral conservador 0.80 m), reancla el marco de coordenadas sobre la última posición válida sin mover el robot y continúa usando los deltas posteriores reales. Un salto aislado que luego vuelve al marco anterior se absorbe con un segundo reanclaje, sin dibujar diagonales falsas. El diagnóstico V85 informa saltos bloqueados, rebases, offset activo y máximo salto raw observado. Conserva íntegramente V84: status=4 autoritativo, timeout anulado, antiatasco cancelado durante retorno y robot visual fijado al dock. El pipeline ejecuta smoke tests estrictos hasta V85."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V84" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V85" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
