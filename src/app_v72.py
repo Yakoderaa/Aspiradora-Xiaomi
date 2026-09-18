@@ -8,7 +8,7 @@ class App(app_v71.App):
     """V72: viewport tipo CAD para el mapa, sin tocar la geometría del mapeo."""
 
     ZOOM_STEP = 1.18
-    MIN_SCALE = 4.0
+    MIN_SCALE = 0.5
     MAX_SCALE = 900.0
 
     def __init__(self):
