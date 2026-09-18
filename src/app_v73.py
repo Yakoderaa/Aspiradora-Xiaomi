@@ -1042,8 +1042,7 @@ class App(app_v72.App):
             "",
             "",
         ]
-        return "
-".join(lines) + inherited
+        return "\n".join(lines) + inherited
 
 
 if __name__ == "__main__":
