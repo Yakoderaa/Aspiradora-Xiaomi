@@ -59,10 +59,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V64 para Windows 10/11 x64. Corrige el flujo de creación de mapa usando la especificación exacta de xiaomi.vacuum.b112. El E10 probado rechaza remember-state 10/1=1, por lo que V64 deja de escribir esa propiedad y la trata sólo como telemetría. Paso 1 ahora arma un mapa nuevo mediante la acción documentada 10/17 build-map-ii con build-map=1; si esa variante es rechazada, usa el fallback documentado 10/11 build-new-map. Sólo después de una respuesta aceptada prepara agua/succión/modo y ejecuta EDGE 7/3. También corrige 10/23 a map-privacy (0=Enable, 1=DisEnable) para este modelo y permite la búsqueda realtime mientras build-map está activo o la orden de build fue aceptada, aunque cur-map-id todavía sea 0. F12 muestra acción, code, timestamp, readback y estado de privacidad. El pipeline mantiene smoke tests estrictos hasta V64."
+          $notes = "V65 para Windows 10/11 x64. Corrige la interpretación de la respuesta de acciones MIoT. python-miio call_action_by devuelve directamente el result de MiIOProtocol, y una acción exitosa puede llegar como ['ok'] sin code ni timestamp; V64 confundía ese ACK con rechazo y disparaba además el fallback 10/11. V65 acepta exclusivamente confirmaciones fuertes: code=0, ACK ok, timestamp de salida o readback build-map=modo. Un code negativo siempre rechaza, incluso si hay un ok anidado; None o respuesta vacía por sí solos no autorizan movimiento. Si 10/17 build-map-ii devuelve ACK válido, 10/11 no se ejecuta y recién entonces se prepara el robot y arranca EDGE 7/3. F12 V65 muestra code, ack, tipo/resumen de respuesta y accepted. El pipeline mantiene smoke tests estrictos hasta V65."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V64" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V65" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }

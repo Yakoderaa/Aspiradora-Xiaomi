@@ -306,6 +306,58 @@ class XiaomiE10:
         return None
 
     @classmethod
+    def _miot_action_ack(cls, response) -> bool:
+        """Detecta el ACK simple que devuelve python-miio para acciones MIoT.
+
+        MiIOProtocol devuelve directamente payload["result"]. Para acciones
+        MIoT sin salida estructurada, python-miio y muchos dispositivos usan
+        ["ok"] (o "ok"), por lo que la ausencia de code NO implica rechazo.
+        """
+        if response is None:
+            return False
+        if isinstance(response, (bytes, bytearray, memoryview)):
+            try:
+                response = bytes(response).decode("utf-8", errors="ignore")
+            except Exception:
+                return False
+        if isinstance(response, str):
+            return response.strip().lower() == "ok"
+        if isinstance(response, dict):
+            for key in ("result", "data", "out", "status"):
+                if key in response and cls._miot_action_ack(response.get(key)):
+                    return True
+            return False
+        if isinstance(response, (list, tuple)):
+            return any(cls._miot_action_ack(item) for item in response)
+        return False
+
+    @classmethod
+    def _miot_action_response_summary(cls, response) -> str:
+        """Resume la forma de la respuesta sin volcar payloads extensos."""
+        if response is None:
+            return "None"
+        if isinstance(response, (bytes, bytearray, memoryview)):
+            return f"{type(response).__name__}[{len(response)}]"
+        if isinstance(response, str):
+            text = response.strip()
+            return repr(text[:80] + ("…" if len(text) > 80 else ""))
+        if isinstance(response, dict):
+            keys = sorted(str(k) for k in response.keys())
+            code = cls._miot_action_code(response)
+            return f"dict(keys={keys[:10]}, code={code!r})"
+        if isinstance(response, (list, tuple)):
+            preview = []
+            for item in list(response)[:4]:
+                if isinstance(item, str):
+                    preview.append(repr(item[:40]))
+                elif isinstance(item, (int, float, bool)) or item is None:
+                    preview.append(repr(item))
+                else:
+                    preview.append(type(item).__name__)
+            return f"{type(response).__name__}[{len(response)}]({', '.join(preview)})"
+        return type(response).__name__
+
+    @classmethod
     def _miot_output_value(cls, response, target_piid: int):
         """Busca recursivamente un valor de salida por PIID."""
         if isinstance(response, dict):
@@ -333,7 +385,7 @@ class XiaomiE10:
 
         xiaomi.vacuum.b112 define 10/17 build-map-ii con PIID 14 como entrada y
         PIID 18 (timestamp) como salida. También conserva 10/11 build-new-map
-        como variante anterior. V64 usa 10/17 primero y sólo cae a 10/11 si la
+        como variante anterior. V65 usa 10/17 primero y sólo cae a 10/11 si la
         acción nueva es rechazada.
 
         Importante: 10/1 remember-state deja de ser un gate. En el B112 real
@@ -364,8 +416,12 @@ class XiaomiE10:
             try:
                 response = self.device.call_action_by(10, aiid, [mode])
                 code = self._miot_action_code(response)
+                ack = self._miot_action_ack(response)
                 timestamp = self._miot_output_value(response, 18)
                 item["code"] = code
+                item["ack"] = bool(ack)
+                item["response_type"] = type(response).__name__
+                item["response_summary"] = self._miot_action_response_summary(response)
                 item["timestamp"] = timestamp
             except Exception as exc:
                 item["error"] = str(exc).strip() or type(exc).__name__
@@ -387,13 +443,20 @@ class XiaomiE10:
             item["has_new_map_readback"] = final_state.get("has_new_map")
             item["map_privacy_readback"] = final_state.get("map_privacy")
 
-            # MIoT code=0 es confirmación explícita de la acción. Para wrappers
-            # que no exponen code, aceptamos la salida timestamp de 10/17 o el
-            # readback build-map=mode.
+            # V65: python-miio puede devolver el ACK de una acción como ["ok"]
+            # porque MiIOProtocol ya extrajo payload["result"]. Un code negativo
+            # sigue siendo rechazo explícito. Si no hay code, sólo aceptamos ACK
+            # "ok", timestamp de salida o readback build-map=mode; None/vacío por
+            # sí solo nunca autoriza mover el robot.
+            explicit_reject = code is not None and code != 0
             accepted = (
-                code == 0
-                or (code is None and timestamp is not None)
-                or self._numeric_values(final_state.get("build_map"))[:1] == [float(mode)]
+                not explicit_reject
+                and (
+                    code == 0
+                    or bool(ack)
+                    or timestamp is not None
+                    or self._numeric_values(final_state.get("build_map"))[:1] == [float(mode)]
+                )
             )
             item["accepted"] = bool(accepted)
             attempts.append(item)
@@ -413,7 +476,14 @@ class XiaomiE10:
 
         if not success:
             detail = "; ".join(
-                f"{x.get('action')}: {x.get('error') or ('code=' + repr(x.get('code')))}"
+                (
+                    f"{x.get('action')}: {x.get('error')}"
+                    if x.get("error")
+                    else (
+                        f"{x.get('action')}: code={x.get('code')!r}, "
+                        f"ack={bool(x.get('ack'))}, resp={x.get('response_summary') or '—'}"
+                    )
+                )
                 for x in attempts
             ) or "sin respuesta"
             raise RuntimeError(
