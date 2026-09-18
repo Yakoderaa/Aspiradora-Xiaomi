@@ -16,10 +16,25 @@ class FakeDevice:
     def __init__(self):
         self.properties = []
         self.actions = []
+        self.remember_state = 0
 
-    def set_property_by(self, siid, piid, value):
+    def set_property_by(self, siid, piid, value, **kwargs):
         self.properties.append((siid, piid, value))
+        if (siid, piid) == (10, 1):
+            self.remember_state = int(value)
         return {"code": 0}
+
+    def get_property_by(self, siid, piid):
+        check((siid, piid) == (10, 1), "El fixture V26 sólo simula readback de remember-state")
+        return [{"code": 0, "value": self.remember_state}]
+
+    def send(self, method, payload):
+        check(method == "set_properties", "El fixture V26 sólo simula set_properties")
+        item = payload[0]
+        check((item.get("siid"), item.get("piid")) == (10, 1), "Setter inesperado en fixture V26")
+        self.remember_state = int(item.get("value"))
+        self.properties.append((10, 1, self.remember_state))
+        return [{"code": 0}]
 
     def call_action_by(self, siid, aiid, params=None):
         self.actions.append((siid, aiid, list(params or [])))
