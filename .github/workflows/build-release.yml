@@ -68,10 +68,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V69 para Windows 10/11 x64. Corrige la transición Paso 1 -> Paso 2 con la especificación exacta del Xiaomi E10 B112: el servicio battery sólo expone 3/1 battery-level, por lo que se elimina la consulta inexistente 3/2 charging-state. status=4 sigue siendo la confirmación directa preferida. Si el firmware queda pegado en status=3 aun después de volver físicamente, V69 reafirma dock una sola vez y sólo habilita el fallback después de retorno prolongado, fault=0 y posición 10/24 estable; una subida de batería también cuenta como evidencia fuerte. Además, el diagnóstico clean-end 7/1 deja de contar placeholders como cloud/hello/retry/null como referencias FDS: clasifica PIID30 como placeholder/URL/ruta/objeto, busca referencias de archivo anidadas en el mismo registro y sólo entrega referencias resolubles al probe. F12 V69 muestra retorno, fault, batería, estabilidad de pose y forma real de record-map-url. El pipeline mantiene smoke tests estrictos hasta V69."
+          $notes = "V70 para Windows 10/11 x64. Rehace la experiencia de la pestaña Mapa sin modificar la lógica V69 del robot: los cuatro slots de mapa permanecen visibles simultáneamente como tarjetas con miniatura, nombre, conteos y estado; el mapa activo queda marcado con SELECCIONADO y puede cambiarse directamente desde la tarjeta, sin abrir la biblioteca. Los slots libres permiten crear un mapa desde la misma pestaña. El mapa seleccionado también aparece de forma persistente en la cabecera global y debajo del título del plano. Se conservan en la misma pestaña las herramientas + Zona, Bloquear, Limpiar zonas y Zonas, además del canvas grande para editar el mapa activo. Al completar naturalmente el Paso 2, la app muestra Mapeo terminado e indica explícitamente qué mapa quedó seleccionado, además de dejarlo en el banner. El botón Mapas pasa a Administrar para renombrar, eliminar, importar o exportar, no para la selección cotidiana. El pipeline mantiene smoke tests estrictos hasta V70."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V69" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V70" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
