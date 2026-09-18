@@ -4,6 +4,9 @@ Gracias por interesarte en Aspiradora Xiaomi.
 
 El proyecto trabaja con un dispositivo real y un protocolo que contiene comportamientos específicos del firmware, por lo que una contribución útil debe priorizar reproducibilidad y seguridad.
 
+> [!IMPORTANT]
+> **La recepción de código externo está temporalmente restringida.** Issues, reportes, diagnósticos saneados y propuestas son bienvenidos; antes de enviar un Pull Request con código, coordiná con el mantenedor. El objetivo es conservar una cadena clara de titularidad mientras se define una política formal de contribuciones/licencias y se evalúa la estrategia de propiedad intelectual.
+
 ## Antes de abrir un issue
 
 Buscá issues existentes y comprobá que estés usando una release reciente.
@@ -33,6 +36,10 @@ python -m pip install -r requirements.txt
 ```
 
 ## Pull Requests
+
+Los Pull Requests con código de terceros requieren coordinación previa con el mantenedor. Un PR no se considera aceptado ni incorporado por el solo hecho de haber sido enviado.
+
+Si se acuerda una contribución:
 
 1. Creá una rama a partir de `main`.
 2. Limitá el PR a un objetivo claro.
@@ -68,3 +75,11 @@ Preferimos código directo y fácil de diagnosticar. Los comentarios deben expli
 ## Documentación
 
 Los cambios sólo de documentación no generan una nueva release de la aplicación.
+
+## Titularidad y licencias
+
+No envíes código que no puedas legalmente contribuir. Las dependencias de terceros deben mantener sus avisos y licencias.
+
+Hasta que exista una política formal de contribuciones (por ejemplo, CLA o mecanismo equivalente), el proyecto prioriza reportes y propuestas sobre la incorporación automática de código externo. Esto evita mezclar titularidades sin documentación suficiente.
+
+Ver [docs/INTELLECTUAL_PROPERTY.md](docs/INTELLECTUAL_PROPERTY.md).

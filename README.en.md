@@ -9,10 +9,12 @@ An independent desktop application to control, observe and extend the **Xiaomi R
 [Español](README.md) · [Download](https://github.com/Yakoderaa/Aspiradora-Xiaomi/releases/latest) · [Documentation](docs/INSTALLATION.md) · [Roadmap](docs/ROADMAP.md)
 
 [![Release](https://img.shields.io/github/v/release/Yakoderaa/Aspiradora-Xiaomi?display_name=tag&sort=semver)](https://github.com/Yakoderaa/Aspiradora-Xiaomi/releases/latest)
-[![Build](https://github.com/Yakoderaa/Aspiradora-Xiaomi/actions/workflows/build-release.yml/badge.svg)](https://github.com/Yakoderaa/Aspiradora-Xiaomi/actions/workflows/build-release.yml)
+[![Windows Build](https://github.com/Yakoderaa/Aspiradora-Xiaomi/actions/workflows/build-release.yml/badge.svg)](https://github.com/Yakoderaa/Aspiradora-Xiaomi/actions/workflows/build-release.yml)
+[![CodeQL](https://github.com/Yakoderaa/Aspiradora-Xiaomi/actions/workflows/codeql.yml/badge.svg)](https://github.com/Yakoderaa/Aspiradora-Xiaomi/actions/workflows/codeql.yml)
 ![Windows](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D4?logo=windows11&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
 ![Model](https://img.shields.io/badge/Xiaomi%20E10-xiaomi.vacuum.b112-ff6900)
+![Copyright](https://img.shields.io/badge/Copyright-2026%20Yakoderaa-111111)
 
 <br>
 
@@ -32,6 +34,18 @@ The project goes beyond a basic remote control. It explores local MIoT communica
 
 > [!IMPORTANT]
 > This project is under **active development**. Core robot control is usable; custom mapping and anti-stall behaviour remain experimental and are being validated specifically against `xiaomi.vacuum.b112`.
+
+### The hardware behind the project
+
+<table>
+  <tr>
+    <td width="33%" align="center"><img src="https://i02.appmifile.com/mi-com-product/fly-birds/pc/xiaomi-robot-vacuum-e10/f13e2b37b5b59a38d76f6e75937d1c3d.jpg" width="100%" alt="Xiaomi E10 path planning"><br><sub>Path planning</sub></td>
+    <td width="33%" align="center"><img src="https://i02.appmifile.com/mi-com-product/fly-birds/pc/xiaomi-robot-vacuum-e10/de5171c41c39a5a6540c19fd21dc850d.jpg" width="100%" alt="Xiaomi E10 sensors"><br><sub>Sensors & environment</sub></td>
+    <td width="33%" align="center"><img src="https://i02.appmifile.com/mi-com-product/fly-birds/pc/xiaomi-robot-vacuum-e10/bb17a6f6e2222dd8b7632866e97f2d7f.jpg" width="100%" alt="Xiaomi E10 under furniture"><br><sub>Compact hardware</sub></td>
+  </tr>
+</table>
+
+<p align="center"><sub>Official Xiaomi product photography used only as a reference for the supported device.</sub></p>
 
 ## Current status
 
@@ -88,9 +102,16 @@ flowchart LR
 
 The current Windows application uses **Python 3.12 + Tkinter**, `python-miio`, PyInstaller and Inno Setup.
 
-## Privacy and security
+## Intellectual property and security
 
-Xiaomi passwords are not stored. Local tokens are protected with Windows DPAPI. Diagnostic output is designed to avoid exposing full tokens, signed FDS URLs or credentials.
+The repository now includes an explicit copyright notice, CODEOWNERS, CodeQL, Dependabot, a security policy and a threat model.
+
+- [Copyright notice](COPYRIGHT.md)
+- [Intellectual property strategy](docs/INTELLECTUAL_PROPERTY.md)
+- [Security policy](SECURITY.md)
+- [Security model](docs/SECURITY_MODEL.md)
+
+Xiaomi passwords are not stored. Local tokens are protected with Windows DPAPI where applicable. Diagnostic output is designed to avoid exposing full tokens, signed FDS URLs or credentials.
 
 Never post secrets or personal configuration files in a public issue.
 
