@@ -59,10 +59,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V56 para Windows 10/11 x64. Implementa la ruta funcional de mapa del Xiaomi E10/B112: solicita un realtime fresco con las acciones oficiales del spec 10/18 upmapdata, 10/15(type=0) y 10/6(type=0), deteniéndose cuando cambia el blob Cloud. Descifra el slot clásico con la derivación MD5 completa ya validada y reconoce el formato B112 de 3628 bytes como cabecera tipo 0x06/24 + rejilla 120x120 de 2 bits por celda. La rejilla se renderiza directamente, su contorno se persiste como paredes y, si 10/24 queda congelado, las diferencias temporales entre mapas frescos alimentan un fallback de trayectoria sólo después de observar cambios reales entre dos mapas. Conserva las guardas contra sentinelas de base y no usa muestras aisladas como movimiento."
+          $notes = "V57 para Windows 10/11 x64. Corrige el falso mapa de cuadrados de V56 y agrega recuperación del mapa real por eventos Cloud. Un grid sólo se renderiza si pasa validación espacial fuerte (celdas suficientes, componente dominante y adyacencia); si falla se borran los contornos falsos. Para realtime, después de 10/18, 10/15(0) y 10/6(0) espera propagación Cloud y consulta los eventos MIoT 10/2 global-push, 10/4 upload-verify y 10/6 test-upload-map. Para el mapa final consulta el evento 7/1 clean-end, extrae piid 30 record-map-url, lo resuelve por getfileurl/getmapfileurl/interim normal/pro y descarga el archivo. El mapa descargado se prueba como imagen directa, B112, IJAI y Xiaomi JSON. El polling continúa 3 minutos tras terminar la limpieza para capturar automáticamente clean-end."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V56" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V57" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
