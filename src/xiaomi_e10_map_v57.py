@@ -31,6 +31,7 @@ class XiaomiE10MapV57(XiaomiE10MapV56):
 
     def __init__(self, *args, **kwargs):
         self.last_v57_diagnostics: dict[str, Any] = {}
+        self._v57_session_started_at = time.time()
         self._v57_last_record_signature = None
         self._v57_last_record_snapshot = None
         super().__init__(*args, **kwargs)
@@ -455,7 +456,11 @@ class XiaomiE10MapV57(XiaomiE10MapV56):
     # ----------------------------------------------------------- event maps
     def _latest_clean_end(self):
         end = int(time.time()) + 30
-        start = max(0, end - self.HISTORY_LOOKBACK_SECONDS)
+        start = max(
+            0,
+            end - self.HISTORY_LOOKBACK_SECONDS,
+            int(float(getattr(self, "_v57_session_started_at", 0.0) or 0.0)) - 120,
+        )
         records, diag = self._query_key(self.CLEAN_END_KEY, start, end)
         log_records, log_diag = self._query_device_log(start, end)
 
