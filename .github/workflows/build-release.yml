@@ -68,10 +68,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V83 para Windows 10/11 x64. Ajusta el mapeo a la prueba física V82: un giro fuerte sólo congela X/Y cuando el desplazamiento es prácticamente nulo; si el E10 gira mientras avanza, la traslación real se conserva. El rail rígido de carril se elimina y un offset lateral sólo se retiene temporalmente; si persiste durante varias muestras o la corrección se alejaría más de 0.22 m de 10/24 absoluto, se acepta como cambio de carril real. El antiatasco es más conservador: aumenta las ventanas y reversiones requeridas, estrecha el detector de corredor, bloquea cualquier recovery mientras sigan apareciendo celdas nuevas y añade un cooldown duro de 120 s entre recuperaciones. El diagnóstico V83 clasifica muestras recientes como ACEPTADO, GIRO PURO, OFFSET TRANSITORIO o CAMBIO DE CARRIL y muestra por qué cada recovery fue permitido o bloqueado. Conserva cobertura 2D, snapshot único, retorno de un solo dock, protección de rampa, base B112 60_60/10-22 e IJAI diagnóstico. El pipeline ejecuta smoke tests estrictos hasta V83."
+          $notes = "V84 para Windows 10/11 x64. Corrige el cierre físico del retorno observado en V83. status=4 pasa a ser autoritativo: una sola lectura de carga confirma el dock, anula cualquier timeout pendiente y evita el estado imposible status=4 con confirmado=False/timeout=True. El monitor de retorno hace una relectura final antes de tocar las ruedas, por lo que no ejecuta stop/manual si el robot ya está cargando. status=3 y status=4 invalidan inmediatamente cualquier recovery/antiatasco pendiente y los workers no pueden reiniciar el sweep durante el regreso. Cuando status=4 queda confirmado, el icono del robot se fija exactamente sobre la base (0,0) aunque 10/24 conserve una pose vieja o 10/22 vuelva a 255_255. V74, V81, V83 y el render comparten el mismo estado físico V84. Un status=4 inicial mientras el robot todavía no salió del dock no finaliza una sesión nueva. Conserva la exploración física y la trayectoria de V83, cobertura 2D, retorno de un solo dock y diagnóstico IJAI. El pipeline ejecuta smoke tests estrictos hasta V84."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V83" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V84" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
