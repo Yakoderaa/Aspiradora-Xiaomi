@@ -81,7 +81,7 @@ assert base == (1000.0, 2000.0)
 assert len(path) == 4
 
 # Verifica además la librería de parsing con el JSON ya descifrado.
-parser = XiaomiE10MapClient._parser()
+parser = XiaomiE10MapClient._xiaomi_parser()
 map_data = parser.parse(plaintext)
 assert map_data.vacuum_position is not None
 assert float(map_data.vacuum_position.x) == 1450.0
@@ -95,4 +95,4 @@ assert abs(local[-1]["x"] - 0.45) < 1e-9
 assert abs(local[-1]["y"] - 0.25) < 1e-9
 assert App._v39_path_has_motion(local) is True
 
-print("smoke_test_v39 OK · AES suffix16 + JSON position/base/paths + parser")
+print("smoke_test_v39 OK · AES suffix16 + JSON position/base/paths + Xiaomi parser")
