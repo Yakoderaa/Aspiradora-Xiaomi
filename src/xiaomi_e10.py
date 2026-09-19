@@ -66,9 +66,40 @@ class XiaomiE10:
         self.device = MiotDevice(self.ip, self.token, model=MODEL, timeout=5)
         self._last_status_code = -1
         self._last_cleaning_area_raw = 0
+        self._targeted_clean_guard = 0
+        self._targeted_clean_blocked_mapping_calls = 0
+        self._targeted_clean_last_blocked = None
 
     def info(self):
         return self.device.info(skip_cache=True)
+
+    def begin_targeted_clean(self):
+        self._targeted_clean_guard = int(
+            getattr(self, "_targeted_clean_guard", 0) or 0
+        ) + 1
+        return self._targeted_clean_guard
+
+    def end_targeted_clean(self):
+        self._targeted_clean_guard = max(
+            0,
+            int(getattr(self, "_targeted_clean_guard", 0) or 0) - 1,
+        )
+        return self._targeted_clean_guard
+
+    def targeted_clean_guard_active(self):
+        return int(getattr(self, "_targeted_clean_guard", 0) or 0) > 0
+
+    def _reject_mapping_during_targeted_clean(self, operation):
+        if not self.targeted_clean_guard_active():
+            return
+        self._targeted_clean_blocked_mapping_calls = int(
+            getattr(self, "_targeted_clean_blocked_mapping_calls", 0) or 0
+        ) + 1
+        self._targeted_clean_last_blocked = str(operation)
+        raise RuntimeError(
+            "Seguridad V114: una limpieza dirigida no puede iniciar, "
+            "armar ni reconstruir un mapa."
+        )
 
     def _get_many(self, definitions):
         payload = [
@@ -489,6 +520,7 @@ class XiaomiE10:
         return None
 
     def arm_new_map(self, build_mode: int = 1):
+        self._reject_mapping_during_targeted_clean("arm_new_map")
         """Arma la creación de un mapa nuevo usando las acciones B112 oficiales.
 
         xiaomi.vacuum.b112 define 10/17 build-map-ii con PIID 14 como entrada y
@@ -700,6 +732,7 @@ class XiaomiE10:
         return final_value
 
     def _prepare_mapping_vacuum(self):
+        self._reject_mapping_during_targeted_clean("_prepare_mapping_vacuum")
         """Prepara el robot físicamente para mapear en ECO.
 
         V64 ya no escribe 10/1 remember-state. La creación del mapa se arma de
@@ -710,6 +743,7 @@ class XiaomiE10:
         self.set_mode(0)
 
     def _start_mapping_sweep(self, sweep_type: int):
+        self._reject_mapping_during_targeted_clean("_start_mapping_sweep")
         """Recorrido genérico; se usa únicamente para el Paso 2 global."""
         self._prepare_mapping_vacuum()
         self.set_sweep_type(sweep_type)
@@ -719,6 +753,7 @@ class XiaomiE10:
             return self.device.call_action_by(2, 3)
 
     def start_mapping_perimeter(self):
+        self._reject_mapping_during_targeted_clean("start_mapping_perimeter")
         """Paso 1: inicia DIRECTAMENTE limpieza de borde en toda la vivienda.
 
         El E10 expone en el servicio Sweep (siid 7) la acción set-room-clean
@@ -735,10 +770,12 @@ class XiaomiE10:
         return self.device.call_action_by(7, 3, ["", 2, 1])
 
     def start_mapping_interior(self):
+        self._reject_mapping_during_targeted_clean("start_mapping_interior")
         """Paso 2: recorrido global para completar el interior."""
         return self._start_mapping_sweep(0)
 
     def start_mapping_run(self):
+        self._reject_mapping_during_targeted_clean("start_mapping_run")
         """Compatibilidad: un recorrido global de mapeo."""
         return self.start_mapping_interior()
 
