@@ -4,6 +4,20 @@ Este archivo resume **hitos importantes**, no cada build interno. Para el detall
 
 ## Unreleased
 
+### V95 · recuperación del mapa vivo + controles globales
+
+- Corrige el caso observado en F12 donde el E10 estaba físicamente en `status=5` pero la app seguía con **0 frames V92, 0 puntos 10/24 y 0 lecturas de mapa**, mientras Mi Home sí actualizaba.
+- Durante un mapeo, `status 5/6/7` ahora puede despertar directamente el lector Cloud aunque la telemetría LAN todavía no haya entregado ninguna pose.
+- El loop de mapa LAN deja de morir si encuentra un worker ya activo: reprograma el siguiente intento en vez de abandonar el sondeo.
+- Watchdog de sólo lectura para LAN y Cloud: si una consulta queda colgada demasiado tiempo, se libera el gate y se permite una lectura nueva sin congelar toda la sesión.
+- Al confirmar el START de mapeo se rearman explícitamente ambos streams, LAN + Cloud.
+- F12 V95 muestra edades de actividad, workers activos, recuperaciones, resets por timeout, polls locales y kicks Cloud.
+- La barra superior incorpora **Iniciar limpieza** y **Volver a base** siempre visibles.
+- **Iniciar limpieza** reaplica modo, succión y agua actualmente seleccionados antes de arrancar la limpieza normal.
+- La limpieza normal queda bloqueada durante un mapeo activo para no pisar la sesión.
+- Esta versión se empaqueta desde `main_v95.py`, incluyendo realmente V93 y V94 dentro del EXE.
+
+
 ### V92 · layouts 2bpp + acumulación temporal
 
 - Conserva la cabecera B112 real de V91: **3628 B = 28 B de cabecera + 3600 B de grid**.
