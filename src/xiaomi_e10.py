@@ -64,6 +64,8 @@ class XiaomiE10:
         self.ip = ip.strip()
         self.token = token.strip()
         self.device = MiotDevice(self.ip, self.token, model=MODEL, timeout=5)
+        self._last_status_code = -1
+        self._last_cleaning_area_raw = 0
 
     def info(self):
         return self.device.info(skip_cache=True)
@@ -109,22 +111,62 @@ class XiaomiE10:
         ]
         v = self._get_many(defs)
         values = {}
-        cleaning_area_raw = 0
+
+        try:
+            status_code = int(v.get("status", -1))
+        except Exception:
+            status_code = -1
+
+        active_states = (2, 5, 6, 7)
+        tail_states = (3, 4)
+
+        # Una sesión nueva debe empezar sin arrastrar el área anterior.
+        if (
+            status_code in active_states
+            and self._last_status_code not in active_states
+        ):
+            self._last_cleaning_area_raw = 0
+
+        try:
+            cleaning_area_raw = int(v.get("cleaning_area", 0) or 0)
+        except Exception:
+            cleaning_area_raw = 0
+
+        # Algunos firmwares B112 omiten 7/23 en el get_properties múltiple.
+        # Si estamos limpiando/retornando/cargando, probamos la propiedad sola.
+        if cleaning_area_raw <= 0 and status_code in active_states + tail_states:
+            try:
+                direct_area = self._value(7, 23)
+                cleaning_area_raw = int(direct_area or 0)
+            except Exception:
+                cleaning_area_raw = 0
+
+        if cleaning_area_raw > 0:
+            self._last_cleaning_area_raw = max(
+                int(self._last_cleaning_area_raw or 0),
+                int(cleaning_area_raw),
+            )
+        elif status_code in tail_states and self._last_cleaning_area_raw > 0:
+            # El dock puede devolver 0 aunque Mi Home siga mostrando el área
+            # de la limpieza recién terminada. Conservamos el último acumulado.
+            cleaning_area_raw = int(self._last_cleaning_area_raw)
+
         for key, _siid, _piid in defs:
-            raw = v.get(key, 0) or 0
             if key == "cleaning_area":
-                try:
-                    cleaning_area_raw = int(raw)
-                except Exception:
-                    cleaning_area_raw = 0
-                # MIoT cleaning-area está expresado en unidades de 0,01 m².
-                values[key] = float(cleaning_area_raw) * 0.01
-            else:
-                try:
-                    values[key] = int(raw)
-                except Exception:
-                    values[key] = 0
-        values["cleaning_area_raw"] = cleaning_area_raw
+                # En xiaomi.vacuum.b112 7/23 usa décimas de m² en la práctica.
+                # El raw se conserva aparte para que el selector de mapa pueda
+                # validar/inferir el factor sin depender de esta presentación.
+                values[key] = float(cleaning_area_raw) * 0.1
+                continue
+
+            raw = v.get(key, 0) or 0
+            try:
+                values[key] = int(raw)
+            except Exception:
+                values[key] = 0
+
+        values["cleaning_area_raw"] = int(cleaning_area_raw)
+        self._last_status_code = int(status_code)
         return VacuumStatus(**values)
 
     def set_mode(self, mode: int):
