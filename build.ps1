@@ -153,7 +153,11 @@ pyinstaller --noconfirm --clean --windowed --onedir `
     --collect-all Crypto `
     --collect-all PIL `
     --collect-all pystray `
-    --collect-all pycaw `\n    --collect-all mcp `\n    --collect-all starlette `\n    --collect-all uvicorn `\n    --collect-all anyio `
+    --collect-all pycaw `
+    --collect-all mcp `
+    --collect-all starlette `
+    --collect-all uvicorn `
+    --collect-all anyio `
     --collect-all comtypes `
     --collect-all google.protobuf `
     --collect-all vacuum_map_parser_base `
