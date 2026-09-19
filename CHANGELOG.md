@@ -4,6 +4,17 @@ Este archivo resume **hitos importantes**, no cada build interno. Para el detall
 
 ## Unreleased
 
+### V88 · geometría Xiaomi validada y persistente
+
+- El mapa grande y las miniaturas usan la rejilla interna Xiaomi cuando V57 confirma que es espacialmente coherente.
+- La geometría nativa se guarda dentro de cada mapa local y sobrevive reinicios/cambios de mapa.
+- Corrección del sentinela de base `255_255`: si queda fuera de la rejilla B112, el renderer usa el centro físico `60_60`.
+- Los límites de zoom/Zoom Extents incluyen la planta Xiaomi completa, no sólo el recorrido del robot.
+- La leyenda fija pasa a **Mapa Xiaomi / Mapa estimado + Recorrido**, acorde al mapeo actual de una sola pasada.
+- Si no hay grid Xiaomi válido, V88 conserva el fallback de V87 pero a resolución de 10 cm, reduciendo la deformación visual.
+- V85/V86 siguen controlando trayectoria, continuidad, antiatasco, dock físico y ETA; V88 no altera esa lógica.
+- La personalización de voz sigue fuera de esta versión y queda como opción futura.
+
 ### V87 · modos de limpieza nativos
 
 - Botones **Limpiar bordes** y **Espiral** en el panel de limpieza.
