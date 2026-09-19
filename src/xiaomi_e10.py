@@ -34,6 +34,7 @@ class VacuumStatus:
     water: int = 0
     cleaning_time: int = 0
     cleaning_area: float = 0.0
+    cleaning_area_raw: int = 0
     door_state: int = 0
     cloth_state: int = 0
     side_brush_life: int = 0
@@ -108,18 +109,22 @@ class XiaomiE10:
         ]
         v = self._get_many(defs)
         values = {}
+        cleaning_area_raw = 0
         for key, _siid, _piid in defs:
             raw = v.get(key, 0) or 0
             if key == "cleaning_area":
                 try:
-                    values[key] = float(raw)
+                    cleaning_area_raw = int(raw)
                 except Exception:
-                    values[key] = 0.0
+                    cleaning_area_raw = 0
+                # MIoT cleaning-area está expresado en unidades de 0,01 m².
+                values[key] = float(cleaning_area_raw) * 0.01
             else:
                 try:
                     values[key] = int(raw)
                 except Exception:
                     values[key] = 0
+        values["cleaning_area_raw"] = cleaning_area_raw
         return VacuumStatus(**values)
 
     def set_mode(self, mode: int):
