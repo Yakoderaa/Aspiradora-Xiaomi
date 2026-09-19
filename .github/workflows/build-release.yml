@@ -68,7 +68,7 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V87 para Windows 10/11 x64. Agrega Limpiar bordes y Espiral usando los modos nativos del Xiaomi Vacuum E10: sweep-type=2 para bordes y sweep-type=4 para espiral/punto. La limpieza normal restablece Global=0 para no heredar el patrón anterior y los modos especiales respetan Aspirar, Aspirar + trapear o Trapear. Conserva V86: aviso de mapeo sólo después de confirmar físicamente status=4 en el dock, ETA de carga y autonomía de aspirado, y continuidad anti-salto V85. La personalización de voz queda documentada como opción futura y no forma parte de esta release."
+          $notes = "V87 para Windows 10/11 x64. Agrega Limpiar bordes y Espiral usando los modos nativos del Xiaomi Vacuum E10: sweep-type=2 para bordes y sweep-type=4 para espiral/punto. La limpieza normal restablece Global=0 para no heredar el patrón anterior. El mapa adopta un estilo inspirado en Mi Home: fondo limpio sin grilla, superficie explorada continua, contorno azul, recorrido superpuesto, base verde con indicador de carga y robot circular orientado; este renderer es sólo visual y conserva intactas las coordenadas, cobertura y lógica física de V85/V86. Conserva además el aviso de fin sólo con dock físico confirmado y las ETA de carga/autonomía. La personalización de voz queda documentada como opción futura."
 
           gh release create $tag `
             --title "Aspiradora Xiaomi $env:APP_VERSION · V87" `
