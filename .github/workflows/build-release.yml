@@ -89,10 +89,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V118 para Windows 10/11 x64. Corrige el desacople detectado en el diagnóstico final: el worker V115 podía quedar inactivo mientras el E10 seguía físicamente en status=5. V118 agrega un candado físico en el controlador: una vez confirmado status 5/6/7, permanece hasta status=4 real; lecturas 0/1 transitorias requieren seis muestras consecutivas y no liberan la sesión. Mientras el candado está activo se bloquea cualquier segundo START global, bordes, espiral, habitación, zona o intento de mapeo, incluso si el worker V116 terminó antes. F12 registra cada orden de arranque, bloqueos, transiciones físicas y mismatches. Conserva V117: 10/24 vivo se superpone sobre el mapa Xiaomi de 241 celdas sin modificarlo, y locate/Hacer sonar queda contabilizado."
+          $notes = "V119 para Windows 10/11 x64. Corrige el retorno prematuro observado durante el mapeo de toda la vivienda. V81 trataba como mapa completo la combinación de cobertura mínima + corredor repetido y ejecutaba stop+dock aunque quedaran habitaciones sin recorrer. V119 elimina ese cierre heurístico: no-new-area y corredor repetido nunca ejecutan stop, dock ni v74_mapping_complete. Los eventos de corredor tampoco reinician el sweep; se prioriza la autorrecuperación del firmware y sólo los casos realmente estacionarios/oscilando conservan recovery. El cierre queda reservado al retorno físico del propio E10 o a Detener mapeo. También corrige el falso positivo V118: status 5/6/7 durante mapping_active=True ya no se cuenta como limpieza global. Conserva V117/V118 para pose viva, START único y auditoría."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V118" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V119" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }

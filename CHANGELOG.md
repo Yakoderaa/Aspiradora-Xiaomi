@@ -1,5 +1,17 @@
 # Changelog
 
+### V119 · mapeo completo sin cierre heurístico prematuro
+
+- Corrige el retorno observado con habitaciones todavía sin recorrer: V81 consideraba “completo” el mapa por cobertura mínima + corredor repetido y ejecutaba `stop + dock`.
+- Durante **Mapear vivienda**, `no-new-area` ya no puede finalizar la sesión ni enviar el robot a la base.
+- Un corredor repetido ya no llama a `_v81_finish_complete` ni `_v81_stop_incomplete`; la sesión permanece abierta.
+- Los recoveries clasificados como **corredor/sector repetido** se suprimen para priorizar la autorrecuperación del firmware y evitar reiniciar el sweep/Mi Home.
+- La recuperación automática se conserva para una oscilación realmente estacionaria sin avance.
+- El cierre normal queda reservado al retorno físico del propio E10 o a **Detener mapeo**.
+- V118 deja de interpretar `status 5/6/7` como limpieza global cuando `mapping_active=True`.
+- F12 V119 contabiliza cierres y recoveries heurísticos suprimidos.
+
+
 ### V118 · sesión física autoritativa + START único
 
 - Corrige el desacople observado: el diagnóstico podía mostrar `limpieza global activa=False` mientras el E10 seguía en `status=5`.
