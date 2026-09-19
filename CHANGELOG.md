@@ -1,5 +1,18 @@
 # Changelog
 
+### V121 · perímetro → interior en la misma sesión Xiaomi
+
+- El mapeo pasa a dos fases sin ejecutar un segundo `build-map-ii`.
+- **Fase 1/2:** Edge recorre el perímetro completo y descubre puertas/límites.
+- El primer `status=4` al volver del perímetro es un **dock intermedio**: no cierra `mapping_active`, no notifica fin y no dispara captura final.
+- **Fase 2/2:** desde ese mismo dock se ejecuta `start_mapping_interior()` con sweep global, sin `arm_new_map()`.
+- La salida física de Fase 2 se confirma por `status 5/6/7`; si no arranca, la sesión se detiene sin guardar el mapa parcial.
+- Sólo el dock posterior a Fase 2 habilita las tres lecturas finales Xiaomi.
+- Corrige el falso mapa final de **40 celdas** observado en V120: `_v107_choose_final_grid` rechaza cualquier frame con `metrics.valid=False`.
+- F12 V121 muestra fase actual, transición, confirmación de Fase 2, cierres/capturas prematuras suprimidas y frames finales inválidos rechazados.
+- Se reparan los separadores literales heredados del bloque de smoke tests para que V117–V121 se ejecuten como comandos independientes durante CI.
+
+
 ### V120 · exploración de vivienda en vez de limpieza global
 
 - **Mapear vivienda** conserva `10/17 build-map-ii(mode=1)`, ECO y agua apagada.

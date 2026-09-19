@@ -89,10 +89,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V120 para Windows 10/11 x64. Mapear vivienda deja de iniciar un sweep global normal después de build-map. La ruta nueva es 10/17 build-map-ii(mode=1) -> ECO/agua=0 -> sweep-type=2 -> una única acción 7/3 con room ids vacíos y modo Edge para explorar la vivienda. No hay start global 2/1 o 2/3 ni segunda fase automática. El START se valida por status físico 5/6/7 y F12 guarda respuesta, status y sweep-type. Conserva V119: corredor/no-new-area no pueden finalizar ni mandar al dock; el preview live sigue fuera de prioridad y el mapa se evalúa al dock."
+          $notes = "V121 para Windows 10/11 x64. Mapeo en dos fases dentro de una sola sesión Xiaomi: build-map-ii se ejecuta una vez, Fase 1 recorre todo el perímetro con Edge y el primer retorno al dock NO cierra ni captura el mapa; desde ese mismo dock se inicia Fase 2 global/interior sin volver a arm_new_map. Sólo el segundo dock habilita las tres lecturas finales. Corrige además el falso mapa de 40 celdas observado en V120: cualquier frame final con metrics.valid=False se rechaza y no se persiste ni se rotula como mapa Xiaomi final. La vista live sigue fuera de prioridad."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V120" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V121" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
