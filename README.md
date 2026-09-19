@@ -41,7 +41,7 @@ The E10/B112 does not expose its map in the same way as newer Xiaomi robot vacuu
 - A decoded 120×120 2-bit grid candidate at 0.20 m resolution.
 - Multi-frame accumulation and spatial validation before a native Xiaomi grid is allowed to replace the estimated view.
 
-A key design rule is **do not invent room geometry**. During early or nearly linear movement, the app shows the dock and robot but **no estimated room surface**. A fallback surface is allowed only after genuine 2D exploration, while a validated Xiaomi grid always has priority. During an active mapping session the viewport is monotonic: it may expand as new geometry appears, but it never shrinks or jumps between partial frames.
+A key design rule is **do not invent room geometry**. V100 uses Xiaomi geometry first: a spatially coherent **partial Xiaomi grid can be rendered live before it is complete**, while the stricter validator is still required before persisting it as the definitive map. If no usable Xiaomi grid exists, estimated room surfaces remain blocked until genuine 2D exploration. During an active mapping session the viewport is monotonic: it may expand as new geometry appears, but it never shrinks or jumps between partial frames.
 
 More detail: [docs/MAPPING.md](docs/MAPPING.md).
 

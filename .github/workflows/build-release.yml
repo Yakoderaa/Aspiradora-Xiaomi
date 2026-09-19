@@ -89,10 +89,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V99 para Windows 10/11 x64. Corrige los últimos problemas visuales y de UX: durante un mapeo no se dibuja ninguna superficie estimada hasta tener grid Xiaomi válido o exploración 2D madura; el viewport queda anclado a la base y sus bounds sólo pueden crecer, por lo que no alterna tamaño/centro entre fotogramas; un grid Xiaomi validado se retiene como fuente visual de la sesión. El tema oscuro ahora reconoce la paleta real heredada y aplica fondos/textos/inputs/canvas correctamente; los botones azules mantienen texto blanco en normal, hover y disabled. La localización Español/English/Português vuelve a traducir textos dinámicos regenerados. Administrar mapas permite eliminar cualquier mapa; si es el último, se limpia por completo y queda un slot vacío."
+          $notes = "V100 para Windows 10/11 x64. La vista de mapa pasa a Xiaomi live-first: un grid B112 parcial pero espacialmente coherente puede mostrarse en vivo antes de superar el gate de mapa completo V57; V57 sigue siendo obligatorio para persistencia definitiva. Durante mapping_active el sondeo pesado Cloud baja de 12 s a 6 s manteniendo un único worker sin solapamientos. El fondo de mapa grande y miniaturas queda fijado en azul #dfe9f2 y queda excluido del cambio de tema para eliminar el titileo blanco/azul. También simplifica el texto del actualizador a “La instalación está en proceso”. Conserva V99: viewport monotónico, tema oscuro completo, botones azules legibles, i18n dinámica y eliminación de mapas."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V99" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V100" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }

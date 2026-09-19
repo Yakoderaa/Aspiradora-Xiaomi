@@ -37,7 +37,7 @@ WORDS = {
         "backup": "Guardando mapas y programaciones…",
         "backup_detail": "Creando un respaldo automático antes de instalar.",
         "install": "Instalando actualización…",
-        "install_detail": "La instalación se ejecuta en segundo plano, sin CMD ni ventanas externas.",
+        "install_detail": "La instalación está en proceso",
         "done": "Instalación completada.",
         "open": "Abriendo Aspiradora…",
         "keep": "No cierres esta ventana. Aspiradora volverá a abrirse automáticamente.",

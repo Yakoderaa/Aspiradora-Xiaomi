@@ -4,6 +4,18 @@ Este archivo resume **hitos importantes**, no cada build interno. Para el detall
 
 ## Unreleased
 
+### V100 · Xiaomi live-first + mapa sin flicker
+
+- La geometría Xiaomi pasa a ser la fuente visual prioritaria durante el mapeo.
+- Un grid Xiaomi parcial puede mostrarse antes de superar el gate de mapa completo de V57 si es espacialmente coherente: mínimo 8 celdas, hasta 3 componentes, ratio del componente principal ≥0,82, adyacencia ≥0,75 y base cercana.
+- V57 sigue siendo obligatorio para persistir el grid como mapa definitivo; la relajación sólo afecta a la vista en vivo.
+- El sondeo Cloud durante `mapping_active` baja de 12 s a 6 s manteniendo la protección de un único worker Cloud sin solapamientos.
+- El mapa grande y las miniaturas quedan con fondo fijo `#dfe9f2`; el sistema Claro/Oscuro ya no puede cambiar el fondo de esos canvases, eliminando el titileo blanco/azul.
+- Si existe un grid Xiaomi live utilizable, no se vuelve visualmente al fallback estimado.
+- El texto visible del instalador se simplifica a **“La instalación está en proceso”**.
+- F12 V100 informa si la fuente visual es Xiaomi live parcial o Xiaomi validado, métricas del candidato y contadores de aceptación/rechazo.
+
+
 ### V99 · mapa estable, dark theme e i18n completa
 
 - Durante una sesión nueva no se dibuja ninguna superficie estimada hasta disponer de un grid Xiaomi validado o exploración 2D realmente madura.

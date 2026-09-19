@@ -66,6 +66,16 @@ Durante `mapping_active`, el encuadre parte de un marco de 4×4 m centrado en la
 
 Cuando aparece el primer grid Xiaomi válido, V99 retiene esa fuente durante la sesión. Los siguientes grids válidos pueden actualizarla, pero un frame incompleto no hace volver al fallback.
 
+### 7. Xiaomi live-first V100
+
+V100 separa **visualización en vivo** de **persistencia definitiva**. El mismo candidato 2bpp de Xiaomi puede dibujarse antes de alcanzar el umbral de mapa completo si mantiene coherencia espacial: al menos 8 celdas, no más de 3 componentes, ratio del componente mayor ≥0,82, adyacencia ≥0,75 y proximidad razonable a la base.
+
+El validador V57 sigue siendo obligatorio antes de persistir un grid como geometría definitiva. Esto permite acompañar visualmente a Mi Home durante el mapeo sin rebajar la seguridad del mapa guardado.
+
+Durante `mapping_active`, el refresco Cloud pesado se intenta cada 6 s; V96 sigue garantizando que sólo exista un worker Cloud en vuelo.
+
+Los canvases del mapa usan fondo fijo `#dfe9f2` y quedan fuera del sistema de tema para evitar alternancias de color durante repintados.
+
 ## Fuentes de mapa
 
 ```mermaid
