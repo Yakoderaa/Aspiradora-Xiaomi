@@ -4,6 +4,17 @@ Este archivo resume **hitos importantes**, no cada build interno. Para el detall
 
 ## Unreleased
 
+### V108 · renderer moderno obligatorio
+
+- El último pase visual de mapa grande y miniatura borra cualquier dibujo heredado antes de presentar la interfaz.
+- Se restauran fondo azul, piso azul, contorno azul, base verde y robot circular.
+- El recorrido interno permanece oculto; tampoco pueden quedar visibles la grilla antigua, la base naranja ni elementos/perímetros naranjas.
+- Durante un mapeo nuevo, antes de tener mapa Xiaomi final, se muestran sólo fondo moderno + base/robot y un aviso discreto de espera.
+- Los mapas guardados antiguos sin grid Xiaomi final vuelven a usar el piso estimado moderno con relleno y contorno, sin recorrido interno.
+- Cuando existe grid Xiaomi final, se usa el mismo renderer moderno tanto en el mapa grande como en la miniatura.
+- Se conservan íntegramente la estrategia final-first y las optimizaciones anti-freeze de V107.
+
+
 ### V107 · mapa final primero + anti-freeze
 
 - La planta deja de reconstruirse en vivo: durante el mapeo se priorizan pose, base y control del robot.
