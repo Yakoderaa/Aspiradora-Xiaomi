@@ -16,7 +16,7 @@ class LocalMapStore:
     """
 
     MAX_MAPS = 4
-    LIBRARY_VERSION = 4
+    LIBRARY_VERSION = 5
 
     def __init__(self, app_folder: Path):
         self.folder = Path(app_folder)
@@ -47,6 +47,7 @@ class LocalMapStore:
             "robot": None,
             "charging_base": None,
             "rooms": [],
+            "native_grid": None,
         }
 
     @classmethod
@@ -77,6 +78,57 @@ class LocalMapStore:
         return {"points": clean, "estimated": bool(wall.get("estimated", True))}
 
     @classmethod
+    def _normalize_native_grid(cls, grid):
+        if grid is None:
+            return None
+        if not isinstance(grid, dict):
+            return None
+        try:
+            side = int(grid.get("side", 0) or 0)
+            resolution = float(grid.get("resolution", 0.0) or 0.0)
+            base_cell = list(grid.get("base_cell") or [])
+            cells = list(grid.get("cells") or [])
+        except Exception:
+            return None
+        if side <= 0 or side > 512:
+            return None
+        if not math.isfinite(resolution) or resolution <= 0.0 or resolution > 2.0:
+            return None
+        if len(base_cell) < 2 or len(cells) != side * side:
+            return None
+        try:
+            bx = float(base_cell[0])
+            by = float(base_cell[1])
+        except Exception:
+            return None
+        if not (math.isfinite(bx) and math.isfinite(by)):
+            return None
+
+        normalized_cells = []
+        for value in cells:
+            try:
+                cell = int(value)
+            except Exception:
+                return None
+            if cell < 0 or cell > 3:
+                return None
+            normalized_cells.append(cell)
+
+        result = {
+            "side": side,
+            "resolution": resolution,
+            "base_cell": [bx, by],
+            "cells": normalized_cells,
+            "source": str(grid.get("source") or "xiaomi-grid"),
+            "blob_sha12": str(grid.get("blob_sha12") or ""),
+            "timestamp": grid.get("timestamp"),
+        }
+        metrics = grid.get("metrics")
+        if isinstance(metrics, dict):
+            result["metrics"] = dict(metrics)
+        return result
+
+    @classmethod
     def _normalize_map(cls, source, fallback_name="Mapa"):
         source = dict(source or {})
         result = cls._blank_map(source.get("name") or fallback_name, source.get("id") or cls._new_id())
@@ -86,6 +138,7 @@ class LocalMapStore:
         result["charging_base"] = source.get("charging_base") if isinstance(source.get("charging_base"), dict) else None
         result["rooms"] = list(source.get("rooms") or [])
         result["points"] = list(source.get("points") or [])
+        result["native_grid"] = cls._normalize_native_grid(source.get("native_grid"))
         for point in result["points"]:
             if isinstance(point, dict):
                 point.setdefault("phase", 0)
@@ -180,6 +233,7 @@ class LocalMapStore:
                     "points": len(item.get("points") or []),
                     "walls": len(item.get("mapped_walls") or []),
                     "rooms": len(item.get("rooms") or []),
+                    "native_grid": bool(item.get("native_grid")),
                     "created_at": item.get("created_at"),
                     "updated_at": item.get("updated_at"),
                 })
@@ -315,6 +369,16 @@ class LocalMapStore:
             self._touch_active_locked()
             self._save_locked()
             return len(by_id) - before
+
+    def set_native_grid(self, grid):
+        normalized = self._normalize_native_grid(grid)
+        if grid is not None and normalized is None:
+            raise ValueError("La geometría nativa del mapa no es válida.")
+        with self._lock:
+            item = self._active_locked()
+            item["native_grid"] = normalized
+            self._touch_active_locked()
+            self._save_locked()
 
     def set_mapped_walls(self, walls):
         clean = []
