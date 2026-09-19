@@ -1,5 +1,17 @@
 # Changelog
 
+### V117 · aspiradora viva sobre el mapa Xiaomi guardado
+
+- Corrige el caso observado en V116 donde la limpieza arrancaba y el mapa de 241 celdas permanecía intacto, pero la aspiradora desaparecía.
+- Causa: V73 anulaba `robot` y `charging_base` cuando `mapping_active=False`, aunque 10/24 siguiera cambiando durante una limpieza normal.
+- V117 captura 10/24 y 10/22 antes de esa capa y dibuja la pose como `(robot-base) × 0,10 m`.
+- Aplica el mismo reflejo del eje Y usado por el grid final V107 para que la pose y la planta compartan marco.
+- El seguimiento vivo es sólo un overlay: no escribe `native_grid`, no reconstruye la planta y no añade recorrido.
+- En `status=4` el robot se fija al dock para ignorar telemetría residual.
+- F12 registra raw 10/24, raw 10/22, pose convertida, cambios y renders.
+- Se cuentan las llamadas `locate()`/“Hacer sonar” emitidas por la app para investigar pitidos sin confundirlos con avisos del firmware.
+
+
 ### V116 · botones de limpieza desbloqueados por estado físico
 
 - Corrige el caso donde **Iniciar limpieza** no hacía nada aunque el E10 estuviera físicamente en **Cargando**.

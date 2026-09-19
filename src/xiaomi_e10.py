@@ -71,6 +71,8 @@ class XiaomiE10:
         self._targeted_clean_blocked_mapping_calls = 0
         self._targeted_clean_last_blocked = None
         self._last_global_start_diag = {}
+        self._locate_calls = 0
+        self._last_locate_at = 0.0
 
     def info(self):
         return self.device.info(skip_cache=True)
@@ -371,6 +373,8 @@ class XiaomiE10:
         return self.device.set_property_by(7, 6, level)
 
     def locate(self):
+        self._locate_calls = int(getattr(self, "_locate_calls", 0) or 0) + 1
+        self._last_locate_at = time.monotonic()
         return self.device.set_property_by(4, 1, 1)
 
     def manual(self, direction: int):
