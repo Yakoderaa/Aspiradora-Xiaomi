@@ -462,13 +462,40 @@ class App(app_v109.App):
             pady=9,
         )
         summary.pack(fill="x", pady=(0, 10))
+        summary_top = tk.Frame(summary, bg=ACCENT_SOFT)
+        summary_top.pack(fill="x")
         tk.Label(
-            summary,
+            summary_top,
             text=room.get("name", "Habitación"),
             bg=ACCENT_SOFT,
             fg=TEXT,
             font=("Segoe UI", 10, "bold"),
-        ).pack(anchor="w")
+        ).pack(side="left")
+
+        switch = tk.Menubutton(
+            summary_top,
+            text="Cambiar ▾",
+            bg="white",
+            fg=TEXT,
+            activebackground="#f8fafc",
+            activeforeground=TEXT,
+            relief="flat",
+            bd=0,
+            cursor="hand2",
+            font=("Segoe UI", 8, "bold"),
+            padx=8,
+            pady=4,
+        )
+        menu = tk.Menu(switch, tearoff=False)
+        for other in self._v110_rooms():
+            other_id = self._v110_room_id(other)
+            menu.add_command(
+                label=str(other.get("name") or "Habitación"),
+                command=lambda rid=other_id: self._v110_select_room(rid),
+            )
+        switch.configure(menu=menu)
+        switch.pack(side="right")
+
         tk.Label(
             summary,
             text="Las zonas que crees ahora quedarán ancladas a esta habitación.",
@@ -477,7 +504,7 @@ class App(app_v109.App):
             font=("Segoe UI", 8),
             wraplength=270,
             justify="left",
-        ).pack(anchor="w", pady=(3, 0))
+        ).pack(anchor="w", pady=(5, 0))
 
         create = tk.Frame(host, bg=SURFACE)
         create.pack(fill="x", pady=(0, 10))
