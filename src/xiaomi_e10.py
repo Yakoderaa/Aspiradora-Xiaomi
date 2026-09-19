@@ -1,6 +1,7 @@
 import json
 import math
 import re
+import time
 from dataclasses import dataclass
 from typing import Any
 
@@ -69,6 +70,7 @@ class XiaomiE10:
         self._targeted_clean_guard = 0
         self._targeted_clean_blocked_mapping_calls = 0
         self._targeted_clean_last_blocked = None
+        self._last_global_start_diag = {}
 
     def info(self):
         return self.device.info(skip_cache=True)
@@ -232,6 +234,119 @@ class XiaomiE10:
     def start(self, mode: int):
         # La limpieza normal siempre vuelve a Global=0.
         return self._start_with_sweep_type(mode, 0)
+
+    def start_global_verified(self, mode: int, confirm_timeout: float = 3.0):
+        """Inicia limpieza global y exige confirmación física del E10.
+
+        El B112 puede devolver una respuesta válida sin abandonar el dock.
+        V115 prueba rutas de inicio conocidas, pero sólo confirma éxito cuando
+        2/1 informa un estado físico de limpieza (5, 6 o 7).
+        Ninguna de estas rutas arma, crea ni reconstruye mapas.
+        """
+        if mode not in (0, 1, 2):
+            raise ValueError("Modo inválido")
+
+        self.set_mode(mode)
+        self.set_sweep_type(0)
+
+        def read_status_code():
+            try:
+                return int(self._value(2, 1))
+            except Exception:
+                return int(self.status().status)
+
+        try:
+            before = read_status_code()
+        except Exception:
+            before = -1
+
+        if before in (5, 6, 7):
+            self._last_global_start_diag = {
+                "success": True,
+                "method": "already_active",
+                "status_before": before,
+                "status_after": before,
+                "attempts": [],
+            }
+            return dict(self._last_global_start_diag)
+
+        timeout = max(0.15, float(confirm_timeout or 0.0))
+        mode_action = {0: 3, 1: 5, 2: 6}[mode]
+        candidates = [
+            (
+                "mode_action",
+                lambda: self.device.call_action_by(2, mode_action),
+            ),
+            (
+                "generic_start",
+                lambda: self.device.call_action_by(2, 1),
+            ),
+            (
+                "whole_home",
+                lambda: self.device.call_action_by(7, 3, ["", 0, 1]),
+            ),
+        ]
+
+        attempts = []
+        last_status = before
+        last_error = None
+
+        for name, command in candidates:
+            item = {
+                "method": name,
+                "status_before": last_status,
+                "response": None,
+                "error": None,
+                "status_after": last_status,
+            }
+            try:
+                response = command()
+                item["response"] = repr(response)[:500]
+            except Exception as exc:
+                item["error"] = str(exc).strip() or type(exc).__name__
+                last_error = item["error"]
+
+            # Incluso si la respuesta MIoT fue rara/errónea, verificamos el
+            # estado: algunos firmwares ejecutan el comando antes del ACK.
+            deadline = time.monotonic() + timeout
+            while True:
+                try:
+                    current = read_status_code()
+                    last_status = current
+                    item["status_after"] = current
+                    if current in (5, 6, 7):
+                        attempts.append(item)
+                        self._last_global_start_diag = {
+                            "success": True,
+                            "method": name,
+                            "status_before": before,
+                            "status_after": current,
+                            "attempts": attempts,
+                        }
+                        return dict(self._last_global_start_diag)
+                except Exception as exc:
+                    item["status_error"] = (
+                        str(exc).strip() or type(exc).__name__
+                    )
+
+                if time.monotonic() >= deadline:
+                    break
+                time.sleep(0.35)
+
+            attempts.append(item)
+
+        self._last_global_start_diag = {
+            "success": False,
+            "method": None,
+            "status_before": before,
+            "status_after": last_status,
+            "attempts": attempts,
+            "error": last_error,
+        }
+        raise RuntimeError(
+            "El E10 recibió los intentos de inicio pero no confirmó movimiento "
+            f"(estado final {last_status}). Revisá el diagnóstico V115."
+        )
 
     def start_edge(self, mode: int = 0):
         return self._start_with_sweep_type(mode, 2)

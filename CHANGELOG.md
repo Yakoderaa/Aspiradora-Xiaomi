@@ -1,5 +1,16 @@
 # Changelog
 
+### V115 · inicio global verificado + mapa congelado durante limpieza
+
+- **Iniciar limpieza** ya no toma un ACK MIoT como prueba de éxito: confirma físicamente que el E10 cambió a estado 5/6/7.
+- Fallback B112 en tres rutas, sin remapear: acción por modo → start genérico → whole-home.
+- El botón muestra **Iniciando…** y luego **Limpiando…**; si ninguna ruta mueve el robot aparece un error visible en vez de fallar en silencio.
+- Durante la limpieza global y el retorno, el `native_grid` Xiaomi guardado queda congelado y cualquier mutación inesperada se restaura.
+- Se bloquean Mapear/cambiar/eliminar mapa y las actualizaciones live de geometría mientras la limpieza global está activa.
+- F12 V115 registra método usado, estados antes/después, respuestas de cada intento, errores y fingerprints del mapa.
+- No cambia el decoder ni la geometría V113/V111.
+
+
 Este archivo resume **hitos importantes**, no cada build interno. Para el detalle de cada publicación consultá [GitHub Releases](https://github.com/Yakoderaa/Aspiradora-Xiaomi/releases).
 
 ## Unreleased
