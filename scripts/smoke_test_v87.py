@@ -31,4 +31,31 @@ for required in (
     assert required in source_e10, required
 
 assert "DIAGNÓSTICO V87 ACTIVO" in source_v87
-print("SMOKE TEST V87 OK: Global=0, Bordes=2 y Espiral=4 integrados")
+
+for required in (
+    "def _v87_floor_cells",
+    "def _v87_draw_floor",
+    "def _v87_draw_base_and_robot",
+    "sin grilla",
+    "base verde con carga",
+    "no altera coordenadas, cobertura ni lógica física",
+):
+    assert required in source_v87, required
+
+# La huella visual debe crear superficie continua alrededor de una trayectoria
+# mínima sin alterar los puntos originales.
+snapshot = {
+    "points": [
+        {"x": 0.0, "y": 0.0},
+        {"x": 0.1, "y": 0.0},
+        {"x": 0.2, "y": 0.0},
+    ]
+}
+before = [dict(p) for p in snapshot["points"]]
+cells = app_v87.App._v87_floor_cells(snapshot)
+assert len(cells) >= 9
+assert snapshot["points"] == before
+
+print(
+    "SMOKE TEST V87 OK: Global=0, Bordes=2, Espiral=4 y mapa continuo tipo Mi Home"
+)
