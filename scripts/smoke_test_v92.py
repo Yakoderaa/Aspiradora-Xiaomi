@@ -54,6 +54,30 @@ assert any(
     for item in options
 )
 
+# El mismo cuarto codificado como 4 celdas verticales también debe tener
+# al menos una interpretación espacial válida.
+raw_v4 = bytearray()
+for by in range(30):
+    for x in range(120):
+        values = [
+            cells[(by * 4 + local_y) * side + x]
+            for local_y in range(4)
+        ]
+        raw_v4.append(
+            (values[0] << 6)
+            | (values[1] << 4)
+            | (values[2] << 2)
+            | values[3]
+        )
+selected_v4, options_v4 = XiaomiE10MapV92._decode_grid(bytes(raw_v4))
+assert selected_v4["metrics"]["valid"] is True
+assert any(
+    str(item["label"]).startswith("v4-")
+    and str(item["label"]).endswith("|v2")
+    and item["metrics"]["valid"] is True
+    for item in options_v4
+)
+
 # La unión temporal debe convertir dos mitades contiguas en un conjunto mayor.
 left = [0] * (side * side)
 right = [0] * (side * side)
