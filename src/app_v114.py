@@ -144,6 +144,17 @@ class App(app_v113.App):
             return
         return super().start_new_mapping()
 
+    def start_clean(self):
+        if bool(self._v114_target_clean_active):
+            messagebox.showinfo(
+                "Limpieza en curso",
+                "Terminá la limpieza de habitación/zona antes de iniciar otra "
+                "limpieza.",
+                parent=self,
+            )
+            return
+        return super().start_clean()
+
     def _switch_map(self, map_id, window=None):
         if self._v114_cleaning_busy():
             return
@@ -389,7 +400,10 @@ class App(app_v113.App):
         # segura una por una; nunca se dispara un mapeo.
         def multi_worker():
             for zone in zones:
-                while bool(self._v114_target_clean_active):
+                while (
+                    bool(self._v114_target_clean_active)
+                    or bool(getattr(self, "_zone_job_running", False))
+                ):
                     time.sleep(0.5)
                 self._v114_run_safe_rectangles(
                     zone,
@@ -399,7 +413,10 @@ class App(app_v113.App):
                     suction,
                     water,
                 )
-                while bool(self._v114_target_clean_active):
+                while (
+                    bool(self._v114_target_clean_active)
+                    or bool(getattr(self, "_zone_job_running", False))
+                ):
                     time.sleep(0.8)
 
         threading.Thread(
@@ -407,6 +424,35 @@ class App(app_v113.App):
             name="AspiradoraMultiZoneV114",
             daemon=True,
         ).start()
+
+    def _run_schedule_now(self, schedule):
+        if str((schedule or {}).get("target", "all")) != "zones":
+            return super()._run_schedule_now(schedule)
+        if not self.plan_store:
+            return
+        plan = self.plan_store.snapshot()
+        zones_by_id = {
+            str(zone.get("id")): dict(zone)
+            for zone in list(plan.get("zones") or [])
+            if isinstance(zone, dict)
+        }
+        zones = [
+            zones_by_id[str(zone_id)]
+            for zone_id in list((schedule or {}).get("zone_ids") or [])
+            if str(zone_id) in zones_by_id
+        ]
+        if not zones:
+            self._post_ui(
+                "plan_job_error",
+                "La programación no tiene zonas disponibles en el mapa activo.",
+            )
+            return
+        return self._run_zones_now(
+            zones,
+            (schedule or {}).get("mode", "vacuum"),
+            (schedule or {}).get("suction", 1),
+            (schedule or {}).get("water", 1),
+        )
 
     def clean_selected_point(self):
         if not self.selected_point or not self.vacuum:
