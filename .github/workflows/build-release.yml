@@ -89,10 +89,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V122 para Windows 10/11 x64. Corrige el patrón ida/vuelta observado en la Fase 2 de V121. El diagnóstico mostró 153 puntos y 16,26 m recorridos pero sólo 1,14 m de salida máxima, con sector repetido ~240 s. La Fase 2 deja de usar start-sweep genérico 2/1 y pasa a la acción whole-home de Sweep 7/3 con room ids vacíos, modo 0 y operación Start, sweep-type=0, sobre el MISMO build-map armado en Fase 1. No se introduce STOP/manual/restart como recovery. Conserva V121: primer dock intermedio, segundo dock final y rechazo de grids finales inválidos."
+          $notes = "V123 para Windows 10/11 x64. V122 confirmó que whole-home 7/3 con ids vacíos y modo Global=0 es aceptado por el B112, pero desde el dock puede permanecer en status=4. V123 conserva esa preparación y, sólo si sigue cargando, emite una única activación start-only-sweep 2/3. La transición no usa start-sweep 2/1, no ejecuta otro build-map, ni STOP/manual/recovery. Conserva el flujo de dos fases, dock intermedio y validación final de V121/V122."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V122" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V123" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }

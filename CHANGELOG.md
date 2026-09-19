@@ -1,5 +1,17 @@
 # Changelog
 
+### V123 · whole-home preparado + trigger físico
+
+- V122 confirmó que `7/3 set-room-clean(["",0,1])` es aceptado por el E10 pero puede dejarlo en `status=4` cuando acaba de volver al dock.
+- La Fase 2 conserva primero la configuración whole-home por `7/3`.
+- Se espera brevemente la salida física. Si el E10 pasa a `status 5/6/7`, no se envía nada más.
+- Si continúa exactamente en `status=4`, se emite una única acción `2/3 start-only-sweep` para sacar el robot del dock.
+- La transición V123 **no usa `2/1 start-sweep`**, evitando repetir la ruta V121 que quedó confinada a la habitación inicial.
+- No se ejecuta otro `arm_new_map`/`build-map`, ni STOP/manual/recovery.
+- F12 registra respuesta de prearm, estado antes del trigger, si se envió `2/3`, respuesta y método que finalmente produjo movimiento.
+- Conserva V121/V122: primer dock intermedio, segundo dock final y rechazo de grids finales inválidos.
+
+
 ### V122 · Fase 2 whole-home por Sweep 7/3
 
 - Corrige el patrón observado en V121: más de 16 m recorridos dentro de ~1,14 m alrededor de la base, con ida/vuelta repetido durante ~240 s.

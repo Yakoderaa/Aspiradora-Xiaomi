@@ -1164,24 +1164,32 @@ class XiaomiE10:
         raise RuntimeError(diag["error"])
 
     def start_mapping_whole_home(self, confirm_timeout: float = 6.0):
-        """V122: Fase 2 usando set-room-clean para toda la vivienda.
+        """V123: prepara whole-home por 7/3 y despierta con 2/3 si hace falta.
 
         Conserva el build-map armado en la Fase 1. No crea/rearma mapa.
         clean-room-ids vacío = toda la vivienda; mode 0 = limpieza normal;
-        oper 1 = Start.
+        oper 1 = Start. Algunos B112 aceptan esa acción estando en dock pero
+        permanecen en status=4; en ese caso se emite UNA sola activación
+        start-only-sweep (2/3) para sacar físicamente al robot de la base.
         """
         self._reject_mapping_during_targeted_clean("start_mapping_whole_home")
         self._prepare_mapping_vacuum()
 
         diag = {
-            "command": "7/3 set-room-clean",
+            "command": "7/3 set-room-clean -> opcional 2/3 start-only-sweep",
             "params": ["", 0, 1],
             "sweep_type_requested": 0,
             "status_before": None,
+            "prearm_response": None,
+            "prearm_status_after": None,
+            "prearm_sweep_type_after": None,
+            "trigger_sent": False,
+            "trigger_command": None,
+            "trigger_response": None,
             "status_after": None,
             "sweep_type_after": None,
-            "response": None,
             "success": False,
+            "started_by": None,
             "error": None,
         }
 
@@ -1211,37 +1219,99 @@ class XiaomiE10:
             )
 
         try:
-            response = self._send_motor_start(
-                "start_mapping_whole_home",
+            prearm_response = self._send_motor_start(
+                "start_mapping_whole_home/prearm",
                 7,
                 3,
                 ["", 0, 1],
                 allow_when_guarded=True,
             )
-            diag["response"] = repr(response)[:500]
+            diag["prearm_response"] = repr(prearm_response)[:500]
         except Exception as exc:
             diag["error"] = str(exc).strip() or type(exc).__name__
             self._last_mapping_whole_home_diag = dict(diag)
             raise
 
-        deadline = time.monotonic() + max(0.5, float(confirm_timeout or 0.0))
+        def read_state():
+            state = self._get_many([
+                ("status", 2, 1),
+                ("sweep_type", 2, 8),
+            ])
+            return state.get("status"), state.get("sweep_type")
+
+        # Primero damos tiempo a que 7/3 arranque por sí solo. Edge lo hace;
+        # V122 demostró que Global=0 puede aceptar el comando y quedarse docked.
+        prearm_deadline = time.monotonic() + min(
+            2.5,
+            max(0.8, float(confirm_timeout or 0.0) * 0.45),
+        )
         last_status = None
         last_sweep = None
         while True:
             try:
-                state = self._get_many([
-                    ("status", 2, 1),
-                    ("sweep_type", 2, 8),
-                ])
-                last_status = state.get("status")
-                last_sweep = state.get("sweep_type")
+                last_status, last_sweep = read_state()
+                diag["prearm_status_after"] = last_status
+                diag["prearm_sweep_type_after"] = last_sweep
                 diag["status_after"] = last_status
                 diag["sweep_type_after"] = last_sweep
                 try:
                     if int(last_status) in (5, 6, 7):
                         diag["success"] = True
+                        diag["started_by"] = "7/3 set-room-clean"
                         self._last_mapping_whole_home_diag = dict(diag)
-                        return response
+                        return prearm_response
+                except Exception:
+                    pass
+            except Exception as exc:
+                diag["prearm_readback_error"] = (
+                    str(exc).strip() or type(exc).__name__
+                )
+
+            if time.monotonic() >= prearm_deadline:
+                break
+            time.sleep(0.30)
+
+        # V123: si 7/3 dejó correctamente Global=0 pero el E10 sigue cargando,
+        # sólo despertamos el motor con start-only-sweep. No usamos 2/1.
+        try:
+            if int(last_status) != 4:
+                raise RuntimeError(
+                    "whole-home quedó en un estado inesperado antes del trigger "
+                    f"(status={last_status!r}, sweep-type={last_sweep!r})"
+                )
+        except (TypeError, ValueError):
+            raise RuntimeError(
+                "No pude confirmar que el E10 siguiera en dock antes del trigger "
+                f"(status={last_status!r})."
+            )
+
+        diag["trigger_sent"] = True
+        diag["trigger_command"] = "2/3 start-only-sweep"
+        try:
+            trigger_response = self._send_motor_start(
+                "start_mapping_whole_home/trigger",
+                2,
+                3,
+                allow_when_guarded=True,
+            )
+            diag["trigger_response"] = repr(trigger_response)[:500]
+        except Exception as exc:
+            diag["error"] = str(exc).strip() or type(exc).__name__
+            self._last_mapping_whole_home_diag = dict(diag)
+            raise
+
+        deadline = time.monotonic() + max(1.0, float(confirm_timeout or 0.0))
+        while True:
+            try:
+                last_status, last_sweep = read_state()
+                diag["status_after"] = last_status
+                diag["sweep_type_after"] = last_sweep
+                try:
+                    if int(last_status) in (5, 6, 7):
+                        diag["success"] = True
+                        diag["started_by"] = "7/3 whole-home + 2/3 trigger"
+                        self._last_mapping_whole_home_diag = dict(diag)
+                        return trigger_response
                 except Exception:
                     pass
             except Exception as exc:
@@ -1254,7 +1324,7 @@ class XiaomiE10:
             time.sleep(0.35)
 
         diag["error"] = (
-            "El E10 no confirmó movimiento físico para whole-home V122 "
+            "El E10 no confirmó movimiento físico tras whole-home + trigger V123 "
             f"(status={last_status!r}, sweep-type={last_sweep!r})."
         )
         self._last_mapping_whole_home_diag = dict(diag)
