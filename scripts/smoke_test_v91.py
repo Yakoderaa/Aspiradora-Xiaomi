@@ -37,6 +37,24 @@ assert header["length"] == 24
 assert header["grid_offset"] == 28
 assert header["timestamp"] == 1789785989
 
+# Grid sintético: una capa v2 coherente debe superar V57 sin depender de
+# nonzero ni de una cabecera fija. Empaquetamos MSB-first, 4 celdas por byte.
+cells = [0] * (120 * 120)
+for y in range(45, 65):
+    for x in range(45, 65):
+        cells[y * 120 + x] = 2
+
+packed = bytearray()
+for i in range(0, len(cells), 4):
+    a, b, d, e = cells[i:i + 4]
+    packed.append((a << 6) | (b << 4) | (d << 2) | e)
+
+selected, options = XiaomiE10MapV91._decode_grid(bytes(packed))
+assert selected["metrics"]["valid"] is True
+assert selected["metrics"]["nonzero"] == 400
+assert "v2" in selected["label"]
+assert len(options) == 14
+
 # El fallback debe expandir una trayectoria y conservar continuidad.
 snapshot = {
     "points": [
