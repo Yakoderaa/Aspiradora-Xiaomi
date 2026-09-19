@@ -7,7 +7,7 @@
 
 **A Windows desktop controller and live mapping project for the Xiaomi Robot Vacuum E10 (`xiaomi.vacuum.b112`).**
 
-[Español](README.es.md) · [Português](README.pt-BR.md)
+[English](README.md) · [Español](README.es.md) · [Português](README.pt-BR.md)
 
 > This is an independent community project. It is not affiliated with or endorsed by Xiaomi.
 

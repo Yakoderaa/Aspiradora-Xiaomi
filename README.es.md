@@ -2,7 +2,7 @@
 
 Aplicación de escritorio para Windows orientada al **Xiaomi Robot Vacuum E10 (`xiaomi.vacuum.b112`)**.
 
-[English](README.md) · [Português](README.pt-BR.md)
+[English](README.md) · [Español](README.es.md) · [Português](README.pt-BR.md)
 
 > Proyecto comunitario e independiente; no está afiliado ni respaldado por Xiaomi.
 
