@@ -4,6 +4,16 @@ Este archivo resume **hitos importantes**, no cada build interno. Para el detall
 
 ## Unreleased
 
+### V103 · geometría Xiaomi con espera de confianza
+
+- La planta parcial deja de aparecer apenas salen los primeros blobs del dock.
+- Un preview no validado por V57 exige 4 hashes distintos con el mismo layout/máscara, al menos 60 s de mapeo y 100 celdas antes de mostrarse.
+- Si el layout cambia o el área salta bruscamente entre lecturas, la confianza vuelve a cero en vez de agrandar/deformar el plano.
+- Durante la espera se conservan base y aspiradora y la UI muestra “validando geometría Xiaomi”.
+- Un grid que ya supera V57 puede mostrarse sin demora adicional.
+- Inicializa `map_selected_xy` antes de la cadena V88/V101 y elimina el error de renderer detectado en V102.
+
+
 ### V101 · grid Xiaomi realmente dibujado
 
 - Corrige el fallo de renderer que dejaba el canvas vacío aunque V100 ya hubiera aceptado un grid Xiaomi live parcial.
