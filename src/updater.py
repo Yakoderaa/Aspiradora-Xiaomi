@@ -103,7 +103,16 @@ def _bundled_helper_path() -> Path:
     return Path(__file__).resolve().parent.parent / "dist" / UPDATER_EXE_NAME
 
 
-def _launch_update_helper(installer: Path, version: str):
+def _hidden_startupinfo():
+    if os.name != "nt":
+        return None
+    startup = subprocess.STARTUPINFO()
+    startup.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+    startup.wShowWindow = 0
+    return startup
+
+
+def _launch_update_helper(installer: Path, version: str, theme="light", language="es"):
     source_helper = _bundled_helper_path()
     if not source_helper.exists():
         raise RuntimeError(
@@ -119,25 +128,34 @@ def _launch_update_helper(installer: Path, version: str):
     creationflags = 0
     creationflags |= getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
     creationflags |= getattr(subprocess, "DETACHED_PROCESS", 0)
+    creationflags |= getattr(subprocess, "CREATE_NO_WINDOW", 0)
 
     subprocess.Popen(
         [
             str(helper_copy),
-            "--parent-pid",
-            str(os.getpid()),
-            "--installer",
-            str(installer),
-            "--app",
-            str(app_exe),
-            "--version",
-            str(version),
+            "--parent-pid", str(os.getpid()),
+            "--installer", str(installer),
+            "--app", str(app_exe),
+            "--version", str(version),
+            "--theme", str(theme or "light"),
+            "--language", str(language or "es"),
         ],
         creationflags=creationflags,
+        startupinfo=_hidden_startupinfo(),
         close_fds=True,
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
     )
 
 
-def download_and_install(update: dict, status_callback=None, progress_callback=None):
+def download_and_install(
+    update: dict,
+    status_callback=None,
+    progress_callback=None,
+    theme="light",
+    language="es",
+):
     status = status_callback or (lambda _text: None)
     progress = progress_callback or (lambda _percent, _done, _total: None)
     version = update["version"]
@@ -160,6 +178,6 @@ def download_and_install(update: dict, status_callback=None, progress_callback=N
             raise RuntimeError("La verificación SHA-256 de la actualización falló.")
 
     status("Verificación correcta. Preparando instalación…")
-    _launch_update_helper(installer, version)
-    status("Actualizador listo. Cerrando la aplicación para instalar…")
+    _launch_update_helper(installer, version, theme=theme, language=language)
+    status("Continuando instalación dentro de Aspiradora…")
     return True

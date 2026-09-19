@@ -52,6 +52,27 @@ jobs:
         shell: pwsh
         run: .\build.ps1
 
+      - name: Sync repository topics
+        continue-on-error: true
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api --method PUT "repos/$env:GITHUB_REPOSITORY/topics" `
+            -H "Accept: application/vnd.github+json" `
+            -f "names[]=xiaomi" `
+            -f "names[]=xiaomi-vacuum" `
+            -f "names[]=robot-vacuum" `
+            -f "names[]=mi-home" `
+            -f "names[]=smart-home" `
+            -f "names[]=home-automation" `
+            -f "names[]=windows" `
+            -f "names[]=python" `
+            -f "names[]=desktop-app" `
+            -f "names[]=vacuum-map" `
+            -f "names[]=xiaomi-e10" `
+            -f "names[]=b112"
+
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
@@ -68,10 +89,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V97 para Windows 10/11 x64. Corrige el mapa prematuro observado en V96: mientras la trayectoria siga siendo casi lineal o tenga poca expansión lateral, la UI muestra sólo una huella temprana derivada del recorrido real, sin cerrar huecos ni rellenar una habitación. El fallback completo recién se habilita con exploración 2D madura y, antes de eso, el viewport conserva 4×4 m alrededor de la base para evitar zoom agresivo. También refuerza SteelSeries Sonar: la app crea una sesión WASAPI silenciosa propia, la mantiene viva y la etiqueta Aspiradora mediante Core Audio; F12 V97 muestra si la sesión fue creada, detectada y renombrada."
+          $notes = "V98 para Windows 10/11 x64. Reúne los últimos cambios: mapa temprano prudente y sin habitaciones inventadas; SteelSeries Sonar con sesión Core Audio Aspiradora; tema Claro/Oscuro e idiomas Español/English/Português persistentes; actualización visual con descarga y SHA dentro de la app, helper GUI sin consola e instalador VERYSILENT; y arranque de ventana corregido para que se construya oculta y aparezca una sola vez en su geometría/estado guardados, neutralizando los múltiples restore de V39. El README principal pasa a inglés con documentación ES/PT separada."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V97" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V98" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }

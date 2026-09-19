@@ -4,6 +4,18 @@ Este archivo resume **hitos importantes**, no cada build interno. Para el detall
 
 ## Unreleased
 
+### V98 · tema, idiomas, updater integrado y arranque estable
+
+- Configuración incorpora tema **Claro/Oscuro**, persistente entre reinicios.
+- Configuración incorpora idioma **Español / English / Português**, persistente y aplicado a la navegación, controles principales, estado y textos esenciales.
+- El actualizador mantiene una interfaz visual durante descarga/verificación y transfiere la instalación a un helper GUI con el mismo tema/idioma.
+- El instalador se ejecuta con `/VERYSILENT`, `CREATE_NO_WINDOW` y salida estándar oculta: no aparecen CMD/PowerShell ni ventanas del instalador.
+- La ventana principal se construye oculta y se muestra una sola vez con su geometría final; se neutralizan los cuatro restores tardíos de V39 que producían maximizar/minimizar repetidamente.
+- README principal en inglés, con documentación de entrada separada para español y portugués.
+- El workflow intenta sincronizar topics de descubrimiento del repositorio sin bloquear la release si GitHub no concede permiso de administración.
+- Conserva V97: fallback de mapa temprano prudente, viewport 4×4 m antes de geometría 2D y sesión Core Audio **Aspiradora** para Sonar.
+
+
 ### V97 · mapa temprano prudente + Sonar
 
 - El fallback estimado ya no convierte unos pocos puntos casi lineales en una habitación completa.
