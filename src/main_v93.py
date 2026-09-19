@@ -21,4 +21,6 @@ def main():
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())\n\n# Build trigger V93 final workflow\n
+    raise SystemExit(main())
+
+# Build trigger V93 final workflow
