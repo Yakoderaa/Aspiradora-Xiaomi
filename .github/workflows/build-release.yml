@@ -89,10 +89,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V113 para Windows 10/11 x64. Conserva exactamente la selección geométrica de V111, que en la última prueba produjo un mapa visualmente cercano a Mi Home, y retira el gate rígido de retención mínima introducido en V112. Mantiene los arreglos seguros: _v87_draw_rooms_and_plan acepta transform opcional para eliminar el TypeError del renderer, y el watchdog de retorno nunca ejecuta stop/manual(5); tras 120 s sólo informa retorno prolongado y deja al firmware continuar hasta status=4. Conserva diagnóstico completo V111, Habitaciones/Zonas V110, privacidad de IP, renderer moderno y anti-freeze."
+          $notes = "V114 para Windows 10/11 x64. Mantiene sin cambios la geometría final V113/V111 que produjo el mapa casi idéntico a Mi Home y convierte esa planta en la referencia operativa de limpieza. Habitaciones, zonas y puntos sólo se ejecutan si existe native_grid Xiaomi final; la selección se recorta contra celdas reales del grid y contra bloqueos antes de convertir a coordenadas raw. Una selección irregular se divide en subzonas seguras en vez de expandirse fuera del mapa. Durante una limpieza dirigida, el E10 activa un guard que bloquea arm_new_map/build-map/start_mapping y la UI bloquea mapear/cambiar/eliminar el mapa activo. El native_grid guardado queda congelado y se restaura si cualquier evento intenta modificarlo. Las programaciones por zonas usan la misma ruta segura. F12 informa selección local, área limpiable, subzonas, raw enviados, comandos completados, hash del mapa y llamadas de mapeo bloqueadas. Conserva retorno seguro V113, renderer sin errores, Habitaciones/Zonas y privacidad."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V113" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V114" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }

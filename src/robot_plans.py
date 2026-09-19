@@ -11,6 +11,271 @@ def _fmt(value):
     return f"{value:.3f}".rstrip("0").rstrip(".")
 
 
+def _rect_bounds(rect):
+    try:
+        x0 = float(rect["x0"])
+        y0 = float(rect["y0"])
+        x1 = float(rect["x1"])
+        y1 = float(rect["y1"])
+    except Exception as exc:
+        raise ValueError("Rectángulo de limpieza inválido.") from exc
+    return {
+        "x0": min(x0, x1),
+        "y0": min(y0, y1),
+        "x1": max(x0, x1),
+        "y1": max(y0, y1),
+    }
+
+
+def _rect_area(rect):
+    rect = _rect_bounds(rect)
+    return max(0.0, rect["x1"] - rect["x0"]) * max(
+        0.0, rect["y1"] - rect["y0"]
+    )
+
+
+def _rect_intersection(a, b):
+    a = _rect_bounds(a)
+    b = _rect_bounds(b)
+    x0 = max(a["x0"], b["x0"])
+    y0 = max(a["y0"], b["y0"])
+    x1 = min(a["x1"], b["x1"])
+    y1 = min(a["y1"], b["y1"])
+    if x1 <= x0 or y1 <= y0:
+        return None
+    return {"x0": x0, "y0": y0, "x1": x1, "y1": y1}
+
+
+def _rects_touch_horizontally(a, b, eps=1e-8):
+    return (
+        abs(float(a["y0"]) - float(b["y0"])) <= eps
+        and abs(float(a["y1"]) - float(b["y1"])) <= eps
+        and abs(float(a["x1"]) - float(b["x0"])) <= eps
+    )
+
+
+def _rects_touch_vertically(a, b, eps=1e-8):
+    return (
+        abs(float(a["x0"]) - float(b["x0"])) <= eps
+        and abs(float(a["x1"]) - float(b["x1"])) <= eps
+        and abs(float(a["y1"]) - float(b["y0"])) <= eps
+    )
+
+
+def _grid_cell_local_rect(grid, gx, gy):
+    side = int(grid["side"])
+    if not (0 <= int(gx) < side and 0 <= int(gy) < side):
+        raise ValueError("Celda fuera del grid.")
+    res = float(grid["resolution"])
+    bx, by = grid["base_cell"]
+    x0 = (float(gx) - float(bx)) * res
+    x1 = (float(gx + 1) - float(bx)) * res
+    y_top = (float(by) - float(gy)) * res
+    y_bottom = (float(by) - float(gy + 1)) * res
+    return {
+        "x0": min(x0, x1),
+        "y0": min(y_bottom, y_top),
+        "x1": max(x0, x1),
+        "y1": max(y_bottom, y_top),
+    }
+
+
+def constrain_rect_to_native_grid(
+    rect,
+    native_grid,
+    no_go=None,
+    max_rectangles=24,
+):
+    """Recorta una selección local contra la planta Xiaomi final.
+
+    El grid recibido ya está orientado como se dibuja en pantalla (V107 refleja
+    Y antes de persistirlo), por lo que estas coordenadas locales son las mismas
+    que usa el editor de habitaciones/zonas. Los bloqueos eliminan celdas enteras
+    para no pedir al firmware que limpie dentro de una zona prohibida.
+    """
+    if not isinstance(native_grid, dict):
+        raise RuntimeError(
+            "Este mapa todavía no tiene una geometría Xiaomi final válida."
+        )
+
+    try:
+        side = int(native_grid.get("side", 0) or 0)
+        resolution = float(native_grid.get("resolution", 0.0) or 0.0)
+        base = list(native_grid.get("base_cell") or [])
+        cells = list(native_grid.get("cells") or [])
+    except Exception as exc:
+        raise RuntimeError("La geometría Xiaomi guardada no es válida.") from exc
+
+    if (
+        side <= 0
+        or resolution <= 0.0
+        or len(base) < 2
+        or len(cells) != side * side
+        or not any(int(value) != 0 for value in cells)
+    ):
+        raise RuntimeError("La geometría Xiaomi guardada no es válida.")
+
+    target = _rect_bounds(rect)
+    blockers = []
+    for item in list(no_go or []):
+        try:
+            blockers.append(_rect_bounds(item))
+        except Exception:
+            continue
+
+    pieces_by_row = {}
+    selected_cells = 0
+    blocked_cells = 0
+    for index, value in enumerate(cells):
+        if int(value) == 0:
+            continue
+        gx = index % side
+        gy = index // side
+        cell_rect = _grid_cell_local_rect(native_grid, gx, gy)
+        clipped = _rect_intersection(cell_rect, target)
+        if clipped is None:
+            continue
+
+        blocked = any(
+            _rect_intersection(cell_rect, wall) is not None
+            for wall in blockers
+        )
+        if blocked:
+            blocked_cells += 1
+            continue
+
+        if _rect_area(clipped) <= 1e-9:
+            continue
+        selected_cells += 1
+        pieces_by_row.setdefault(gy, []).append(clipped)
+
+    if selected_cells <= 0:
+        raise RuntimeError(
+            "La selección no contiene superficie limpiable del mapa Xiaomi "
+            "o está completamente bloqueada."
+        )
+
+    # Primero fusionamos celdas contiguas de cada fila.
+    row_runs = []
+    for gy in sorted(pieces_by_row):
+        pieces = sorted(
+            pieces_by_row[gy],
+            key=lambda item: (item["x0"], item["x1"]),
+        )
+        current = None
+        for piece in pieces:
+            if current is None:
+                current = dict(piece)
+                continue
+            if _rects_touch_horizontally(current, piece):
+                current["x1"] = float(piece["x1"])
+            else:
+                row_runs.append(current)
+                current = dict(piece)
+        if current is not None:
+            row_runs.append(current)
+
+    # Después unimos verticalmente runs con exactamente el mismo ancho.
+    merged = []
+    for run in sorted(
+        row_runs,
+        key=lambda item: (
+            round(float(item["x0"]), 8),
+            round(float(item["x1"]), 8),
+            float(item["y0"]),
+        ),
+    ):
+        match = None
+        for previous in reversed(merged):
+            if _rects_touch_vertically(previous, run):
+                match = previous
+                break
+        if match is None:
+            merged.append(dict(run))
+        else:
+            match["y1"] = float(run["y1"])
+
+    merged = [
+        _rect_bounds(item)
+        for item in merged
+        if _rect_area(item) > 1e-6
+    ]
+    merged.sort(
+        key=lambda item: (
+            -_rect_area(item),
+            item["y0"],
+            item["x0"],
+        )
+    )
+
+    if len(merged) > int(max_rectangles):
+        raise RuntimeError(
+            "La selección es demasiado irregular para limpiarla de forma "
+            "segura en una sola operación. Dividila en zonas más pequeñas."
+        )
+
+    allowed_area = sum(_rect_area(item) for item in merged)
+    requested_area = _rect_area(target)
+    return {
+        "requested": target,
+        "rectangles": merged,
+        "requested_area": requested_area,
+        "allowed_area": allowed_area,
+        "coverage_ratio": (
+            allowed_area / requested_area
+            if requested_area > 1e-9
+            else 0.0
+        ),
+        "selected_cells": int(selected_cells),
+        "blocked_cells": int(blocked_cells),
+        "resolution": resolution,
+    }
+
+
+def native_grid_contains_point(point, native_grid, no_go=None):
+    try:
+        x = float(point["x"])
+        y = float(point["y"])
+    except Exception:
+        return False
+
+    blockers = []
+    for item in list(no_go or []):
+        try:
+            blockers.append(_rect_bounds(item))
+        except Exception:
+            continue
+    for wall in blockers:
+        if (
+            wall["x0"] <= x <= wall["x1"]
+            and wall["y0"] <= y <= wall["y1"]
+        ):
+            return False
+
+    if not isinstance(native_grid, dict):
+        return False
+    try:
+        side = int(native_grid.get("side", 0) or 0)
+        cells = list(native_grid.get("cells") or [])
+    except Exception:
+        return False
+    if side <= 0 or len(cells) != side * side:
+        return False
+
+    for index, value in enumerate(cells):
+        if int(value) == 0:
+            continue
+        gx = index % side
+        gy = index // side
+        cell = _grid_cell_local_rect(native_grid, gx, gy)
+        if (
+            cell["x0"] <= x <= cell["x1"]
+            and cell["y0"] <= y <= cell["y1"]
+        ):
+            return True
+    return False
+
+
 def require_origin(plan):
     origin = (plan or {}).get("device_origin")
     if not isinstance(origin, dict) or "x" not in origin or "y" not in origin:
