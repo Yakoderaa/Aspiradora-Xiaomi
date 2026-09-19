@@ -4,6 +4,18 @@ Este archivo resume **hitos importantes**, no cada build interno. Para el detall
 
 ## Unreleased
 
+### V113 · geometría V111 congelada + retorno seguro
+
+- Conserva exactamente el selector geométrico V111, cuya salida final fue visualmente cercana a Mi Home en la última prueba.
+- Se elimina de la versión activa el gate rígido V112 que obligaba a conservar al menos 84% del componente V93.
+- Se mantiene la espera de lecturas finales y el filtrado que permitió obtener la planta más fiel observada hasta ahora.
+- `_v87_draw_rooms_and_plan(..., transform=None)` conserva el contrato V88/V110 y elimina el TypeError repetitivo del renderer.
+- El watchdog de retorno no ejecuta `vacuum.stop()` ni `manual(5)` al vencer 120 s.
+- Un retorno prolongado sólo muestra aviso y continúa bajo control del firmware hasta confirmar `status=4`.
+- F12 V113 identifica explícitamente que la geometría activa es V111 y registra avisos/progreso del retorno.
+- Conserva diagnóstico completo V111, Habitaciones/Zonas V110, privacidad de IP, renderer moderno y anti-freeze.
+
+
 ### V112 · geometría retenida + retorno sin frenado
 
 - El mapa final queda anclado al candidato V93 espacialmente válido en vez de volver a puntuar libremente máscaras mucho más pequeñas.

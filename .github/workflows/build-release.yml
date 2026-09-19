@@ -89,10 +89,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V112 para Windows 10/11 x64. Corrige la pérdida de geometría observada al finalizar: el candidato final queda anclado al layout/máscara V93 ya validado, exige conservar al menos 84% de su componente principal y debe cubrir la extensión física de la trayectoria en ambos ejes. Cuando cleaning-area 7/23 permanece en 0, la referencia geométrica se deriva de la huella/extensión de la trayectoria; el área de tarea de Mi Home no se fuerza como área del polígono. Corrige definitivamente el contrato V88/V110 de _v87_draw_rooms_and_plan con transform opcional. El watchdog de retorno deja de ejecutar stop/manual(5): tras 120 s sólo informa retorno prolongado y sigue dejando al firmware buscar el dock hasta status=4. Conserva V111 diagnóstico completo, V110 Habitaciones/Zonas, renderer moderno, privacidad de IP y anti-freeze."
+          $notes = "V113 para Windows 10/11 x64. Conserva exactamente la selección geométrica de V111, que en la última prueba produjo un mapa visualmente cercano a Mi Home, y retira el gate rígido de retención mínima introducido en V112. Mantiene los arreglos seguros: _v87_draw_rooms_and_plan acepta transform opcional para eliminar el TypeError del renderer, y el watchdog de retorno nunca ejecuta stop/manual(5); tras 120 s sólo informa retorno prolongado y deja al firmware continuar hasta status=4. Conserva diagnóstico completo V111, Habitaciones/Zonas V110, privacidad de IP, renderer moderno y anti-freeze."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V112" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V113" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
