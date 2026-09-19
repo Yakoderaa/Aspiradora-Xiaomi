@@ -68,10 +68,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V93 para Windows 10/11 x64. Parte del grid Xiaomi válido conseguido por V92 y añade un desempate físico/temporal de layouts: cada candidato se contrasta con la base, la posición 10/24 del robot y la zona donde aparecen celdas nuevas entre frames. Entre candidatos equivalentes usa densidad y perímetro sólo como tie-break visual. Después aplica una limpieza conservadora del componente principal, huecos encerrados y apéndices finos, revirtiéndola si degrada la validez V57. Un grid Xiaomi validado pasa a contar como evidencia de mapeo completo para evitar que los umbrales antiguos de trayectoria V81 lo marquen como incompleto. Al confirmar status=4 se hacen tres lecturas finales en dock antes de congelar la geometría. La cabecera deja de mostrar Mapeando cuando la sesión ya terminó y muestra el estado real del grid guardado. Se conservan V92/V90/V89, la trayectoria física oculta y las protecciones V77/V85."
+          $notes = "V94 para Windows 10/11 x64. Agrega un estado global del E10 siempre visible en la barra superior, junto a mapa, batería y conexión/IP. Refleja directamente status()/fault del robot: dormido, en espera, pausado, volviendo a la base, cargando, aspirando, aspirando y trapeando, trapeando, actualizando firmware o error. Durante un mapeo añade el sufijo mapeando sólo cuando el estado físico es 5/6/7. El indicador también pasa a Sin conexión o Leyendo estado cuando corresponde y se actualiza sin importar qué pestaña esté abierta. Se conserva toda la lógica V93 de grid Xiaomi y finalización en dock."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V93" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V94" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
