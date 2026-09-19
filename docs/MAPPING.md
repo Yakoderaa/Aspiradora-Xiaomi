@@ -88,6 +88,22 @@ flowchart TD
 - El archivo Cloud puede ser histórico; la frescura y la coherencia se validan antes de usarlo.
 - `255_255` se trata como sentinela y nunca como una base real dentro del plano.
 
+## Decoder B112 V91
+
+V91 corrige la estructura binaria observada en el payload post-hex del E10. En las sesiones reales el bloque mide **3628 bytes** y se interpreta como:
+
+- 1 byte de tipo variable;
+- 1 byte de versión;
+- 2 bytes big-endian de longitud de cabecera;
+- 24 bytes de metadatos;
+- 3600 bytes de grid 120×120 a 2 bits por celda.
+
+El parser anterior esperaba un tipo fijo y una longitud de 3 bytes, por lo que descartaba estos mapas antes de probar la rejilla. V91 acepta la cabecera observada, prueba ambos órdenes 2bpp y separa las capas de valor antes de enviarlas al validador espacial V57.
+
+La resolución candidata del grid pasa a **0,20 m**. Este cambio se aplica sólo al mapa/grid candidato; la cinemática física heredada de V77/V85 continúa en 0,10 m hasta tener evidencia suficiente para cambiarla sin afectar antiatasco, retorno o completitud.
+
+Cuando no existe un grid Xiaomi válido, V91 mejora el fallback visual usando la huella física del robot, interpolación entre muestras, cierre de huecos cortos y relleno de huecos encerrados. El recorrido continúa oculto en la UI y disponible íntegro en F12.
+
 ## Gate de arranque V90
 
 V90 separa explícitamente tres estados de una sesión nueva:
