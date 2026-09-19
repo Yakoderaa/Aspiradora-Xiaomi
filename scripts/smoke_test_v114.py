@@ -112,9 +112,16 @@ for required in (
     "constrain_rect_to_native_grid",
     "_v114_restore_grid_if_needed",
     "_v114_target_clean_active",
+    "_v114_map_switch_restores",
+    "current_fp != original_fp",
+    "self._zone_job_running = True",
     "mapa Xiaomi guardado queda congelado",
 ):
     assert required in source, required
+
+# Una habitación local nunca debe salir por clean_rooms(room_id): esos IDs son
+# nuestros, no IDs internos de Xiaomi.
+assert "clean_rooms(" not in source
 
 print(
     "SMOKE TEST V114 OK: native-grid clipping + blockers + raw coordinates + "
