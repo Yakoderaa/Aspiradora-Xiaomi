@@ -91,6 +91,11 @@ class App(tk.Tk):
         self.mode_combo.pack(side="left", fill="x", expand=True)
         self._button(mode_row, "Iniciar", self.start_clean, accent=True).pack(side="left", padx=(10, 0))
 
+        pattern_row = tk.Frame(controls, bg=PANEL)
+        pattern_row.pack(fill="x", padx=20, pady=(3, 7))
+        self._button(pattern_row, "Limpiar bordes", self.start_edge_clean).pack(side="left", fill="x", expand=True)
+        self._button(pattern_row, "Espiral", self.start_spiral_clean).pack(side="left", fill="x", expand=True, padx=(10, 0))
+
         cmd_row = tk.Frame(controls, bg=PANEL)
         cmd_row.pack(fill="x", padx=20, pady=7)
         self._button(cmd_row, "Detener", self.stop_clean).pack(side="left", fill="x", expand=True)
@@ -310,9 +315,20 @@ class App(tk.Tk):
 
         threading.Thread(target=worker, daemon=True).start()
 
+    def _selected_clean_mode(self):
+        return {"Aspirar": 0, "Aspirar + trapear": 1, "Trapear": 2}[self.mode_var.get()]
+
     def start_clean(self):
-        mode = {"Aspirar": 0, "Aspirar + trapear": 1, "Trapear": 2}[self.mode_var.get()]
-        self._run_command("Iniciando limpieza…", lambda: self.vacuum.start(mode))
+        mode = self._selected_clean_mode()
+        self._run_command("Iniciando limpieza global…", lambda: self.vacuum.start(mode))
+
+    def start_edge_clean(self):
+        mode = self._selected_clean_mode()
+        self._run_command("Iniciando limpieza por bordes…", lambda: self.vacuum.start_edge(mode))
+
+    def start_spiral_clean(self):
+        mode = self._selected_clean_mode()
+        self._run_command("Iniciando limpieza en espiral…", lambda: self.vacuum.start_spiral(mode))
 
     def stop_clean(self):
         self._run_command("Deteniendo limpieza…", self.vacuum.stop if self.vacuum else lambda: None)
