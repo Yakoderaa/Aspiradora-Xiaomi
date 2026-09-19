@@ -46,15 +46,17 @@ Al reiniciar la aplicación o cambiar de mapa, cada mapa recupera su propia geom
 
 ### 5. Renderer estilo Mi Home
 
-El mapa grande y las miniaturas usan la geometría Xiaomi validada como superficie, sin mostrar la cuadrícula interna. Encima se dibujan:
+El mapa grande y las miniaturas usan la geometría Xiaomi validada como superficie, sin mostrar la cuadrícula interna. Desde V89 la vista normal muestra:
 
 - contorno azul;
-- recorrido real;
+- relleno de la superficie;
 - base;
 - robot y orientación;
 - habitaciones/zonas configuradas.
 
-La leyenda queda fija en la esquina superior izquierda. La rueda controla el zoom y el doble clic con la rueda ejecuta **Zoom Extents**. El encuadre inicial conserva la base como centro de referencia.
+La trayectoria real continúa guardada completa y se usa para cobertura, completitud, antiatasco y diagnóstico F12, pero sus líneas internas no se dibujan en el mapa ni en las miniaturas.
+
+La leyenda queda fija en la esquina superior izquierda y sólo identifica la fuente del mapa. La rueda controla el zoom y el doble clic con la rueda ejecuta **Zoom Extents**. El encuadre inicial conserva la base como centro de referencia.
 
 Si Xiaomi todavía no entrega un grid válido, V88 usa el fallback de trayectoria de V87 a resolución de 10 cm en lugar de inventar una planta desde datos incoherentes.
 
