@@ -89,10 +89,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V117 para Windows 10/11 x64. Corrige la pose desaparecida durante limpieza normal: V73 descartaba robot/base cuando mapping_active=False, por lo que V116 conservaba el native_grid pero no podía mostrar 10/24. V117 captura 10/24 y 10/22 antes de esa capa, convierte (robot-base) con 0,10 m/raw, refleja Y con el mismo marco del grid final V107 y superpone sólo base+robot sobre las 241 celdas guardadas. El overlay no escribe native_grid, no reconstruye mapa y no agrega recorrido. Durante status=4 fuerza robot=dock para ignorar una pose 10/24 vieja. También instrumenta Hacer sonar/locate: F12 cuenta cualquier pitido solicitado explícitamente por la app para distinguirlo de sonidos propios del firmware. Conserva V116 y el START físico verificado V115."
+          $notes = "V118 para Windows 10/11 x64. Corrige el desacople detectado en el diagnóstico final: el worker V115 podía quedar inactivo mientras el E10 seguía físicamente en status=5. V118 agrega un candado físico en el controlador: una vez confirmado status 5/6/7, permanece hasta status=4 real; lecturas 0/1 transitorias requieren seis muestras consecutivas y no liberan la sesión. Mientras el candado está activo se bloquea cualquier segundo START global, bordes, espiral, habitación, zona o intento de mapeo, incluso si el worker V116 terminó antes. F12 registra cada orden de arranque, bloqueos, transiciones físicas y mismatches. Conserva V117: 10/24 vivo se superpone sobre el mapa Xiaomi de 241 celdas sin modificarlo, y locate/Hacer sonar queda contabilizado."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V117" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V118" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }

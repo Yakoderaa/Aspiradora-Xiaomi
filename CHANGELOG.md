@@ -1,5 +1,16 @@
 # Changelog
 
+### V118 · sesión física autoritativa + START único
+
+- Corrige el desacople observado: el diagnóstico podía mostrar `limpieza global activa=False` mientras el E10 seguía en `status=5`.
+- Una vez confirmado `status 5/6/7`, el controlador mantiene un candado físico independiente del worker de UI.
+- El candado se libera inmediatamente en `status=4` real; `status 0/1` requiere seis lecturas consecutivas para evitar cierres por muestras transitorias.
+- Mientras el candado está activo se bloquea cualquier segundo START global, bordes, espiral, habitación, zona o arranque de mapeo.
+- El guard de mapeo ya no depende únicamente de `_targeted_clean_guard`; también respeta la sesión física.
+- F12 registra órdenes de arranque, intentos bloqueados, transiciones de estado y divergencias entre estado físico y worker.
+- Conserva V117: pose 10/24 viva sobre las 241 celdas sin modificar `native_grid`, y contador de `locate()` para investigar pitidos.
+
+
 ### V117 · aspiradora viva sobre el mapa Xiaomi guardado
 
 - Corrige el caso observado en V116 donde la limpieza arrancaba y el mapa de 241 celdas permanecía intacto, pero la aspiradora desaparecía.

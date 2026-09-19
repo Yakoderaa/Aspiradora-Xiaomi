@@ -73,6 +73,15 @@ class XiaomiE10:
         self._last_global_start_diag = {}
         self._locate_calls = 0
         self._last_locate_at = 0.0
+        self._global_clean_guard = 0
+        self._global_clean_seen_active = False
+        self._global_clean_terminal_streak = 0
+        self._global_clean_guard_source = None
+        self._global_clean_guard_started_at = 0.0
+        self._global_clean_guard_cleared_at = 0.0
+        self._blocked_duplicate_starts = 0
+        self._last_blocked_duplicate_start = None
+        self._motor_start_audit = []
 
     def info(self):
         return self.device.info(skip_cache=True)
@@ -93,8 +102,151 @@ class XiaomiE10:
     def targeted_clean_guard_active(self):
         return int(getattr(self, "_targeted_clean_guard", 0) or 0) > 0
 
+    def global_clean_guard_active(self):
+        return int(getattr(self, "_global_clean_guard", 0) or 0) > 0
+
+    def begin_global_clean_guard(self, source="global-start"):
+        self._global_clean_guard = 1
+        self._global_clean_seen_active = True
+        self._global_clean_terminal_streak = 0
+        self._global_clean_guard_source = str(source or "global-start")
+        self._global_clean_guard_started_at = time.monotonic()
+        return True
+
+    def end_global_clean_guard(self, source="terminal"):
+        was_active = self.global_clean_guard_active()
+        self._global_clean_guard = 0
+        self._global_clean_terminal_streak = 0
+        self._global_clean_guard_source = str(source or "terminal")
+        self._global_clean_guard_cleared_at = time.monotonic()
+        return was_active
+
+    def reset_motor_start_audit(self):
+        self._motor_start_audit = []
+        self._blocked_duplicate_starts = 0
+        self._last_blocked_duplicate_start = None
+
+    def _record_motor_start(
+        self,
+        operation,
+        siid,
+        aiid,
+        params=None,
+        blocked=False,
+        response=None,
+        error=None,
+    ):
+        rows = list(getattr(self, "_motor_start_audit", []) or [])
+        rows.append({
+            "t": round(time.monotonic(), 3),
+            "operation": str(operation),
+            "siid": int(siid),
+            "aiid": int(aiid),
+            "params": repr(params)[:180],
+            "blocked": bool(blocked),
+            "response": repr(response)[:180] if response is not None else None,
+            "error": str(error)[:240] if error else None,
+        })
+        self._motor_start_audit = rows[-40:]
+
+    def _send_motor_start(
+        self,
+        operation,
+        siid,
+        aiid,
+        params=None,
+        allow_when_guarded=False,
+    ):
+        if self.global_clean_guard_active() and not allow_when_guarded:
+            self._blocked_duplicate_starts = int(
+                getattr(self, "_blocked_duplicate_starts", 0) or 0
+            ) + 1
+            self._last_blocked_duplicate_start = {
+                "operation": str(operation),
+                "siid": int(siid),
+                "aiid": int(aiid),
+                "params": repr(params)[:180],
+            }
+            self._record_motor_start(
+                operation,
+                siid,
+                aiid,
+                params,
+                blocked=True,
+                error="bloqueado por candado físico V118",
+            )
+            raise RuntimeError(
+                "Seguridad V118: el E10 ya está en una limpieza física activa; "
+                "se bloqueó una segunda orden de arranque."
+            )
+
+        try:
+            if params is None:
+                response = self.device.call_action_by(int(siid), int(aiid))
+            else:
+                response = self.device.call_action_by(
+                    int(siid),
+                    int(aiid),
+                    params,
+                )
+            self._record_motor_start(
+                operation,
+                siid,
+                aiid,
+                params,
+                blocked=False,
+                response=response,
+            )
+            return response
+        except Exception as exc:
+            self._record_motor_start(
+                operation,
+                siid,
+                aiid,
+                params,
+                blocked=False,
+                error=str(exc).strip() or type(exc).__name__,
+            )
+            raise
+
+    def _note_global_clean_status(self, status_code):
+        if not self.global_clean_guard_active():
+            return
+        try:
+            status_code = int(status_code)
+        except Exception:
+            return
+
+        if status_code in (2, 3, 5, 6, 7):
+            if status_code in (5, 6, 7):
+                self._global_clean_seen_active = True
+            self._global_clean_terminal_streak = 0
+            return
+
+        # Carga es evidencia física fuerte de cierre. 0/1 pueden aparecer de
+        # forma transitoria durante una limpieza B112, así que requieren seis
+        # lecturas consecutivas antes de liberar el candado.
+        if status_code == 4:
+            self.end_global_clean_guard("status=4 · dock físico")
+            return
+
+        if status_code in (0, 1) and self._global_clean_seen_active:
+            self._global_clean_terminal_streak = int(
+                getattr(self, "_global_clean_terminal_streak", 0) or 0
+            ) + 1
+            if self._global_clean_terminal_streak >= 6:
+                self.end_global_clean_guard(
+                    f"status={status_code} estable ×6"
+                )
+            return
+
+        self._global_clean_terminal_streak = 0
+
     def _reject_mapping_during_targeted_clean(self, operation):
-        if not self.targeted_clean_guard_active():
+        if not (
+            self.targeted_clean_guard_active()
+            or self.global_clean_guard_active()
+        ):
             return
         self._targeted_clean_blocked_mapping_calls = int(
             getattr(self, "_targeted_clean_blocked_mapping_calls", 0) or 0
@@ -151,6 +303,8 @@ class XiaomiE10:
             status_code = int(v.get("status", -1))
         except Exception:
             status_code = -1
+
+        self._note_global_clean_status(status_code)
 
         active_states = (2, 5, 6, 7)
         tail_states = (3, 4)
@@ -228,10 +382,20 @@ class XiaomiE10:
             raise ValueError("Modo inválido")
         if int(sweep_type) not in (0, 2, 4):
             raise ValueError("Tipo de limpieza inválido")
+        if self.global_clean_guard_active():
+            self._send_motor_start(
+                f"start sweep_type={int(sweep_type)}",
+                2,
+                {0: 3, 1: 5, 2: 6}[mode],
+            )
         self.set_mode(mode)
         self.set_sweep_type(int(sweep_type))
         action = {0: 3, 1: 5, 2: 6}[mode]
-        return self.device.call_action_by(2, action)
+        return self._send_motor_start(
+            f"start sweep_type={int(sweep_type)}",
+            2,
+            action,
+        )
 
     def start(self, mode: int):
         # La limpieza normal siempre vuelve a Global=0.
@@ -263,6 +427,7 @@ class XiaomiE10:
             before = -1
 
         if before in (5, 6, 7):
+            self.begin_global_clean_guard("already_active")
             self._last_global_start_diag = {
                 "success": True,
                 "method": "already_active",
@@ -277,15 +442,31 @@ class XiaomiE10:
         candidates = [
             (
                 "mode_action",
-                lambda: self.device.call_action_by(2, mode_action),
+                lambda: self._send_motor_start(
+                    "start_global_verified/mode_action",
+                    2,
+                    mode_action,
+                    allow_when_guarded=True,
+                ),
             ),
             (
                 "generic_start",
-                lambda: self.device.call_action_by(2, 1),
+                lambda: self._send_motor_start(
+                    "start_global_verified/generic_start",
+                    2,
+                    1,
+                    allow_when_guarded=True,
+                ),
             ),
             (
                 "whole_home",
-                lambda: self.device.call_action_by(7, 3, ["", 0, 1]),
+                lambda: self._send_motor_start(
+                    "start_global_verified/whole_home",
+                    7,
+                    3,
+                    ["", 0, 1],
+                    allow_when_guarded=True,
+                ),
             ),
         ]
 
@@ -318,6 +499,7 @@ class XiaomiE10:
                     item["status_after"] = current
                     if current in (5, 6, 7):
                         attempts.append(item)
+                        self.begin_global_clean_guard(name)
                         self._last_global_start_diag = {
                             "success": True,
                             "method": name,
@@ -937,9 +1119,11 @@ class XiaomiE10:
 
     def clean_point(self, x: float, y: float):
         target = f"{self._coord(x)},{self._coord(y)}"
+        if self.global_clean_guard_active():
+            return self._send_motor_start("clean_point", 9, 1, [target])
         self.device.set_property_by(9, 5, target)
         self.device.set_property_by(2, 8, 4)
-        return self.device.call_action_by(9, 1)
+        return self._send_motor_start("clean_point", 9, 1)
 
     def clean_zone(self, x0: float, y0: float, x1: float, y1: float):
         left, right = sorted((float(x0), float(x1)))
@@ -950,13 +1134,18 @@ class XiaomiE10:
             self.device.call_action_by(9, 8, [zone])
         except Exception:
             self.device.set_property_by(9, 2, zone)
-        return self.device.call_action_by(9, 3)
+        return self._send_motor_start("clean_zone", 9, 3)
 
     def clean_rooms(self, room_ids: list[int]):
         if not room_ids:
             raise ValueError("Elegí al menos una habitación.")
         value = ",".join(str(int(room_id)) for room_id in room_ids)
-        return self.device.call_action_by(7, 3, [value, 0, 1])
+        return self._send_motor_start(
+            "clean_rooms",
+            7,
+            3,
+            [value, 0, 1],
+        )
 
 
 def discover_from_xiaomi(username: str, password: str, locale: str = "all") -> list[dict[str, Any]]:
