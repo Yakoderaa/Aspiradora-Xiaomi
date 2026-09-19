@@ -2,74 +2,103 @@
 
 ## Estado
 
-El mapeo propio es una de las áreas principales de investigación del proyecto y debe considerarse **experimental**.
+El mapeo propio sigue siendo **experimental**, pero desde V78 el flujo ya no depende de dos pasadas artificiales de perímetro/interior. El E10 (`xiaomi.vacuum.b112`) realiza una limpieza/mapeo normal y la aplicación separa dos capas:
 
-El E10 (`xiaomi.vacuum.b112`) no se comporta igual que otros modelos Xiaomi. Varias propiedades y acciones MIoT que parecen equivalentes en documentación comunitaria tienen respuestas o estados diferentes en el firmware real del B112.
+1. **Trayectoria física**: posición, continuidad, cobertura, antiatasco, regreso a base y ETA.
+2. **Geometría visual**: planta de la habitación obtenida de Xiaomi cuando el mapa interno supera la validación espacial.
 
-Por ese motivo, la aplicación valida las respuestas observadas en el E10 y evita asumir que una propiedad significa lo mismo que en otra aspiradora.
+V88 mantiene esa separación para no deformar la trayectoria intentando hacer que “parezca” una habitación.
 
-## Flujo experimental actual
+## Flujo actual
 
-El flujo de creación utiliza dos recorridos:
+### 1. Inicio desde la base
 
-### Paso 1 — perímetro
+La sesión toma el dock como referencia local. La base física permanece en el origen de la trayectoria, pero la geometría Xiaomi se alinea usando la celda de base del mapa.
 
-La aplicación solicita un mapa nuevo y arranca un recorrido de borde. El watchdog observa el estado operativo y detecta el final mediante movimiento real, retorno a base y estado de carga, sin depender exclusivamente de `sweep-type`.
+El B112 puede publicar `255_255` como sentinela de posición. V88 nunca usa ese valor como coordenada visual: si la base queda fuera de la rejilla, se usa el centro físico `60_60` del grid 120×120.
 
-### Transición — base
+### 2. Recorrido único
 
-Cuando termina el perímetro, el robot debe regresar a su base. La aplicación confirma físicamente el estado de regreso/carga antes de permitir el Paso 2.
+El robot realiza el barrido normal. La aplicación conserva las correcciones de continuidad V85 y la lógica de cobertura/antiatasco de las versiones anteriores sin alterar las coordenadas para “enderezar” el mapa.
 
-### Paso 2 — interior
+### 3. Mapa Xiaomi
 
-Una vez confirmada la base, se inicia el recorrido interior para completar la superficie.
+Durante y después de la limpieza se prueban las fuentes realtime y clean-end disponibles. Un grid descifrado sólo se acepta si supera la validación espacial V57:
 
-## Particularidades B112 descubiertas
+- cantidad mínima de celdas conocidas;
+- componente conexa suficientemente grande;
+- relación entre componente principal y total;
+- adyacencia suficiente para descartar islotes aleatorios.
 
-Entre los comportamientos observados y cubiertos por regresiones automatizadas se encuentran:
+Un blob descifrable pero espacialmente incoherente **no se dibuja ni se persiste**.
 
-- `10/17 build-map-ii` puede devolver una respuesta sin `code=0` convencional.
-- `python-miio` documenta un quirk específico del B112 donde un `result` vacío puede repararse como un diccionario con `id` y `exe_time`.
-- `remember-state 10/1` no se usa como gate de creación de mapa.
-- `map-privacy 10/23` se trata con la semántica específica del modelo.
-- `robot-location 10/24` y otras propiedades pueden permanecer congeladas y por sí solas no prueban movimiento.
-- El archivo de mapa disponible en Cloud puede ser antiguo; un blob conocido como stale nunca debe dibujarse como si fuera el mapa actual.
+### 4. Persistencia V88
+
+Cuando el grid es válido, V88 guarda por cada mapa:
+
+- rejilla Xiaomi;
+- resolución;
+- celda de base corregida;
+- fuente/hash/timestamp;
+- métricas de validación.
+
+Al reiniciar la aplicación o cambiar de mapa, cada mapa recupera su propia geometría. No se reutiliza el grid de otra vivienda/mapa.
+
+### 5. Renderer estilo Mi Home
+
+El mapa grande y las miniaturas usan la geometría Xiaomi validada como superficie, sin mostrar la cuadrícula interna. Encima se dibujan:
+
+- contorno azul;
+- recorrido real;
+- base;
+- robot y orientación;
+- habitaciones/zonas configuradas.
+
+La leyenda queda fija en la esquina superior izquierda. La rueda controla el zoom y el doble clic con la rueda ejecuta **Zoom Extents**. El encuadre inicial conserva la base como centro de referencia.
+
+Si Xiaomi todavía no entrega un grid válido, V88 usa el fallback de trayectoria de V87 a resolución de 10 cm en lugar de inventar una planta desde datos incoherentes.
 
 ## Fuentes de mapa
 
-La aplicación puede combinar varias fuentes según disponibilidad:
-
 ```mermaid
 flowchart TD
-    A["E10 B112"] --> B["Propiedades MIoT LAN"]
-    A --> C["Acciones de mapa MIoT"]
-    C --> D["Archivo / referencia de mapa"]
-    D --> E["Xiaomi Cloud / FDS"]
-    E --> F["Decodificadores B112"]
-    B --> G["Telemetría local"]
-    F --> H["Mapa validado"]
-    G --> H
-    H --> I["Mapa local de la aplicación"]
+    A["E10 B112"] --> B["10/24 y telemetría LAN"]
+    A --> C["Upload realtime / eventos Xiaomi"]
+    A --> D["clean-end 7/1 / record-map-url"]
+    C --> E["Decoders B112 / IJAI"]
+    D --> E
+    E --> F{"Validación espacial V57"}
+    F -->|válido| G["Grid Xiaomi V88"]
+    F -->|inválido| H["Fallback visual desde recorrido"]
+    B --> I["Trayectoria física V85/V86"]
+    G --> J["Renderer"]
+    H --> J
+    I --> J
+    G --> K["Persistencia por mapa"]
 ```
 
-La aplicación prioriza no mostrar geometría incoherente. Un decoder puede abrir un blob correctamente y aun así rechazarse si la rejilla resultante no es espacialmente plausible.
+## Particularidades B112 cubiertas
+
+- `10/17 build-map-ii` puede devolver ACK sin `code=0` convencional.
+- `python-miio` contempla respuestas vacías reparables con `id` y `exe_time`.
+- `map-privacy 10/23` tiene semántica específica del modelo.
+- `robot-location 10/24` puede congelarse; no se toma como única prueba de movimiento.
+- El archivo Cloud puede ser histórico; la frescura y la coherencia se validan antes de usarlo.
+- `255_255` se trata como sentinela y nunca como una base real dentro del plano.
 
 ## Diagnóstico F12
 
-F12 muestra información destinada al desarrollo. Los bloques de versiones anteriores se mantienen temporalmente para comparar rutas y detectar regresiones.
-
-El diagnóstico intenta ocultar identificadores y material sensible. Aun así, antes de publicarlo revisá que no hayas añadido manualmente tokens, cookies o credenciales.
+F12 conserva los bloques de diagnóstico históricos para comparar versiones. V88 añade la fuente visual activa, métricas del grid, base cruda/corregida y cantidad de actualizaciones/reutilizaciones persistidas.
 
 ## Qué falta para considerarlo estable
 
-El mapeo dejará de considerarse experimental cuando podamos verificar repetidamente, en diferentes recorridos:
+La implementación se considerará estable cuando las pruebas físicas repetidas confirmen:
 
-- creación de un mapa nuevo sin intervención manual;
-- transición Paso 1 → base → Paso 2 fiable;
-- obtención del mapa fresco y no de un blob histórico;
-- posición y geometría coherentes;
-- persistencia después de reiniciar la app;
-- limpieza por zona/habitación basada en el mapa obtenido;
-- comportamiento seguro ante pérdida de red o respuestas MIoT inesperadas.
+- mapa fresco reproducible en distintos recorridos;
+- geometría comparable de forma consistente con Mi Home;
+- antiatasco sin falsos positivos en distintos muebles/esquinas;
+- retorno a base fiable en la rampa real;
+- limpieza por habitación/zona apoyada en una planta validada;
+- recuperación segura ante pérdida de red o respuestas MIoT inesperadas.
 
-Hasta entonces, el código privilegia **seguridad y diagnóstico** frente a adivinar estados del firmware.
+Los comandos de voz personalizados quedan deliberadamente fuera de esta etapa y se evaluarán más adelante con un paquete compatible y restauración segura.
