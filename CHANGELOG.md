@@ -1,5 +1,21 @@
 # Changelog
 
+### V124 · Conectar ChatGPT · MCP read-only
+
+- Conserva íntegramente V123 para la transición de mapeo `7/3 whole-home → 2/3 start-only-sweep` cuando el B112 queda cargando.
+- Ajustes incorpora una tarjeta **ChatGPT** con botón **Conectar ChatGPT** y asistente paso a paso.
+- La aplicación publica una instantánea local estructurada cada 2 s: estado físico, fase de mapeo, grid/mapa local, auditoría de START y diagnóstico F12 completo.
+- Servidor MCP local oficial mediante el SDK Python MCP, escuchando sólo en `127.0.0.1`.
+- Herramientas read-only: `get_robot_status`, `get_mapping_state`, `get_map_data`, `get_recent_events`, `get_full_diagnostic` y `get_full_snapshot`.
+- No existe ninguna tool MCP para iniciar limpieza, detener, volver a base, mover el robot o editar mapas.
+- El asistente abre directamente OpenAI Platform Tunnels, API Keys y la configuración de Connectors de ChatGPT.
+- Al conectar, descarga desde la release oficial `openai/tunnel-client` el ZIP Windows amd64, valida su SHA-256 publicado y recién entonces lo ejecuta.
+- El túnel usa sólo tráfico HTTPS saliente; el servidor MCP local no se publica directamente en Internet.
+- La API key de ejecución se guarda cifrada mediante **Windows DPAPI**; no aparece en argumentos del proceso, F12 ni snapshot MCP.
+- Token Xiaomi, IP, secretos, URLs firmadas y credenciales se eliminan/redactan antes de publicar el snapshot.
+- Reconexión automática opcional al iniciar la app.
+
+
 ### V123 · whole-home preparado + trigger físico
 
 - V122 confirmó que `7/3 set-room-clean(["",0,1])` es aceptado por el E10 pero puede dejarlo en `status=4` cuando acaba de volver al dock.

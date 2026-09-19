@@ -121,7 +121,10 @@ Invoke-PythonChecked "scripts\smoke_test_v116.py"
 Invoke-PythonChecked "scripts\smoke_test_v117.py"
 Invoke-PythonChecked "scripts\smoke_test_v118.py"
 Invoke-PythonChecked "scripts\smoke_test_v119.py"
-Invoke-PythonChecked "scripts\smoke_test_v120.py"\nInvoke-PythonChecked "scripts\smoke_test_v121.py"\nInvoke-PythonChecked "scripts\smoke_test_v122.py"\nInvoke-PythonChecked "scripts\smoke_test_v123.py"
+Invoke-PythonChecked "scripts\smoke_test_v120.py"
+Invoke-PythonChecked "scripts\smoke_test_v121.py"
+Invoke-PythonChecked "scripts\smoke_test_v122.py"
+Invoke-PythonChecked "scripts\smoke_test_v123.py"\nInvoke-PythonChecked "scripts\smoke_test_v124.py"
 
 pyinstaller --noconfirm --clean --windowed --onefile `
     --name "Aspiradora Xiaomi Updater" `
@@ -150,13 +153,13 @@ pyinstaller --noconfirm --clean --windowed --onedir `
     --collect-all Crypto `
     --collect-all PIL `
     --collect-all pystray `
-    --collect-all pycaw `
+    --collect-all pycaw `\n    --collect-all mcp `\n    --collect-all starlette `\n    --collect-all uvicorn `\n    --collect-all anyio `
     --collect-all comtypes `
     --collect-all google.protobuf `
     --collect-all vacuum_map_parser_base `
     --collect-all vacuum_map_parser_xiaomi `
     --collect-all vacuum_map_parser_ijai `
-    src\main_v123.py
+    src\main_v124.py
 if ($LASTEXITCODE -ne 0) { throw "PyInstaller falló con código $LASTEXITCODE." }
 
 Copy-Item "dist\Aspiradora Xiaomi Updater.exe" "dist\Aspiradora Xiaomi\Aspiradora Xiaomi Updater.exe" -Force
@@ -203,7 +206,7 @@ if ($probeProcess.ExitCode -ne 0) {
 $appProcess = Start-Process -FilePath $appExe -ArgumentList "--tray" -PassThru
 Start-Sleep -Seconds 6
 $appProcess.Refresh()
-if ($appProcess.HasExited) { throw "La aplicación v123 se cerró durante el smoke test de arranque. Código: $($appProcess.ExitCode)" }
+if ($appProcess.HasExited) { throw "La aplicación v124 se cerró durante el smoke test de arranque. Código: $($appProcess.ExitCode)" }
 Stop-Process -Id $appProcess.Id -Force -ErrorAction SilentlyContinue
 
 $schedulerExe = (Resolve-Path "dist\Aspiradora Xiaomi\Aspiradora Xiaomi Scheduler.exe").Path

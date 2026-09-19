@@ -89,10 +89,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V123 para Windows 10/11 x64. V122 confirmó que whole-home 7/3 con ids vacíos y modo Global=0 es aceptado por el B112, pero desde el dock puede permanecer en status=4. V123 conserva esa preparación y, sólo si sigue cargando, emite una única activación start-only-sweep 2/3. La transición no usa start-sweep 2/1, no ejecuta otro build-map, ni STOP/manual/recovery. Conserva el flujo de dos fases, dock intermedio y validación final de V121/V122."
+          $notes = "V124 para Windows 10/11 x64. Conserva V123 para la Fase 2 del mapeo y agrega Conectar ChatGPT: servidor MCP local read-only dentro de Aspiradora Xiaomi, snapshot estructurado del estado/mapa/F12, descarga y verificación SHA-256 del tunnel-client oficial de OpenAI, Secure MCP Tunnel sin puertos públicos, clave de ejecución cifrada con Windows DPAPI, reconexión opcional y asistente gráfico paso a paso. La integración no expone ninguna acción para mover, limpiar, volver a base ni modificar mapas."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V123" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V124" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }

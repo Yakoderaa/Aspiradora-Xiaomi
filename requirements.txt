@@ -8,3 +8,4 @@ protobuf>=3.20.3,<7
 vacuum-map-parser-xiaomi>=0.1.4,<1
 vacuum-map-parser-ijai>=0.1.1,<1
 pycaw
+mcp>=2.2,<3
