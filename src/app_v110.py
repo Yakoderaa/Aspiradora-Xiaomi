@@ -606,6 +606,83 @@ class App(app_v109.App):
             danger=True,
         ).pack(fill="x")
 
+    # ====================================== overlays por habitación activa
+    def _v87_draw_rooms_and_plan(self, canvas, snapshot, xy):
+        selected = self._v110_selected_room()
+        selected_id = self._v110_room_id(selected) if selected else None
+
+        # Todas las habitaciones siguen visibles para conservar contexto, pero
+        # la activa se destaca de forma sólida.
+        for room in list((snapshot or {}).get("rooms") or []):
+            if not isinstance(room, dict):
+                continue
+            try:
+                a = xy(room["x0"], room["y0"])
+                b = xy(room["x1"], room["y1"])
+            except Exception:
+                continue
+
+            room_id = self._v110_room_id(room)
+            active = room_id == selected_id
+            left, right = sorted((a[0], b[0]))
+            top, bottom = sorted((a[1], b[1]))
+            canvas.create_rectangle(
+                left,
+                top,
+                right,
+                bottom,
+                outline=ACCENT if active else "#94a3b8",
+                width=3 if active else 1,
+                dash=() if active else (5, 3),
+                tags=("v87_room", "v110_room"),
+            )
+            canvas.create_text(
+                (left + right) / 2,
+                (top + bottom) / 2,
+                text=str(room.get("name") or "Habitación"),
+                fill=TEXT if active else MUTED,
+                font=("Segoe UI", 8, "bold"),
+                tags=("v87_room", "v110_room"),
+            )
+
+        if not self.plan_store or selected_id is None:
+            return
+
+        items = self._v110_room_items(selected_id)
+        for zone in list(items.get("zones") or []):
+            try:
+                a = xy(zone["x0"], zone["y0"])
+                b = xy(zone["x1"], zone["y1"])
+            except Exception:
+                continue
+            canvas.create_rectangle(
+                min(a[0], b[0]),
+                min(a[1], b[1]),
+                max(a[0], b[0]),
+                max(a[1], b[1]),
+                outline=GREEN,
+                width=2,
+                dash=(5, 3),
+                tags=("v87_zone", "v110_active_zone"),
+            )
+
+        for zone in list(items.get("no_go") or []):
+            try:
+                a = xy(zone["x0"], zone["y0"])
+                b = xy(zone["x1"], zone["y1"])
+            except Exception:
+                continue
+            canvas.create_rectangle(
+                min(a[0], b[0]),
+                min(a[1], b[1]),
+                max(a[0], b[0]),
+                max(a[1], b[1]),
+                outline=RED,
+                width=2,
+                dash=(6, 4),
+                tags=("v87_nogo", "v110_active_zone"),
+            )
+
     # ======================================== anclaje habitación -> zonas
     @staticmethod
     def _v110_rect(item):
