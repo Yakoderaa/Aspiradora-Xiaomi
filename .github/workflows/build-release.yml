@@ -89,10 +89,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V104 para Windows 10/11 x64. Corrige el bloqueo de V103 cuando el frame actual y el acumulado eligen permutaciones tile2 distintas. Mientras el grid 2bpp siga ambiguo, V104 agrupa cada bloque 2x2 de 0,20 m en una celda física estable de 0,40 m, de modo que tile2-1203, tile2-0213 y las demás permutaciones generan el mismo preview preliminar. El preview aparece tras 2 hashes distintos y 25 segundos si mantiene coherencia espacial, sin esperar 100 celdas. Los saltos bruscos reinician la acumulación. Cuando V57 valida el mapa completo, la app cambia automáticamente al grid Xiaomi preciso de 0,20 m. Mantiene base y robot visibles y conserva las correcciones de V102/V103."
+          $notes = "V105 para Windows 10/11 x64. Corrige la desaparición del mapa preliminar cuando mapping_active pasa a False durante el retorno o al confirmar el dock. El último preview Xiaomi visible queda congelado y se sigue renderizando en status 3/4 y después del cierre local, hasta que llegue una geometría mejor o empiece un mapeo nuevo. Además deja de inflar la superficie mediante unión temporal: el preview coarse usa consenso por mayoría de hasta 5 frames reales recientes, recuperados del frame actual de V93 en lugar del acumulado V92. Una celda debe repetirse en suficientes frames para permanecer visible. Se añade cleaning_area MIoT 7/23 al diagnóstico para calibrar el área contra Mi Home en la siguiente prueba."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V104" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V105" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }

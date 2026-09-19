@@ -4,6 +4,16 @@ Este archivo resume **hitos importantes**, no cada build interno. Para el detall
 
 ## Unreleased
 
+### V105 · preview retenido + consenso temporal
+
+- El último mapa Xiaomi preliminar ya no desaparece cuando `mapping_active` pasa a `False` durante el retorno a base.
+- El preview queda congelado y visible en `status=3`, `status=4` y tras el cierre local, hasta recibir una geometría mejor o iniciar un mapa nuevo.
+- El preview parcial deja de usar una unión acumulativa permanente.
+- V105 toma el frame físico actual de V93 y usa consenso por mayoría de hasta 5 hashes recientes.
+- Las celdas transitorias deben repetirse en suficientes frames antes de quedar en la planta, reduciendo la inflación de área.
+- Se registra `cleaning_area` MIoT 7/23 en F12 para comparar el área física reportada por el E10 con Mi Home.
+
+
 ### V104 · preview Xiaomi independiente del layout
 
 - El mapa parcial ya no queda bloqueado porque el frame actual y el acumulado elijan permutaciones `tile2` diferentes.
