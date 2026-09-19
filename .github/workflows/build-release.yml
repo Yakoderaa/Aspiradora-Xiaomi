@@ -68,10 +68,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V87 para Windows 10/11 x64. Agrega Limpiar bordes y Espiral usando los modos nativos del Xiaomi Vacuum E10: sweep-type=2 para bordes y sweep-type=4 para espiral/punto. La limpieza normal restablece Global=0 para no heredar el patrón anterior. El mapa adopta un estilo inspirado en Mi Home: fondo limpio sin grilla, superficie explorada continua, contorno azul, recorrido superpuesto, base verde con indicador de carga y robot circular orientado; este renderer es sólo visual y conserva intactas las coordenadas, cobertura y lógica física de V85/V86. Conserva además el aviso de fin sólo con dock físico confirmado y las ETA de carga/autonomía. La personalización de voz queda documentada como opción futura."
+          $notes = "V88 para Windows 10/11 x64. El mapa deja de depender sólo del relleno alrededor del recorrido: cuando Xiaomi entrega una rejilla 120x120 coherente, V88 usa esa geometría interna validada como planta, la alinea con la base, la guarda por cada mapa y la reutiliza en el mapa grande y las miniaturas. El sentinela 255_255 del B112 ya no puede desplazar la base fuera del plano: se corrige al marco físico 60_60. Si el grid no supera la validación espacial, se conserva un fallback estimado de 10 cm sin dibujar geometría falsa. Se mantienen rueda=zoom, doble clic de rueda=Zoom Extents, leyenda fija, recorrido superpuesto, modos Global/Bordes/Espiral y toda la lógica física V85/V86 de continuidad, dock y ETA. La personalización de voz sigue reservada para una versión futura."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V87" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V88" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
