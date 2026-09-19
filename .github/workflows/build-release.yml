@@ -89,10 +89,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V108 para Windows 10/11 x64. Restaura de forma obligatoria la interfaz moderna del mapa sin modificar la estrategia final-first de V107. El último pase visual del canvas borra cualquier dibujo heredado y sólo presenta fondo azul limpio, piso/contorno azul cuando corresponde, base verde, robot y zonas. El recorrido interno, grilla antigua, base naranja y elementos/perímetros naranjas no pueden quedar visibles. Durante un mapeo nuevo, mientras se espera el mapa Xiaomi final, se muestran únicamente fondo moderno + base/robot. Los mapas viejos sin grid final usan el piso estimado moderno con contorno y sin recorrido. Mapa grande y miniatura comparten el mismo renderer final. Se conservan todas las optimizaciones anti-freeze y la captura final Xiaomi de V107."
+          $notes = "V109 para Windows 10/11 x64. Corrige cuatro frentes en una sola versión. Mapa final: el layout 2bpp y su orientación global se eligen contra la trayectoria física real del E10, probando layouts/máscaras/orientaciones y premiando cobertura y cercanía del recorrido en lugar de conectividad aislada. Zonas y habitaciones: corrige la conversión de metros locales a coordenadas raw del robot (1 raw = 0,10 m) y repara el origen usando la base raw real de V77/V78. Interfaz: abajo queda únicamente Administrar mapas; habitaciones y zonas se concentran en un panel derecho con pestañas, selección, limpiar, bloquear/desbloquear, crear y eliminar. Diagnóstico/privacidad: F12 nunca puede quedar en blanco, tiene fallback de emergencia, Copiar diagnóstico usa la misma ruta segura, las IPv4 se redactan y el estado visible muestra sólo Conectado. Conserva V108 visual, V107 final-first y las optimizaciones anti-freeze."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V108" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V109" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
