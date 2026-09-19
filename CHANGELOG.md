@@ -4,6 +4,19 @@ Este archivo resume **hitos importantes**, no cada build interno. Para el detall
 
 ## Unreleased
 
+### V111 · área retenida + diagnóstico completo
+
+- Corrige el error de F12 de V110: `_v87_floor_cells` vuelve a respetar el contrato `@classmethod` esperado por V91/V97/V99 y acepta `snapshot=None` sin interpretar el diccionario como `self`.
+- El área raw 7/23 del B112 se conserva durante toda la sesión de mapeo y no se pierde al volver/cargar.
+- Si el batch `get_properties` devuelve 0 para 7/23 durante una sesión activa/retorno/dock, el driver intenta una lectura directa de la propiedad.
+- La app mantiene el máximo raw y el máximo de área observado desde el inicio del mapeo.
+- El selector final resuelve una única escala para el raw (×1, ×0,1 o ×0,01) comparándola con la huella física de la trayectoria; todos los candidatos compiten contra el mismo objetivo.
+- Se mantiene la puntuación V110 por trayectoria + área + topología.
+- Gate de seguridad: si el mejor grid final difiere más de 42% del área física objetivo, no se guarda como mapa definitivo.
+- F12 V111 informa raw máximo, área máxima, factor inferido, área estimada por trayectoria, área del grid elegido y error relativo.
+- Conserva V110 Habitaciones/Zonas, renderer moderno, privacidad de IP, escala física de presentación y anti-freeze.
+
+
 ### V110 · habitaciones ancladas + escala física
 
 - Cada zona de limpieza y bloqueo tiene un `room_id` obligatorio y pertenece a una habitación.
