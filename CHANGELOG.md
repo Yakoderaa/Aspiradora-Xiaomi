@@ -4,6 +4,18 @@ Este archivo resume **hitos importantes**, no cada build interno. Para el detall
 
 ## Unreleased
 
+### V90 · START real y cierre de dock por sesión
+
+- Corrige la carrera que cerraba el mapeo con `tiempo 0.0 s` cuando llegaban puntos `10/24` mientras el robot todavía informaba `status=4`.
+- `status=4` antes de `v74_mapping_started` ya no puede finalizar una sesión.
+- Después del START, la app exige observar una salida física real del dock mediante `status 5/6/7`.
+- Sólo después de esa salida un `status=3/4` puede considerarse retorno real y cerrar el mapeo.
+- Los retornos/status tempranos quedan bloqueados y contabilizados en F12.
+- Los puntos `10/24` tempranos se conservan para diagnóstico, pero no son prueba suficiente de salida física.
+- Watchdog de START de 60 s: si no hay confirmación, cancela el intento, ejecuta `stop + dock` y evita etiquetarlo falsamente como “mapeo incompleto”.
+- Un START tardío u obsoleto se descarta y no puede reactivar el watcher.
+- Se conserva V89 sin cambios visuales: recorrido oculto, sólo perímetro + relleno + base + robot.
+
 ### V89 · mapa limpio sin recorrido visible
 
 - Se ocultan las líneas internas del recorrido en el mapa grande y en las cuatro miniaturas.
