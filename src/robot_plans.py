@@ -1,6 +1,8 @@
 import json
 import time
 
+LOCAL_METERS_PER_RAW = 0.10
+
 
 def _fmt(value):
     value = float(value)
@@ -20,17 +22,27 @@ def require_origin(plan):
 
 
 def local_point_to_device(x, y, plan):
+    """Convierte metros locales del mapa a coordenadas raw del E10.
+
+    Desde V77 el mapa local se guarda en metros, mientras que 10/22 y 10/24
+    usan 1 unidad raw = 0,10 m. La operación inversa es:
+        raw = origen_raw + metros / 0,10
+    """
     ox, oy = require_origin(plan)
-    return float(x) + ox, float(y) + oy
+    return (
+        ox + float(x) / LOCAL_METERS_PER_RAW,
+        oy + float(y) / LOCAL_METERS_PER_RAW,
+    )
 
 
 def local_rect_to_device(rect, plan):
-    ox, oy = require_origin(plan)
+    x0, y0 = local_point_to_device(rect["x0"], rect["y0"], plan)
+    x1, y1 = local_point_to_device(rect["x1"], rect["y1"], plan)
     return {
-        "x0": float(rect["x0"]) + ox,
-        "y0": float(rect["y0"]) + oy,
-        "x1": float(rect["x1"]) + ox,
-        "y1": float(rect["y1"]) + oy,
+        "x0": x0,
+        "y0": y0,
+        "x1": x1,
+        "y1": y1,
     }
 
 
