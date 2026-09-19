@@ -7,6 +7,7 @@ from xiaomi_e10_map_v92 import XiaomiE10MapV92
 class XiaomiE10MapV93(XiaomiE10MapV92):
     """V93: coherencia física/temporal para elegir el layout B112."""
 
+    DEVICE_RAW_RESOLUTION_M = 0.10
     ROBOT_NEAR_CELLS = 2.5
     DELTA_NEAR_CELLS = 3.5
     CLEAN_MIN_CELLS = 150
@@ -34,7 +35,7 @@ class XiaomiE10MapV93(XiaomiE10MapV92):
         return result
 
     @classmethod
-    def _valid_robot_cell(cls, point):
+    def _valid_raw_pose(cls, point):
         if not isinstance(point, dict):
             return None
         try:
@@ -44,11 +45,37 @@ class XiaomiE10MapV93(XiaomiE10MapV92):
             return None
         if not (math.isfinite(x) and math.isfinite(y)):
             return None
-        if not (0.0 <= x < cls.GRID_SIDE and 0.0 <= y < cls.GRID_SIDE):
-            return None
         if x >= 250.0 and y >= 250.0:
             return None
         return x, y
+
+    @classmethod
+    def _physical_robot_grid_cell(cls, base_grid, robot_grid, base_cell):
+        """Proyecta 10/24 (0,10 m/raw) a la rejilla Xiaomi (0,20 m/celda)."""
+        robot_raw = cls._valid_raw_pose(robot_grid)
+        if robot_raw is None:
+            return None
+
+        base_raw = cls._valid_raw_pose(base_grid)
+        if base_raw is None:
+            # Cuando 10/22 pasa a 255_255, V78 ya demostró que el dock B112
+            # físico es 60_60 mientras está confirmado en base.
+            base_raw = tuple(cls.BASE_FALLBACK_CELL)
+
+        try:
+            bx, by = float(base_cell[0]), float(base_cell[1])
+            dx_m = (float(robot_raw[0]) - float(base_raw[0])) * cls.DEVICE_RAW_RESOLUTION_M
+            dy_m = (float(robot_raw[1]) - float(base_raw[1])) * cls.DEVICE_RAW_RESOLUTION_M
+            gx = bx + dx_m / float(cls.GRID_RESOLUTION_M)
+            gy = by + dy_m / float(cls.GRID_RESOLUTION_M)
+        except Exception:
+            return None
+
+        if not (math.isfinite(gx) and math.isfinite(gy)):
+            return None
+        if not (0.0 <= gx < cls.GRID_SIDE and 0.0 <= gy < cls.GRID_SIDE):
+            return None
+        return gx, gy
 
     @classmethod
     def _nearest_distance(cls, cells, point):
@@ -430,7 +457,11 @@ class XiaomiE10MapV93(XiaomiE10MapV92):
 
         base_grid, robot_grid = self._device_pose_grid()
         base_cell, base_fallback = self._valid_device_base_cell(base_grid)
-        robot_cell = self._valid_robot_cell(robot_grid)
+        robot_cell = self._physical_robot_grid_cell(
+            base_grid,
+            robot_grid,
+            base_cell,
+        )
         self._v93_note_frame(current_options, robot_cell)
 
         candidates = list(current_options)
@@ -553,6 +584,12 @@ class XiaomiE10MapV93(XiaomiE10MapV92):
             "base_cell": tuple(base_cell),
             "base_fallback": bool(base_fallback),
             "robot_cell": tuple(robot_cell) if robot_cell is not None else None,
+            "robot_raw": (
+                tuple(self._valid_raw_pose(robot_grid))
+                if self._valid_raw_pose(robot_grid) is not None else None
+            ),
+            "device_raw_resolution": self.DEVICE_RAW_RESOLUTION_M,
+            "grid_resolution": self.GRID_RESOLUTION_M,
             "candidate_count": len(ranked),
             "selected": brief(selected),
             "selected_key": selected_key,
