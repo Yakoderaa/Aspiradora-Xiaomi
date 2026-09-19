@@ -4,6 +4,8 @@ import time
 import app_v121
 import app_v9
 
+# V122 release retry marker: publication-only change; no runtime behavior.
+
 
 class App(app_v121.App):
     """V122: Fase 2 whole-home por servicio 7/3, no start-sweep 2/1."""
