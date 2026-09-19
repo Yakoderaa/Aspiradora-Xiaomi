@@ -60,9 +60,27 @@ phase2 = source.split(
 )[1].split(
     "    def _handle_ui_event", 1
 )[0]
-assert "start_mapping_whole_home" in phase2
-assert "start_mapping_interior" not in phase2
-assert "arm_new_map(" not in phase2
+phase2_tree = ast.parse(
+    "def _probe(self, vacuum, serial, source, sweep_type=None):\n"
+    + "\n".join("    " + line for line in phase2.splitlines()[1:])
+)
+calls = [
+    node for node in ast.walk(phase2_tree)
+    if isinstance(node, ast.Call)
+]
+attrs = [
+    call.func.attr
+    for call in calls
+    if isinstance(call.func, ast.Attribute)
+]
+names = [
+    call.func.id
+    for call in calls
+    if isinstance(call.func, ast.Name)
+]
+assert "start_mapping_whole_home" in attrs
+assert "start_mapping_interior" not in attrs + names
+assert "arm_new_map" not in attrs + names
 assert "7/3 ['', 0, 1]" in source
 
 print(
