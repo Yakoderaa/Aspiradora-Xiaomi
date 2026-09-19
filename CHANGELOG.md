@@ -4,6 +4,16 @@ Este archivo resume **hitos importantes**, no cada build interno. Para el detall
 
 ## Unreleased
 
+### V87 · modos de limpieza nativos
+
+- Botones **Limpiar bordes** y **Espiral** en el panel de limpieza.
+- Uso de `sweep-type=2` para bordes y `sweep-type=4` para espiral/punto.
+- La limpieza normal fuerza `sweep-type=0` para no heredar el patrón anterior.
+- Los patrones especiales respetan el modo seleccionado: aspirar, aspirar + trapear o trapear.
+- Se conserva el cierre V86: el aviso de mapeo sólo aparece una vez confirmado físicamente el dock.
+- Personalización de voz: queda fuera de V87 y se evaluará como función futura mediante paquetes compatibles.
+
+
 ### Presentación
 
 - Portada profesional con galería de fotografías oficiales del Xiaomi E10.
