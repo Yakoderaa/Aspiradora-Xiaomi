@@ -89,10 +89,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V115 para Windows 10/11 x64. Corrige el botón Iniciar limpieza: ya no considera suficiente un ACK MIoT. Prepara modo/succión/agua, intenta la acción específica por modo y, si el E10 sigue inmóvil, usa start genérico y luego whole-home. Cada ruta se valida leyendo el estado físico hasta confirmar 5/6/7; si ninguna mueve el robot, muestra error visible y deja el detalle completo en F12. Durante la limpieza global y el retorno, el native_grid Xiaomi guardado queda congelado, se bloquean actualizaciones live de geometría y se restaura cualquier cambio inesperado. Mapear/cambiar/eliminar mapa queda bloqueado durante la sesión y el guard del E10 impide arm_new_map/build-map/start_mapping. Conserva V114, la geometría final V113/V111, renderer, Habitaciones/Zonas y privacidad."
+          $notes = "V116 para Windows 10/11 x64. Corrige los dos botones visibles Iniciar limpieza. La causa era que una bandera mapping_active residual podía dejar el control superior deshabilitado aunque el estado físico del E10 fuera Cargando/En espera; la ruta rápida entraba al mismo bloqueo. V116 hace mandar al estado físico: 0/1/3/4 invalida ese bloqueo residual, reenlaza explícitamente todos los botones Iniciar limpieza a la función V116 y registra el clic antes de cualquier lectura de red. El mapa Xiaomi deja de ser requisito para una limpieza global: si existe native_grid se congela/protege, pero su ausencia no bloquea START. Succión/agua pasan a ser best-effort y no pueden impedir el arranque. Conserva el START verificado de V115: acción por modo -> start genérico -> whole-home y éxito sólo al confirmar status 5/6/7. F12 muestra clics, estados de botones, flags de mapeo limpiados y etapa exacta."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V115" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V116" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }

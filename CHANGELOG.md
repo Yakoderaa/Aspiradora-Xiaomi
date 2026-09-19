@@ -1,5 +1,16 @@
 # Changelog
 
+### V116 · botones de limpieza desbloqueados por estado físico
+
+- Corrige el caso donde **Iniciar limpieza** no hacía nada aunque el E10 estuviera físicamente en **Cargando**.
+- Una bandera `mapping_active` residual ya no deshabilita la limpieza cuando el estado real es 0/1/3/4.
+- Los botones superior, Inicio/Acciones rápidas y cualquier botón equivalente se reenlazan explícitamente a `App.start_clean` V116.
+- El clic se registra en F12 y en el banner **antes** de cualquier lectura de red.
+- La limpieza global ya no exige `native_grid`; si hay mapa Xiaomi se protege, pero nunca se usa como condición para permitir START.
+- Fallos al aplicar succión/agua se registran y no impiden intentar el arranque.
+- Se conserva V115: fallback por modo → start genérico → whole-home y éxito sólo con status físico 5/6/7.
+
+
 ### V115 · inicio global verificado + mapa congelado durante limpieza
 
 - **Iniciar limpieza** ya no toma un ACK MIoT como prueba de éxito: confirma físicamente que el E10 cambió a estado 5/6/7.
