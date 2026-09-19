@@ -4,6 +4,19 @@ Este archivo resume **hitos importantes**, no cada build interno. Para el detall
 
 ## Unreleased
 
+### V91 · cabecera B112 real + reconstrucción de superficie
+
+- Corrige el parser del payload post-hex observado en el E10: `type8 + version8 + len16be`.
+- Reconoce la estructura real de **3628 bytes = 28 bytes de cabecera + 3600 bytes de grid 120×120 2bpp**.
+- La cabecera observada acepta tipos variables (por ejemplo 0x09/0x0B/0x0D), versión 1 y longitud 24.
+- El decoder prueba orden MSB/LSB y máscaras de capa `1`, `2`, `3`, `1+2`, `1+3`, `2+3` y `nonzero`.
+- **V57 sigue siendo obligatorio**: un grid incoherente jamás se persiste ni se dibuja.
+- El grid candidato usa resolución de **0,20 m**. Por seguridad, V91 no cambia todavía `RAW_TO_METERS` de V77/V85.
+- Si no hay grid Xiaomi válido, el fallback visual usa radio físico de 0,18 m, interpola entre muestras, cierra huecos cortos entre carriles y rellena sólo huecos completamente encerrados.
+- El viewport y las miniaturas incluyen la superficie reconstruida completa.
+- F12 compara área/celdas del fallback anterior con V91, bounding box y densidad de cobertura.
+- Se conservan sin cambios el gate de START/salida física de V90 y el recorrido invisible de V89.
+
 ### V90 · START real y cierre de dock por sesión
 
 - Corrige la carrera que cerraba el mapeo con `tiempo 0.0 s` cuando llegaban puntos `10/24` mientras el robot todavía informaba `status=4`.
