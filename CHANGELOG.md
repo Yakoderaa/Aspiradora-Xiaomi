@@ -4,6 +4,20 @@ Este archivo resume **hitos importantes**, no cada build interno. Para el detall
 
 ## Unreleased
 
+### V112 · geometría retenida + retorno sin frenado
+
+- El mapa final queda anclado al candidato V93 espacialmente válido en vez de volver a puntuar libremente máscaras mucho más pequeñas.
+- Un candidato final debe conservar al menos 84% del componente principal V93; el caso real 265→196 queda explícitamente bloqueado.
+- La planta final debe seguir cubriendo la extensión de la trayectoria real en ambos ejes, con un margen físico para el centro del robot.
+- Si `cleaning-area 7/23` es 0, la referencia de superficie se deriva de la huella/extensión de la trayectoria y no del área de tarea mostrada por Mi Home.
+- Se conserva trayectoria + topología + orientación como criterios de selección, pero una buena cercanía a la polilínea ya no puede ganar a costa de recortar demasiado la planta.
+- `_v87_draw_rooms_and_plan(..., transform=None)` restaura el contrato V88/V110 y elimina el TypeError repetitivo del renderer.
+- El watchdog de retorno ya no ejecuta `vacuum.stop()` ni `manual(5)` al vencer 120 s.
+- Un retorno superior a 120 s pasa a ser sólo **Retorno prolongado**; el firmware mantiene control hasta confirmar `status=4`.
+- F12 V112 informa baseline V93, mínimo retenido, celdas finales, retención, candidatos descartados y avisos de retorno prolongado.
+- Conserva V111 diagnóstico completo, V110 Habitaciones/Zonas, renderer moderno, privacidad de IP y anti-freeze.
+
+
 ### V111 · área retenida + diagnóstico completo
 
 - Corrige el error de F12 de V110: `_v87_floor_cells` vuelve a respetar el contrato `@classmethod` esperado por V91/V97/V99 y acepta `snapshot=None` sin interpretar el diccionario como `self`.
