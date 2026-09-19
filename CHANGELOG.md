@@ -4,6 +4,19 @@ Este archivo resume **hitos importantes**, no cada build interno. Para el detall
 
 ## Unreleased
 
+### V107 · mapa final primero + anti-freeze
+
+- La planta deja de reconstruirse en vivo: durante el mapeo se priorizan pose, base y control del robot.
+- No se hace polling/decodificación Cloud de la planta cada pocos segundos; el mapa se captura al finalizar en el dock.
+- Al confirmar `status=4`, se hacen 3 lecturas finales Xiaomi y se prefiere un frame actual repetido/estable.
+- El mapa final ya no usa la unión histórica `acum[N]`; toma el frame actual del layout/máscara elegido por la coherencia física V93.
+- No se rellenan huecos ni se agregan celdas al mapa final; sólo se elimina geometría completamente separada.
+- La geometría final se refleja en Y alrededor de la base para igualar la orientación visual observada en Mi Home.
+- Render completo limitado a 1,5 s; galería de mapas a 12 s; refresh global de tema/i18n a 15 s; eventos UI en lotes de 4.
+- Se eliminan miles de `configure()` redundantes del fondo de canvas.
+- Un mapa ya guardado sigue visible al reiniciar; la superficie sólo se oculta al comenzar un mapeo nuevo.
+
+
 ### V106 · densidad 2x2 sin inflar el mapa
 
 - El preview Xiaomi ya no convierte automáticamente cada bloque ambiguo 2×2 en 0,16 m² completos.
