@@ -6,7 +6,7 @@ import app_v9
 
 
 class App(app_v99.App):
-    """V100: Xiaomi live-first + fondo de mapa estable sin flicker."""
+    """V100: Xiaomi live-first + fondo de mapa estable sin flicker.\n\n    Release build: visualización parcial Xiaomi separada de persistencia V57.\n    """
 
     MAP_BG = "#dfe9f2"
     CLOUD_FILE_POLL_SECONDS = 6.0
