@@ -89,10 +89,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V106 para Windows 10/11 x64. Mantiene la retención de V105 durante retorno/dock y corrige la inflación residual del preview 0,40 m. En vez de marcar un bloque 2x2 completo cuando sólo una parte está ocupada, conserva el conteo real de 1/4, 2/4, 3/4 o 4/4 subceldas Xiaomi por bloque, usa mediana baja de hasta 5 frames y vuelve a proyectar el preview a celdas de 0,20 m. La posición interna ambigua se elige hacia el núcleo/dock para no expandir artificialmente el borde. El área mostrada vuelve a calcularse con celdas reales de 0,20x0,20 m. Cuando V57 valida el grid completo, sigue usando el mapa Xiaomi exacto."
+          $notes = "V107 para Windows 10/11 x64. Cambia la estrategia de mapeo para priorizar fidelidad a Mi Home y fluidez. Durante la limpieza no reconstruye ni descarga la planta Cloud en tiempo real: sólo mantiene pose/base por LAN y espera al dock. Al confirmar status=4 hace tres lecturas finales del slot Xiaomi, selecciona un frame actual repetido/estable y evita la unión histórica acum[N] que deformaba la planta. El mapa final conserva sólo el componente principal literal, sin rellenos inventados, y refleja el eje Y alrededor del dock para igualar la orientación visual observada en Mi Home. Rendimiento: render completo limitado a 1,5 s, galería a 12 s, refresh global de tema/i18n a 15 s, eventos UI en lotes de 4, sin configure redundante de canvas y sin polling Cloud live durante la limpieza."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V106" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V107" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
