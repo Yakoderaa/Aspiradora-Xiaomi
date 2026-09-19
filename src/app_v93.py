@@ -331,8 +331,11 @@ class App(app_v92.App):
             "================================================================",
             (
                 "posición física: "
-                f"base={diag.get('base_cell', '—')} · "
-                f"robot10/24={diag.get('robot_cell', '—')} · "
+                f"base grid={diag.get('base_cell', '—')} · "
+                f"10/24 raw={diag.get('robot_raw', '—')} · "
+                f"10/24→grid={diag.get('robot_cell', '—')} · "
+                f"escala={diag.get('device_raw_resolution', 0.10)}/"
+                f"{diag.get('grid_resolution', 0.20)}m · "
                 f"fallback base={bool(diag.get('base_fallback'))}"
             ),
             f"seleccionado V93: {desc(selected)}",
@@ -364,6 +367,7 @@ class App(app_v92.App):
             ),
             "top candidatos V93:",
             *top_lines,
+            "regla V93: 10/24 se convierte de 0,10 m/raw a 0,20 m/celda antes de compararlo con la geometría Xiaomi",
             "regla V93: un layout no gana sólo por ser conexo; debe ser coherente con 10/24 y con dónde aparecen celdas nuevas",
             "regla V93: el filtro de apéndices sólo se aplica si conserva al menos 68% de la geometría y nunca puede volver inválido un grid V57",
             "regla V93: un grid Xiaomi válido cuenta como evidencia de mapeo completo aunque la heurística de trayectoria V81 quede corta",
