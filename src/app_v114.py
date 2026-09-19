@@ -43,6 +43,7 @@ class App(app_v113.App):
         self._v114_map_fingerprint_before = None
         self._v114_map_fingerprint_after = None
         self._v114_map_restores = 0
+        self._v114_map_switch_restores = 0
         self._v114_live_grid_updates_blocked = 0
         self._v114_mapping_ui_blocks = 0
         super().__init__()
@@ -121,7 +122,29 @@ class App(app_v113.App):
             return None
         return super()._v88_prepare_live_grid(snapshot)
 
-    def _v114_restore_grid_if_needed(self, original_grid, original_fp):
+    def _v114_restore_grid_if_needed(
+        self,
+        original_grid,
+        original_fp,
+        original_map_id=None,
+    ):
+        # El rollback siempre se aplica al mapa con el que comenzó la tarea.
+        # Aunque la UI ya bloquea cambios, esta segunda barrera evita escribir
+        # geometría en otro mapa si algún evento externo cambia la selección.
+        if original_map_id:
+            try:
+                current_map_id = str(self.local_map.active_map_id or "")
+            except Exception:
+                current_map_id = ""
+            if current_map_id != str(original_map_id):
+                try:
+                    self.local_map.select_map(str(original_map_id))
+                    if self.plan_store:
+                        self.plan_store.set_active_map(str(original_map_id))
+                    self._v114_map_switch_restores += 1
+                except Exception:
+                    pass
+
         try:
             current = self.local_map.snapshot().get("native_grid")
             current_fp = self._v114_grid_fingerprint(current)
@@ -129,11 +152,8 @@ class App(app_v113.App):
             current_fp = None
         self._v114_map_fingerprint_after = current_fp
 
-        if (
-            original_fp is not None
-            and current_fp is not None
-            and current_fp != original_fp
-        ):
+        # También restauramos si el grid desapareció por completo (None).
+        if original_fp is not None and current_fp != original_fp:
             self.local_map.set_native_grid(original_grid)
             self._v114_map_restores += 1
             self._v114_map_fingerprint_after = original_fp
@@ -350,6 +370,7 @@ class App(app_v113.App):
                         self._v114_restore_grid_if_needed(
                             original_grid,
                             original_fp,
+                            map_id,
                         )
                         time.sleep(0.8)
 
@@ -365,6 +386,7 @@ class App(app_v113.App):
                 self._v114_restore_grid_if_needed(
                     original_grid,
                     original_fp,
+                    map_id,
                 )
                 self._post_ui(
                     "plan_job_error",
@@ -379,6 +401,7 @@ class App(app_v113.App):
                 self._v114_restore_grid_if_needed(
                     original_grid,
                     original_fp,
+                    map_id,
                 )
                 self._v114_target_clean_active = False
 
@@ -507,6 +530,7 @@ class App(app_v113.App):
         original_fp = self._v114_grid_fingerprint(original_grid)
         self._v114_map_fingerprint_before = original_fp
         self._v114_target_clean_active = True
+        self._zone_job_running = True
         self._v114_target_clean_kind = "point"
         self._v114_target_clean_label = "Punto seleccionado"
         self._v114_target_clean_map_id = map_id
@@ -545,8 +569,10 @@ class App(app_v113.App):
                 self._v114_restore_grid_if_needed(
                     original_grid,
                     original_fp,
+                    map_id,
                 )
                 self._v114_target_clean_active = False
+                self._zone_job_running = False
 
         threading.Thread(
             target=worker,

@@ -14,8 +14,8 @@ Este archivo resume **hitos importantes**, no cada build interno. Para el detall
 - El marco visual final y la conversión física comparten el mismo origen de dock; luego se convierte a raw con `1 raw = 0,10 m`.
 - Durante limpieza dirigida se activa un guard en el E10: `arm_new_map`, `build-map` y las rutas `start_mapping_*` quedan bloqueadas por código.
 - Mientras una limpieza dirigida está activa no se puede iniciar mapeo, cambiar mapa, crear mapa ni eliminar el mapa activo.
-- El `native_grid` final queda congelado durante la limpieza y se restaura automáticamente si cambia su huella.
-- Las programaciones que apuntan a zonas usan la misma ruta operativa segura.
+- El `native_grid` final queda congelado durante la limpieza y se restaura automáticamente si cambia, desaparece o un evento externo cambia temporalmente el mapa activo.
+- Una habitación local nunca se envía como `room-id` Xiaomi: se convierte exclusivamente en superficie del grid final.\n- Las programaciones que apuntan a zonas usan la misma ruta operativa segura.
 - F12 V114 informa selección local, área pedida/limpiable, subzonas, coordenadas raw, comandos completados, hash del mapa y bloqueos de mapeo.
 - Conserva V113 retorno sin frenado automático, renderer compatible, panel Habitaciones/Zonas, privacidad de IP y anti-freeze.
 
