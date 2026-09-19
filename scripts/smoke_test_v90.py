@@ -68,6 +68,8 @@ for required in (
     "status 5/6/7",
     "START no se confirma en 60 s",
     "puntos 10/24 por sí solos nunca prueban salida física",
+    "START tardío/obsoleto descartado por V90",
+    "vacuum.dock()",
 ):
     assert required in source, required
 
