@@ -89,10 +89,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V109 para Windows 10/11 x64. Corrige cuatro frentes en una sola versión. Mapa final: el layout 2bpp y su orientación global se eligen contra la trayectoria física real del E10, probando layouts/máscaras/orientaciones y premiando cobertura y cercanía del recorrido en lugar de conectividad aislada. Zonas y habitaciones: corrige la conversión de metros locales a coordenadas raw del robot (1 raw = 0,10 m) y repara el origen usando la base raw real de V77/V78. Interfaz: abajo queda únicamente Administrar mapas; habitaciones y zonas se concentran en un panel derecho con pestañas, selección, limpiar, bloquear/desbloquear, crear y eliminar. Diagnóstico/privacidad: F12 nunca puede quedar en blanco, tiene fallback de emergencia, Copiar diagnóstico usa la misma ruta segura, las IPv4 se redactan y el estado visible muestra sólo Conectado. Conserva V108 visual, V107 final-first y las optimizaciones anti-freeze."
+          $notes = "V110 para Windows 10/11 x64. Habitaciones/Zonas: cada zona y bloqueo queda anclado obligatoriamente a una habitación mediante room_id; sin habitación activa no se pueden crear zonas; cambiar habitación cambia lista y overlays; borrar una habitación elimina en cascada sus zonas, bloqueos y referencias de programación. El lateral derecho se rehace con interfaz moderna, selector Habitaciones/Zonas, tarjetas y selector de habitación activa; abajo permanece únicamente Administrar mapas. Diagnóstico: compatibilidad para llamadas heredadas a _v87_floor_cells() sin snapshot para recuperar el diagnóstico completo. Mapa final: cleaning-area MIoT se normaliza desde centésimas de m², la selección final combina trayectoria física, área real y topología para penalizar máscaras demasiado ralas, huecos y contornos artificiales. La escala automática inicial se limita a 72 px/m para evitar inflar visualmente mapas pequeños, manteniendo zoom/pan manual. Conserva V109 privacidad/zonas raw, V108 renderer moderno y V107 anti-freeze."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V109" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V110" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
