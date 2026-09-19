@@ -89,10 +89,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V111 para Windows 10/11 x64. Corrige la prueba V110: F12 vuelve a respetar el contrato classmethod de _v87_floor_cells y elimina el error donde el snapshot dict se interpretaba como self. El área de limpieza del B112 se retiene durante toda la sesión y sobrevive retorno/dock; si 7/23 falta en el get_properties múltiple se intenta una lectura directa y se conserva el último acumulado válido. El valor raw máximo se usa para inferir de forma única la escala física plausible contra la huella de trayectoria (×1, ×0,1 o ×0,01) antes de puntuar todas las máscaras. El mapa final mantiene trayectoria+área+topología y agrega un gate: si el mejor candidato difiere más de 42% del área física objetivo, no publica una planta que sabemos incorrecta. Se conservan V110 Habitaciones/Zonas, renderer moderno, privacidad de IP y anti-freeze."
+          $notes = "V112 para Windows 10/11 x64. Corrige la pérdida de geometría observada al finalizar: el candidato final queda anclado al layout/máscara V93 ya validado, exige conservar al menos 84% de su componente principal y debe cubrir la extensión física de la trayectoria en ambos ejes. Cuando cleaning-area 7/23 permanece en 0, la referencia geométrica se deriva de la huella/extensión de la trayectoria; el área de tarea de Mi Home no se fuerza como área del polígono. Corrige definitivamente el contrato V88/V110 de _v87_draw_rooms_and_plan con transform opcional. El watchdog de retorno deja de ejecutar stop/manual(5): tras 120 s sólo informa retorno prolongado y sigue dejando al firmware buscar el dock hasta status=4. Conserva V111 diagnóstico completo, V110 Habitaciones/Zonas, renderer moderno, privacidad de IP y anti-freeze."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V111" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V112" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
