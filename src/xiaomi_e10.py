@@ -115,7 +115,7 @@ class XiaomiE10:
         return self.device.set_property_by(2, 4, mode)
 
     def set_sweep_type(self, sweep_type: int):
-        # xiaomi.vacuum.b112: 0 global, 2 borde/perímetro, 4 punto, 5 remoto.
+        # xiaomi.vacuum.b112: 0 global, 2 bordes, 4 espiral/punto, 5 remoto.
         if int(sweep_type) not in (0, 2, 4, 5):
             raise ValueError("Tipo de recorrido inválido")
         return self.device.set_property_by(2, 8, int(sweep_type))
@@ -128,10 +128,25 @@ class XiaomiE10:
         self.set_water(0)
         return self.set_mode(0)
 
-    def start(self, mode: int):
+    def _start_with_sweep_type(self, mode: int, sweep_type: int):
+        if mode not in (0, 1, 2):
+            raise ValueError("Modo inválido")
+        if int(sweep_type) not in (0, 2, 4):
+            raise ValueError("Tipo de limpieza inválido")
         self.set_mode(mode)
+        self.set_sweep_type(int(sweep_type))
         action = {0: 3, 1: 5, 2: 6}[mode]
         return self.device.call_action_by(2, action)
+
+    def start(self, mode: int):
+        # La limpieza normal siempre vuelve a Global=0.
+        return self._start_with_sweep_type(mode, 0)
+
+    def start_edge(self, mode: int = 0):
+        return self._start_with_sweep_type(mode, 2)
+
+    def start_spiral(self, mode: int = 0):
+        return self._start_with_sweep_type(mode, 4)
 
     def stop(self):
         return self.device.call_action_by(2, 2)
