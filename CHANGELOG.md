@@ -1,5 +1,17 @@
 # Changelog
 
+### V122 · Fase 2 whole-home por Sweep 7/3
+
+- Corrige el patrón observado en V121: más de 16 m recorridos dentro de ~1,14 m alrededor de la base, con ida/vuelta repetido durante ~240 s.
+- La Fase 2 deja de usar el START global genérico `2/1` / `2/3`.
+- Después del dock intermedio, fija `sweep-type=0` y ejecuta una sola acción `7/3 set-room-clean(["", 0, 1])`.
+- Los room ids vacíos conservan el objetivo de **toda la vivienda**; modo 0 pide limpieza normal en vez de Edge.
+- No se ejecuta otro `arm_new_map` ni `build-map-ii`: se conserva la misma sesión iniciada antes del perímetro.
+- No se reactiva el recovery heredado `STOP -> manual -> start_mapping_interior`, para no reiniciar el mapa de Mi Home.
+- F12 V122 registra comando, respuesta, status y sweep-type de la nueva Fase 2.
+- Conserva V121: primer dock = transición, segundo dock = final, y grids con `metrics.valid=False` no se guardan.
+
+
 ### V121 · perímetro → interior en la misma sesión Xiaomi
 
 - El mapeo pasa a dos fases sin ejecutar un segundo `build-map-ii`.
