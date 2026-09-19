@@ -1,7 +1,7 @@
 import math
 import re
 import tkinter as tk
-from tkinter import messagebox, ttk
+from tkinter import messagebox, simpledialog, ttk
 
 import app_v98
 import app_v9
@@ -35,6 +35,24 @@ DARK99 = {
 }
 
 V99_TRANSLATIONS = {
+    "Zonas y puntos": {"en": "Zones and points", "pt": "Zonas e pontos"},
+    "Todo lo que guardaste sobre el mapa activo.": {"en": "Everything saved on the active map.", "pt": "Tudo o que foi salvo no mapa ativo."},
+    "Control del hogar": {"en": "Home control", "pt": "Controle da casa"},
+    "Estado general y mantenimiento.": {"en": "General status and maintenance.", "pt": "Estado geral e manutenção."},
+    "Windows · control local": {"en": "Windows · local control", "pt": "Windows · controle local"},
+    "Mapa local: —": {"en": "Local map: —", "pt": "Mapa local: —"},
+    "Limpiar zonas": {"en": "Clean zones", "pt": "Limpar zonas"},
+    "Ir / limpiar": {"en": "Go / clean", "pt": "Ir / limpar"},
+    "+ Zona": {"en": "+ Zone", "pt": "+ Zona"},
+    "Bloquear": {"en": "Block", "pt": "Bloquear"},
+    "Podés elegir una o varias áreas del mapa.": {"en": "You can choose one or more map areas.", "pt": "Você pode escolher uma ou várias áreas do mapa."},
+    "Se ejecutan en segundo plano": {"en": "Runs in the background", "pt": "Executadas em segundo plano"},
+    "Guardar": {"en": "Save", "pt": "Salvar"},
+    "Mapa eliminado.": {"en": "Map deleted.", "pt": "Mapa excluído."},
+    "Crear mapa": {"en": "Create map", "pt": "Criar mapa"},
+    "Nombre del mapa": {"en": "Map name", "pt": "Nome do mapa"},
+    "Renombrar mapa": {"en": "Rename map", "pt": "Renomear mapa"},
+    "Nuevo nombre": {"en": "New name", "pt": "Novo nome"},
     "Tu mapa": {"en": "Your map", "pt": "Seu mapa"},
     "Sin mapa todavía": {"en": "No map yet", "pt": "Ainda sem mapa"},
     "Acciones rápidas": {"en": "Quick actions", "pt": "Ações rápidas"},
@@ -619,6 +637,47 @@ class App(app_v98.App):
         )
 
     # ====================================================== administrar mapas
+    def _create_map(self, rebuild):
+        if not self.local_map or not self.plan_store:
+            return
+        maps = list(self.local_map.list_maps())
+        if len(maps) >= 4:
+            return
+        lang = str(self.settings.get("language") or "es")
+        title = {"es": "Crear mapa", "en": "Create map", "pt": "Criar mapa"}[lang]
+        prompt = {"es": "Nombre del mapa:", "en": "Map name:", "pt": "Nome do mapa:"}[lang]
+        default = f"Mapa {len(maps) + 1}"
+        name = simpledialog.askstring(title, prompt, initialvalue=default, parent=self._map_library_window or self)
+        if name is None:
+            return
+        try:
+            created = self.local_map.create_map(str(name).strip() or default)
+            self.plan_store.set_active_map(created["id"])
+            self._v99_session_bounds[created["id"]] = tuple(self.V99_INITIAL_BOUNDS)
+            rebuild()
+            self._v70_update_active_map_labels()
+            self._render_maps()
+        except Exception as exc:
+            messagebox.showerror(title, str(exc), parent=self._map_library_window or self)
+
+    def _rename_map(self, item, rebuild):
+        if not self.local_map:
+            return
+        lang = str(self.settings.get("language") or "es")
+        title = {"es": "Renombrar mapa", "en": "Rename map", "pt": "Renomear mapa"}[lang]
+        prompt = {"es": "Nuevo nombre:", "en": "New name:", "pt": "Novo nome:"}[lang]
+        current = str(item.get("name") or "Mapa")
+        name = simpledialog.askstring(title, prompt, initialvalue=current, parent=self._map_library_window or self)
+        if name is None or not str(name).strip():
+            return
+        try:
+            self.local_map.rename_map(str(item.get("id") or ""), str(name).strip())
+            rebuild()
+            self._v70_update_active_map_labels()
+            self._render_maps()
+        except Exception as exc:
+            messagebox.showerror(title, str(exc), parent=self._map_library_window or self)
+
     def _v99_confirm_delete_map(self, item, last):
         name = str(item.get("name") or "Mapa")
         lang = str(self.settings.get("language") or "es")
