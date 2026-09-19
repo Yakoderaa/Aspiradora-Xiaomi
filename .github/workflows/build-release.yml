@@ -89,10 +89,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V103 para Windows 10/11 x64. Retrasa deliberadamente la planta parcial Xiaomi para priorizar coherencia sobre inmediatez. Un preview no validado por V57 sólo puede mostrarse tras 4 hashes distintos con el mismo layout/máscara, al menos 60 segundos de mapeo, 100 celdas coherentes y sin saltos bruscos de área. Si el layout cambia o la geometría crece de golpe, la confianza se reinicia y se mantienen visibles sólo la base y la aspiradora mientras la UI indica validando geometría Xiaomi. También inicializa map_selected_xy antes de la cadena V88/V101 para eliminar el error de renderer observado en V102. Un grid V57 válido sigue apareciendo inmediatamente."
+          $notes = "V104 para Windows 10/11 x64. Corrige el bloqueo de V103 cuando el frame actual y el acumulado eligen permutaciones tile2 distintas. Mientras el grid 2bpp siga ambiguo, V104 agrupa cada bloque 2x2 de 0,20 m en una celda física estable de 0,40 m, de modo que tile2-1203, tile2-0213 y las demás permutaciones generan el mismo preview preliminar. El preview aparece tras 2 hashes distintos y 25 segundos si mantiene coherencia espacial, sin esperar 100 celdas. Los saltos bruscos reinician la acumulación. Cuando V57 valida el mapa completo, la app cambia automáticamente al grid Xiaomi preciso de 0,20 m. Mantiene base y robot visibles y conserva las correcciones de V102/V103."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V103" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V104" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
