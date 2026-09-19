@@ -4,6 +4,21 @@ Este archivo resume **hitos importantes**, no cada build interno. Para el detall
 
 ## Unreleased
 
+### V92 · layouts 2bpp + acumulación temporal
+
+- Conserva la cabecera B112 real de V91: **3628 B = 28 B de cabecera + 3600 B de grid**.
+- Ya no supone que cada byte contiene cuatro celdas horizontales.
+- Prueba **28 layouts físicos**: horizontal4 MSB/LSB, vertical4 MSB/LSB y bloque 2×2 con las 24 permutaciones locales.
+- Cada layout se prueba con las siete máscaras 2bpp: `nonzero`, `v1`, `v2`, `v3`, `v12`, `v13`, `v23`.
+- Total: **196 candidatos por frame**.
+- Acumula por candidato los hashes nuevos de una sesión mediante unión binaria, para detectar mapas publicados como frames/deltas.
+- Reinicia la acumulación al comenzar un mapeo nuevo o ante un salto temporal incompatible.
+- El ranking combina validez V57, componente mayor, ratio, adyacencia y distancia a la base.
+- **V57 sigue siendo obligatorio**: ningún candidato actual ni acumulado se renderiza si no pasa la coherencia espacial.
+- Corrige el sentinela `10/22=255_255`: nunca vuelve a convertirse en una base geométrica de 51 m; para grid usa el fallback B112 `60_60`.
+- F12 muestra mejor frame, mejor acumulado, seleccionado, cantidad de hashes y top de layouts.
+- No modifica `RAW_TO_METERS`, antiatasco, continuidad, retorno ni las protecciones V90.
+
 ### V91 · cabecera B112 real + reconstrucción de superficie
 
 - Corrige el parser del payload post-hex observado en el E10: `type8 + version8 + len16be`.
