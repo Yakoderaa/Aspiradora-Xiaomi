@@ -68,10 +68,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V89 para Windows 10/11 x64. El mapa visible queda limpio al estilo Mi Home: se muestran únicamente perímetro, relleno, base y robot. Las líneas internas del recorrido se ocultan tanto en el mapa grande como en las miniaturas, pero la trayectoria completa continúa guardada en LocalMapStore y sigue alimentando cobertura, completitud, antiatasco, continuidad V85/V86 y F12. El diagnóstico V89 informa cantidad de puntos, segmentos, longitud y extremos del recorrido oculto. La leyenda visible deja de mostrar Recorrido. Se conserva toda la geometría Xiaomi validada/persistente de V88 y el fallback estimado cuando no hay grid real válido."
+          $notes = "V90 para Windows 10/11 x64. Corrige el falso cierre de mapeo observado en V89: status=4 ya no puede cerrar una sesión sólo porque aparezcan puntos 10/24 antes de confirmar el START. V90 exige START confirmado para el serial vigente y luego una salida física real del dock observada como status 5/6/7; recién después status=3/4 puede representar un retorno válido. Los status=3/4 tempranos quedan bloqueados y contabilizados en F12. Si START no se confirma en 60 s, el intento se cancela de forma controlada, se ejecuta stop+dock y un START tardío se descarta para que no reactive la sesión. Se conserva íntegramente V89: recorrido oculto sólo visualmente, perímetro+relleno+base+robot, trayectoria completa disponible para diagnóstico/cobertura/antiatasco, y toda la geometría V88."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V89" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V90" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
