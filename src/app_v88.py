@@ -30,6 +30,12 @@ class App(app_v87.App):
         self._v88_legend_source = None
         super().__init__()
         self._v88_install_legend()
+        # El primer render heredado ocurre antes de reemplazar la leyenda V72.
+        # Redibujamos una vez para restaurar inmediatamente el grid persistido.
+        try:
+            self._render_maps()
+        except Exception:
+            pass
 
     # ===================================================== grid persistente
     @staticmethod
