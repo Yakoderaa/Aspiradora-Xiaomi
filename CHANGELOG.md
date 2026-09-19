@@ -4,6 +4,21 @@ Este archivo resume **hitos importantes**, no cada build interno. Para el detall
 
 ## Unreleased
 
+### V110 · habitaciones ancladas + escala física
+
+- Cada zona de limpieza y bloqueo tiene un `room_id` obligatorio y pertenece a una habitación.
+- Sin habitación activa no se pueden crear zonas; una zona nueva debe quedar dentro de su habitación.
+- Cambiar de habitación cambia la lista y los overlays de zonas visibles.
+- Borrar una habitación elimina en cascada sus zonas, bloqueos y referencias desde programaciones.
+- El lateral derecho se rediseña con selector Habitaciones/Zonas, tarjetas modernas, contadores y selector de habitación activa.
+- Debajo del mapa sigue quedando únicamente **Administrar mapas**.
+- Se agrega compatibilidad para `_v87_floor_cells(snapshot=None)` y recuperar el diagnóstico completo heredado.
+- `cleaning-area` MIoT se interpreta en centésimas de m² y se conserva tanto raw como convertido.
+- La selección final del grid combina trayectoria, área física real y topología para penalizar máscaras ralas, huecos y contornos artificiales.
+- La vista automática inicial se limita a 72 px/m para mantener una escala visual física más cercana a Mi Home, sin afectar zoom/pan manual.
+- Se conservan privacidad de IP, renderer moderno y optimizaciones anti-freeze.
+
+
 ### V109 · mapa físico + panel lateral + diagnóstico seguro
 
 - El mapa final ya no acepta el layout 2bpp sólo por conectividad: compara layout, máscara y orientación global contra la trayectoria física real del E10.
