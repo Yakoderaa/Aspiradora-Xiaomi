@@ -88,6 +88,20 @@ flowchart TD
 - El archivo Cloud puede ser histórico; la frescura y la coherencia se validan antes de usarlo.
 - `255_255` se trata como sentinela y nunca como una base real dentro del plano.
 
+## Decoder espacial V92
+
+V92 parte del payload ya abierto por V91 y prueba cómo están distribuidos físicamente los cuatro valores 2bpp de cada byte. Se evalúan tres familias de empaquetado:
+
+- cuatro celdas horizontales por byte;
+- cuatro celdas verticales por byte;
+- un bloque 2×2 por byte, con las 24 permutaciones posibles entre los cuatro valores y las cuatro posiciones.
+
+Cada layout se cruza con las siete máscaras de valores conocidas, dando 196 candidatos por frame. El ranking usa las métricas espaciales de V57 y la distancia del mapa a la base corregida.
+
+Además V92 acumula, por layout y máscara, los blobs únicos observados durante una sesión. Esto permite reconstruir un mapa si el firmware publica cambios parciales o frames sucesivos en vez de una rejilla completa en cada archivo. La acumulación se reinicia al comenzar una sesión nueva y nunca elude el validador V57.
+
+El sentinela `10/22=255_255` no se usa como coordenada. Para la geometría del B112 se reemplaza por `60_60` cuando la base entregada por el dispositivo queda fuera del grid.
+
 ## Decoder B112 V91
 
 V91 corrige la estructura binaria observada en el payload post-hex del E10. En las sesiones reales el bloque mide **3628 bytes** y se interpreta como:
