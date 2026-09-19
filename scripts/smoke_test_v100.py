@@ -9,11 +9,13 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 import app_v100
+from xiaomi_e10_map_v100 import XiaomiE10MapV100
 
 for path in (
     SRC / "app_v100.py",
     SRC / "main_v100.py",
     SRC / "update_helper.py",
+    SRC / "xiaomi_e10_map_v100.py",
 ):
     ast.parse(path.read_text(encoding="utf-8"))
 
@@ -21,6 +23,8 @@ assert issubclass(app_v100.App, app_v100.app_v99.App)
 assert app_v100.App.MAP_BG == "#dfe9f2"
 assert app_v100.App.CLOUD_FILE_POLL_SECONDS == 6.0
 assert app_v100.App.LIVE_MIN_NONZERO <= 8
+assert app_v100.App.CLOUD_WORKER_STALL_SECONDS <= 18.0
+assert issubclass(XiaomiE10MapV100, XiaomiE10MapV100.__mro__[1])
 
 # Simula el tipo de frame que V92 ya observó: conectado y coherente, pero
 # todavía por debajo del gate de "mapa completo" de V57.
@@ -68,6 +72,13 @@ assert grid["source"] == "xiaomi-live-partial"
 assert dummy._v100_live_accepts == 1
 
 source = (SRC / "app_v100.py").read_text(encoding="utf-8")
+client_source = (SRC / "xiaomi_e10_map_v100.py").read_text(encoding="utf-8")
+assert "def load_live_partial" in client_source
+assert 'self._download_slot("0")' in client_source
+assert "def request_live_upload" in client_source
+assert "_run_v60_cycle" not in client_source
+assert "AspiradoraXiaomiLiveGrid" in source
+assert "client.load_live_partial()" in source
 for required in (
     "XIAOMI LIVE PARCIAL",
     "el tema nunca modifica el fondo de los canvases de mapa",

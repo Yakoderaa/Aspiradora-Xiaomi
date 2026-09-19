@@ -72,7 +72,7 @@ V100 separa **visualización en vivo** de **persistencia definitiva**. El mismo 
 
 El validador V57 sigue siendo obligatorio antes de persistir un grid como geometría definitiva. Esto permite acompañar visualmente a Mi Home durante el mapeo sin rebajar la seguridad del mapa guardado.
 
-Durante `mapping_active`, el refresco Cloud pesado se intenta cada 6 s; V96 sigue garantizando que sólo exista un worker Cloud en vuelo.
+Durante `mapping_active`, V100 evita el ciclo estructurado largo V60 para la vista. Aproximadamente cada 6 s descarga y decodifica directamente el **slot 0 B112**. Para pedir frescura al firmware rota una sola acción oficial por ciclo (`10/18`, luego `10/15`, luego `10/6` si el blob no cambia). V96/V100 mantienen un único worker en vuelo.
 
 Los canvases del mapa usan fondo fijo `#dfe9f2` y quedan fuera del sistema de tema para evitar alternancias de color durante repintados.
 
@@ -83,9 +83,13 @@ flowchart TD
     A["E10 B112"] --> B["10/24 y telemetría LAN"]
     A --> C["Upload realtime / eventos Xiaomi"]
     A --> D["clean-end 7/1 / record-map-url"]
-    C --> E["Decoders B112 / IJAI"]
+    C --> L["V100 fast slot 0"]
+    L --> E["Decoder B112 parcial"]
     D --> E
-    E --> F{"Validación espacial V57"}
+    E --> P{"Coherente para live?"}
+    P -->|sí| J["Renderer Xiaomi live"]
+    P -->|no| F{"Validación espacial V57"}
+    E --> F
     F -->|válido| G["Grid Xiaomi V88"]
     F -->|inválido / temprano| H["Sin superficie hasta exploración 2D madura"]
     B --> I["Trayectoria física V85/V86"]

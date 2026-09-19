@@ -1,16 +1,20 @@
 import math
+import threading
+import time
 import tkinter as tk
 
 import app_v99
 import app_v9
+from xiaomi_e10_map_v100 import XiaomiE10MapV100
 
 
 class App(app_v99.App):
-    """V100: Xiaomi live-first + fondo de mapa estable sin flicker.\n\n    Release build: visualización parcial Xiaomi separada de persistencia V57.\n    """
+    """V100: Xiaomi live-first + fondo de mapa estable sin flicker."""
 
     MAP_BG = "#dfe9f2"
     CLOUD_FILE_POLL_SECONDS = 6.0
     CLOUD_UPLOAD_INTERVAL_SECONDS = 6.0
+    CLOUD_WORKER_STALL_SECONDS = 18.0
 
     LIVE_MIN_NONZERO = 8
     LIVE_MAX_COMPONENTS = 3
@@ -29,6 +33,99 @@ class App(app_v99.App):
         self._v100_map_bg_fixes = 0
         self._v100_thumbnail_bg_fixes = 0
         super().__init__()
+
+    # ================================================= cliente + Cloud fast-path
+    def _v40_map_client(self, vacuum, settings):
+        if self._v40_client is None or self._v40_client_vacuum is not vacuum:
+            self._v40_client = XiaomiE10MapV100(vacuum, settings)
+            self._v40_client_vacuum = vacuum
+        return self._v40_client
+
+    def start_new_mapping(self):
+        client = getattr(self, "_v40_client", None)
+        if client is not None and hasattr(client, "reset_v100_live"):
+            try:
+                client.reset_v100_live("Mapear vivienda")
+            except Exception:
+                pass
+        return super().start_new_mapping()
+
+    def _v38_maybe_poll_map_file(self):
+        """V100: no espera el ciclo V60 para el mapa en vivo.
+
+        Descarga/decodifica sólo slot 0. El worker sigue siendo único y el
+        refresco oficial rota 10/18 -> 10/15 -> 10/6 si el blob no cambia.
+        """
+        if (
+            not bool(getattr(self, "mapping_active", False))
+            or not getattr(self, "vacuum", None)
+        ):
+            return False
+        try:
+            if not self._cloud_session_ready():
+                return False
+        except Exception:
+            return False
+
+        now = time.monotonic()
+        if bool(getattr(self, "_v38_map_worker", False)):
+            started = float(
+                getattr(self, "_v95_cloud_worker_started_at", 0.0) or 0.0
+            )
+            if started > 0 and now - started >= float(self.CLOUD_WORKER_STALL_SECONDS):
+                marker = round(started, 3)
+                if marker != getattr(self, "_v96_cloud_stall_marker", None):
+                    self._v96_cloud_stall_marker = marker
+                    self._v96_cloud_worker_stalls_seen += 1
+            return False
+
+        if (
+            now - float(getattr(self, "_v38_map_last_at", 0.0) or 0.0)
+            < float(self.CLOUD_FILE_POLL_SECONDS)
+        ):
+            return False
+
+        self._v38_map_last_at = now
+        self._v38_map_worker = True
+        self._v95_cloud_worker_started_at = now
+        self._v96_cloud_actual_starts += 1
+        self._v96_cloud_stall_marker = None
+
+        vacuum = self.vacuum
+        settings = dict(self.settings or {})
+        request_upload = (
+            now - float(getattr(self, "_v40_last_upload_at", 0.0) or 0.0)
+            >= float(self.CLOUD_UPLOAD_INTERVAL_SECONDS)
+        )
+        if request_upload:
+            self._v40_last_upload_at = now
+
+        def worker():
+            upload_info = None
+            try:
+                client = self._v40_map_client(vacuum, settings)
+                if request_upload:
+                    upload_info = client.request_live_upload()
+                snapshot = client.load_live_partial()
+                self._post_ui(
+                    "cloud_ijai_map_state_v40",
+                    snapshot,
+                    upload_info,
+                )
+            except Exception as exc:
+                self._post_ui(
+                    "cloud_ijai_map_error_v40",
+                    str(exc).strip()
+                    or "No se pudo leer el grid Xiaomi live del E10.",
+                    upload_info,
+                )
+
+        threading.Thread(
+            target=worker,
+            name="AspiradoraXiaomiLiveGrid",
+            daemon=True,
+        ).start()
+        return True
 
     # ===================================================== fondo fijo sin flicker
     def _v100_is_map_canvas(self, widget):
@@ -282,6 +379,10 @@ class App(app_v99.App):
         if isinstance(grid, dict):
             nonzero = sum(1 for value in list(grid.get("cells") or []) if int(value))
         metrics = dict(self._v100_last_live_metrics or {})
+        client = getattr(self, "_v40_client", None)
+        fast = dict(
+            getattr(client, "last_v100_diagnostics", {}) or {}
+        ) if client is not None else {}
         lines = [
             "DIAGNÓSTICO V100 ACTIVO · Xiaomi live-first + canvas estable",
             "================================================================",
@@ -300,10 +401,18 @@ class App(app_v99.App):
                 f"baseΔ={metrics.get('base_distance','—')} · {self._v100_last_live_reason}"
             ),
             (
+                f"fast slot0: ok={bool(fast.get('ok'))} · "
+                f"duración={fast.get('duration_ms','—')}ms · "
+                f"reads={fast.get('reads',0)} · cambios={fast.get('changes',0)} · "
+                f"decodeOK={fast.get('decode_ok',0)} · "
+                f"refresh={fast.get('refresh_ok',0)}/{fast.get('refresh_attempts',0)}"
+            ),
+            (
                 f"fondo fijo: grande/mini fixes={self._v100_map_bg_fixes}/"
                 f"{self._v100_thumbnail_bg_fixes} · color={self.MAP_BG}"
             ),
             "regla V100: Xiaomi parcial coherente puede mostrarse antes del gate V57; V57 sigue mandando para persistencia definitiva",
+            "regla V100: el mapa vivo usa slot 0 directo; no espera el ciclo estructurado largo V60",
             "regla V100: el tema nunca modifica el fondo de los canvases de mapa",
             "regla V100: no se vuelve al fallback si existe un grid Xiaomi live utilizable",
             "",

@@ -89,7 +89,7 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V100 para Windows 10/11 x64. La vista de mapa pasa a Xiaomi live-first: un grid B112 parcial pero espacialmente coherente puede mostrarse en vivo antes de superar el gate de mapa completo V57; V57 sigue siendo obligatorio para persistencia definitiva. Durante mapping_active el sondeo pesado Cloud baja de 12 s a 6 s manteniendo un único worker sin solapamientos. El fondo de mapa grande y miniaturas queda fijado en azul #dfe9f2 y queda excluido del cambio de tema para eliminar el titileo blanco/azul. También simplifica el texto visible del actualizador a La instalación está en proceso. Conserva V99: viewport monotónico, tema oscuro completo, botones azules legibles, i18n dinámica y eliminación de mapas."
+          $notes = "V100 para Windows 10/11 x64. La vista pasa a Xiaomi live-first real: durante mapping_active se usa un fast-path directo al slot 0 B112, evitando el ciclo estructurado largo V60. Un grid parcial coherente se muestra en vivo aunque V57 todavía no lo considere mapa completo; V57 sigue siendo obligatorio para persistencia definitiva. El refresco rota una sola acción oficial 10/18, 10/15 o 10/6 por ciclo, sin workers superpuestos. Fondo grande y miniaturas quedan fijados en #dfe9f2 sin titileo. También simplifica el texto visible del actualizador a La instalación está en proceso. Conserva V99: viewport monotónico, dark theme, i18n dinámica y eliminación de mapas."
 
           gh release create $tag `
             --title "Aspiradora Xiaomi $env:APP_VERSION · V100" `

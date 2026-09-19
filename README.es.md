@@ -25,7 +25,7 @@ Aplicación de escritorio para Windows orientada al **Xiaomi Robot Vacuum E10 (`
 
 El E10/B112 utiliza un formato distinto al de modelos Xiaomi más nuevos. La app combina telemetría MIoT, estado físico de la base, blobs de Xiaomi Cloud y un grid B112 de 120×120 candidato.
 
-La regla visual es conservadora y Xiaomi-first: un **grid Xiaomi parcial coherente puede dibujarse en vivo aunque todavía no sea un mapa completo**; el validador fuerte sigue siendo obligatorio para guardarlo como definitivo. Si Xiaomi aún no entrega un grid utilizable, no se inventa superficie hasta tener exploración 2D suficiente. El viewport no se achica ni salta entre fotogramas parciales.
+Durante un mapeo activo, la vista usa un **lector rápido del slot 0 Xiaomi** en lugar de esperar el ciclo Cloud estructurado largo. La regla visual es conservadora y Xiaomi-first: un **grid Xiaomi parcial coherente puede dibujarse en vivo aunque todavía no sea un mapa completo**; el validador fuerte sigue siendo obligatorio para guardarlo como definitivo. Si Xiaomi aún no entrega un grid utilizable, no se inventa superficie hasta tener exploración 2D suficiente. El viewport no se achica ni salta entre fotogramas parciales.
 
 Más detalles: [docs/MAPPING.md](docs/MAPPING.md).
 

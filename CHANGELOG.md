@@ -9,7 +9,8 @@ Este archivo resume **hitos importantes**, no cada build interno. Para el detall
 - La geometría Xiaomi pasa a ser la fuente visual prioritaria durante el mapeo.
 - Un grid Xiaomi parcial puede mostrarse antes de superar el gate de mapa completo de V57 si es espacialmente coherente: mínimo 8 celdas, hasta 3 componentes, ratio del componente principal ≥0,82, adyacencia ≥0,75 y base cercana.
 - V57 sigue siendo obligatorio para persistir el grid como mapa definitivo; la relajación sólo afecta a la vista en vivo.
-- El sondeo Cloud durante `mapping_active` baja de 12 s a 6 s manteniendo la protección de un único worker Cloud sin solapamientos.
+- Durante `mapping_active`, V100 usa un **fast-path directo al slot 0 B112** aproximadamente cada 6 s. Ya no espera el ciclo estructurado largo V60 para actualizar la vista.
+- El refresco oficial rota una sola acción por ciclo (`10/18` → `10/15` → `10/6`) y conserva la protección de un único worker, evitando volver al consumo alto de CPU/RAM.
 - El mapa grande y las miniaturas quedan con fondo fijo `#dfe9f2`; el sistema Claro/Oscuro ya no puede cambiar el fondo de esos canvases, eliminando el titileo blanco/azul.
 - Si existe un grid Xiaomi live utilizable, no se vuelve visualmente al fallback estimado.
 - El texto visible del instalador se simplifica a **“La instalación está en proceso”**.
