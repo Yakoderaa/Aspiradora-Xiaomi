@@ -68,10 +68,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V88 para Windows 10/11 x64. El mapa deja de depender sólo del relleno alrededor del recorrido: cuando Xiaomi entrega una rejilla 120x120 coherente, V88 usa esa geometría interna validada como planta, la alinea con la base, la guarda por cada mapa y la reutiliza en el mapa grande y las miniaturas. El sentinela 255_255 del B112 ya no puede desplazar la base fuera del plano: se corrige al marco físico 60_60. Si el grid no supera la validación espacial, se conserva un fallback estimado de 10 cm sin dibujar geometría falsa. Se mantienen rueda=zoom, doble clic de rueda=Zoom Extents, leyenda fija, recorrido superpuesto, modos Global/Bordes/Espiral y toda la lógica física V85/V86 de continuidad, dock y ETA. La personalización de voz sigue reservada para una versión futura."
+          $notes = "V89 para Windows 10/11 x64. El mapa visible queda limpio al estilo Mi Home: se muestran únicamente perímetro, relleno, base y robot. Las líneas internas del recorrido se ocultan tanto en el mapa grande como en las miniaturas, pero la trayectoria completa continúa guardada en LocalMapStore y sigue alimentando cobertura, completitud, antiatasco, continuidad V85/V86 y F12. El diagnóstico V89 informa cantidad de puntos, segmentos, longitud y extremos del recorrido oculto. La leyenda visible deja de mostrar Recorrido. Se conserva toda la geometría Xiaomi validada/persistente de V88 y el fallback estimado cuando no hay grid real válido."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V88" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V89" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
