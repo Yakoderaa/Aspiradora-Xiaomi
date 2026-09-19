@@ -4,6 +4,16 @@ Este archivo resume **hitos importantes**, no cada build interno. Para el detall
 
 ## Unreleased
 
+### V89 · mapa limpio sin recorrido visible
+
+- Se ocultan las líneas internas del recorrido en el mapa grande y en las cuatro miniaturas.
+- La presentación conserva únicamente **perímetro + relleno + base + robot**.
+- La trayectoria física no se elimina ni modifica: sigue guardada completa en `LocalMapStore`.
+- Cobertura, completitud, antiatasco, continuidad V85/V86 y demás cálculos siguen usando todos los puntos.
+- F12 añade cantidad de puntos, segmentos, longitud y extremos del recorrido oculto.
+- La leyenda deja de mostrar **Recorrido** porque esa capa ya no se representa visualmente.
+- Se conserva la geometría Xiaomi validada/persistente de V88 y su fallback estimado cuando no hay grid real válido.
+
 ### V88 · geometría Xiaomi validada y persistente
 
 - El mapa grande y las miniaturas usan la rejilla interna Xiaomi cuando V57 confirma que es espacialmente coherente.
