@@ -16,7 +16,10 @@ for path in (
     ast.parse(path.read_text(encoding="utf-8"))
 
 assert issubclass(app_v103.App, app_v103.app_v102.App)
-assert app_v103.App.LIVE_CONFIDENCE_FRAMES == 3
+assert app_v103.App.LIVE_CONFIDENCE_FRAMES == 4
+assert app_v103.App.LIVE_MIN_PREVIEW_SECONDS == 60.0
+assert app_v103.App.LIVE_MIN_PREVIEW_CELLS == 100
+assert app_v103.App.LIVE_MAX_GROWTH_RATIO == 2.4
 
 dummy = app_v103.App.__new__(app_v103.App)
 assert dummy._v103_canonical_candidate(
@@ -30,8 +33,11 @@ source = (SRC / "app_v103.py").read_text(encoding="utf-8")
 for required in (
     "self.map_selected_xy = None",
     "current_key == selected_key",
-    "LIVE_CONFIDENCE_FRAMES = 3",
+    "LIVE_CONFIDENCE_FRAMES = 4",
     'out["v103_confident"] = True',
+    "LIVE_MIN_PREVIEW_SECONDS = 60.0",
+    "LIVE_MIN_PREVIEW_CELLS = 100",
+    "salto geométrico",
     "validando geometría Xiaomi",
     "un acumulado preview inválido nunca se dibuja",
 ):
@@ -39,5 +45,5 @@ for required in (
 
 print(
     "SMOKE TEST V103 OK: unstable accumulated grids blocked + "
-    "three-frame confidence gate + map_selected_xy initialized"
+    "delayed confidence gate + growth reset + map_selected_xy initialized"
 )
