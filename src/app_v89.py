@@ -5,6 +5,8 @@ import app_v88
 
 
 class App(app_v88.App):
+    ROUTE_VISIBLE = False
+
     """V89: mapa limpio; recorrido físico oculto sólo en la presentación.
 
     La trayectoria sigue existiendo íntegra en LocalMapStore y en todos los
