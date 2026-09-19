@@ -52,7 +52,16 @@ for i in range(0, len(cells), 4):
 selected, options = XiaomiE10MapV91._decode_grid(bytes(packed))
 assert selected["metrics"]["valid"] is True
 assert selected["metrics"]["nonzero"] == 400
-assert "v2" in selected["label"]
+v2_candidates = [
+    item for item in options
+    if str(item.get("label", "")).endswith("|v2")
+]
+assert v2_candidates
+assert any(
+    item["metrics"]["valid"] is True
+    and item["metrics"]["nonzero"] == 400
+    for item in v2_candidates
+)
 assert len(options) == 14
 
 # El fallback debe expandir una trayectoria y conservar continuidad.
