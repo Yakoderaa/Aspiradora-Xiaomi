@@ -68,10 +68,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V91 para Windows 10/11 x64. Corrige la interpretación del payload B112 observado: 3628 bytes post-hex se tratan como type8 + version8 + length16be, con 24 bytes de cabecera y 3600 bytes de grid 120x120 a 2bpp. V91 prueba MSB/LSB y las capas 1/2/3 por separado, pero V57 sigue siendo el gate final: ningún grid se dibuja si no es espacialmente coherente. El grid candidato usa resolución 0.20 m, coherente con el área real observada en Mi Home; esto no cambia todavía RAW_TO_METERS de la lógica física V77/V85. Si el grid no valida, el fallback visual se reconstruye con radio físico de 0.18 m, unión de huecos cortos y relleno sólo de huecos encerrados. Se mantienen V90 y V89 completos: START/salida física protegidos y recorrido oculto en UI."
+          $notes = "V92 para Windows 10/11 x64. Mantiene la cabecera B112 real de V91 y añade búsqueda de disposición espacial del grid: 4 celdas horizontales por byte, 4 verticales por byte y bloques 2x2 con las 24 permutaciones locales, cada una probada con las siete máscaras 2bpp. Además acumula por candidato los hashes nuevos de una misma sesión para detectar si Xiaomi publica frames/deltas en lugar del plano completo. V57 sigue siendo el gate final: ningún frame ni acumulado reemplaza el mapa estimado si continúa fragmentado. El score usa conectividad y proximidad a la base; 255_255 queda excluido y se corrige a 60_60 sólo para geometría. F12 informa mejor frame, mejor acumulado, candidato seleccionado y top de layouts. Se conservan V91/V90/V89, el recorrido oculto y la lógica física V77/V85 sin cambios."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V91" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V92" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
