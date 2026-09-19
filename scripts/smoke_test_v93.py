@@ -22,6 +22,22 @@ assert app_v93.App.ROUTE_VISIBLE is False
 
 side = XiaomiE10MapV93.GRID_SIDE
 
+# 10/24 usa 0,10 m por unidad; el grid nativo usa 0,20 m por celda.
+# Robot raw 66_53 respecto de dock 60_60 => +0,6/-0,7 m =>
+# +3/-3,5 celdas sobre la base geométrica 60_60.
+projected = XiaomiE10MapV93._physical_robot_grid_cell(
+    {"x": 60, "y": 60},
+    {"x": 66, "y": 53},
+    (60.0, 60.0),
+)
+assert projected == (63.0, 56.5)
+projected_sentinel = XiaomiE10MapV93._physical_robot_grid_cell(
+    {"x": 255, "y": 255},
+    {"x": 66, "y": 53},
+    (60.0, 60.0),
+)
+assert projected_sentinel == (63.0, 56.5)
+
 # Dos plantas igualmente válidas: el tie-break físico debe preferir la que
 # contiene la base y la posición 10/24 actual.
 near = [0] * (side * side)
@@ -104,6 +120,7 @@ assert filled_count >= 1
 source = (SRC / "xiaomi_e10_map_v93.py").read_text(encoding="utf-8")
 app_source = (SRC / "app_v93.py").read_text(encoding="utf-8")
 for required in (
+    "_physical_robot_grid_cell",
     "_v93_note_frame",
     "_v93_score",
     "_clean_cells",
