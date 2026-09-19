@@ -89,10 +89,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V101 para Windows 10/11 x64. Corrige el bug que impedía dibujar el grid Xiaomi live aunque V100 ya lo hubiera recibido y aceptado. La causa estaba en V88: llamaba _v87_xy(canvas, transform) aunque V87 definía _v87_xy(point). V101 agrega un adaptador dual compatible, verifica cuántos objetos v88_xiaomi_floor existen realmente y fuerza el dibujo nativo si hay grid pero el canvas queda vacío. También fuerza el refresh inmediato de la miniatura activa con cada frame Xiaomi. Conserva el fast-path slot 0, fondo azul fijo, viewport monotónico, dark theme, i18n dinámica y eliminación de mapas."
+          $notes = "V102 para Windows 10/11 x64. Corrige el segundo contrato roto del renderer heredado: V88 enviaba transform como argumento extra a _v87_draw_rooms_and_plan, cortando el render antes de completar base, aspiradora y leyenda. V102 absorbe ese argumento de forma compatible, vuelve a dibujar y elevar base/robot sobre el grid Xiaomi tanto en el mapa grande como en la miniatura, elimina el texto de espera cuando ya existe un grid Xiaomi live utilizable y actualiza el estado a mapa Xiaomi en vivo aunque todavía sea preview. La planta sigue usando directamente el grid Xiaomi B112 120x120 a 0,20 m, sin sustituirlo por una geometría estimada."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V101" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V102" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
