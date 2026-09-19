@@ -12,7 +12,7 @@ class CleaningPlanStore:
     snapshot_all() se usa para backups y para el agente de programaciones.
     """
 
-    VERSION = 2
+    VERSION = 3
 
     def __init__(self, app_folder: Path):
         self.folder = Path(app_folder)
@@ -49,8 +49,9 @@ class CleaningPlanStore:
             except Exception:
                 data = self._defaults()
 
-            # Migración transparente del formato v1.
-            if int(data.get("version", 1) or 1) < self.VERSION:
+            # Migraciones transparentes.
+            version = int(data.get("version", 1) or 1)
+            if version < 2:
                 active = str(data.get("active_map_id") or "legacy")
                 for key in ("zones", "no_go", "points", "schedules"):
                     for item in data.get(key, []) or []:
@@ -66,9 +67,19 @@ class CleaningPlanStore:
                 data["device_origins"] = origins
                 data["virtual_walls_managed_maps"] = managed
                 data["active_map_id"] = active
-                data["version"] = self.VERSION
                 data.pop("device_origin", None)
                 data.pop("virtual_walls_managed", None)
+
+            if version < 3:
+                # V110: las zonas pasan a pertenecer a una habitación concreta.
+                # La asignación geométrica de elementos legacy se hace desde la
+                # app, porque CleaningPlanStore no conoce los rectángulos de
+                # LocalMapStore. Mientras tanto quedan marcados como huérfanos.
+                for key in ("zones", "no_go"):
+                    for item in data.get(key, []) or []:
+                        if isinstance(item, dict):
+                            item.setdefault("room_id", None)
+                data["version"] = 3
 
             defaults = self._defaults()
             defaults.update(data)
@@ -79,6 +90,8 @@ class CleaningPlanStore:
                 for item in defaults[key]:
                     if isinstance(item, dict):
                         item.setdefault("map_id", defaults["active_map_id"])
+                        if key in ("zones", "no_go"):
+                            item.setdefault("room_id", None)
             defaults["device_origins"] = dict(defaults.get("device_origins") or {})
             defaults["virtual_walls_managed_maps"] = dict(defaults.get("virtual_walls_managed_maps") or {})
             defaults["last_runs"] = dict(defaults.get("last_runs") or {})
@@ -152,12 +165,13 @@ class CleaningPlanStore:
         bottom, top = sorted((float(y0), float(y1)))
         return {"x0": left, "y0": bottom, "x1": right, "y1": top}
 
-    def add_zone(self, name, x0, y0, x1, y1):
+    def add_zone(self, name, x0, y0, x1, y1, room_id=None):
         data = self._read()
         map_id = str(data.get("active_map_id") or "legacy")
         zone = {
             "id": uuid.uuid4().hex[:10],
             "map_id": map_id,
+            "room_id": None if room_id is None else str(room_id),
             "name": (str(name).strip() or "Zona"),
             **self._rect(x0, y0, x1, y1),
         }
@@ -172,12 +186,13 @@ class CleaningPlanStore:
             schedule["zone_ids"] = [z for z in schedule.get("zone_ids", []) if z != zone_id]
         self._write(data)
 
-    def add_no_go(self, name, x0, y0, x1, y1):
+    def add_no_go(self, name, x0, y0, x1, y1, room_id=None):
         data = self._read()
         map_id = str(data.get("active_map_id") or "legacy")
         wall = {
             "id": uuid.uuid4().hex[:10],
             "map_id": map_id,
+            "room_id": None if room_id is None else str(room_id),
             "name": (str(name).strip() or "Zona bloqueada"),
             **self._rect(x0, y0, x1, y1),
         }
@@ -194,6 +209,97 @@ class CleaningPlanStore:
         # True se conserva para poder enviar explícitamente cero bloqueos.
         data["virtual_walls_managed_maps"][map_id] = True
         self._write(data)
+
+    def set_item_room(self, kind, item_id, room_id):
+        """Asocia una zona/bloqueo existente a una habitación."""
+        key = "zones" if str(kind) == "zone" else "no_go"
+        data = self._read()
+        changed = False
+        for item in data.get(key, []):
+            if str(item.get("id")) == str(item_id):
+                item["room_id"] = None if room_id is None else str(room_id)
+                changed = True
+                break
+        if changed:
+            self._write(data)
+        return changed
+
+    def room_items(self, room_id, map_id=None):
+        """Devuelve zonas de limpieza y bloqueos ligados a una habitación."""
+        data = self._read()
+        map_id = str(map_id or data.get("active_map_id") or "legacy")
+        room_id = str(room_id)
+        return {
+            "zones": [
+                dict(item)
+                for item in data.get("zones", [])
+                if str(item.get("map_id")) == map_id
+                and str(item.get("room_id")) == room_id
+            ],
+            "no_go": [
+                dict(item)
+                for item in data.get("no_go", [])
+                if str(item.get("map_id")) == map_id
+                and str(item.get("room_id")) == room_id
+            ],
+        }
+
+    def delete_room_items(self, room_id, map_id=None):
+        """Borra en cascada todo lo asociado a una habitación.
+
+        También elimina las referencias a zonas de limpieza desde las
+        programaciones del mismo mapa.
+        """
+        data = self._read()
+        map_id = str(map_id or data.get("active_map_id") or "legacy")
+        room_id = str(room_id)
+
+        removed_zone_ids = {
+            str(item.get("id"))
+            for item in data.get("zones", [])
+            if str(item.get("map_id")) == map_id
+            and str(item.get("room_id")) == room_id
+        }
+        removed_no_go_ids = {
+            str(item.get("id"))
+            for item in data.get("no_go", [])
+            if str(item.get("map_id")) == map_id
+            and str(item.get("room_id")) == room_id
+        }
+
+        data["zones"] = [
+            item for item in data.get("zones", [])
+            if not (
+                str(item.get("map_id")) == map_id
+                and str(item.get("room_id")) == room_id
+            )
+        ]
+        data["no_go"] = [
+            item for item in data.get("no_go", [])
+            if not (
+                str(item.get("map_id")) == map_id
+                and str(item.get("room_id")) == room_id
+            )
+        ]
+
+        if removed_zone_ids:
+            for schedule in data.get("schedules", []):
+                if str(schedule.get("map_id")) != map_id:
+                    continue
+                schedule["zone_ids"] = [
+                    zone_id
+                    for zone_id in schedule.get("zone_ids", [])
+                    if str(zone_id) not in removed_zone_ids
+                ]
+
+        if removed_no_go_ids:
+            data["virtual_walls_managed_maps"][map_id] = True
+
+        self._write(data)
+        return {
+            "zones": len(removed_zone_ids),
+            "no_go": len(removed_no_go_ids),
+        }
 
     def add_point(self, name, x, y):
         data = self._read()
