@@ -37,6 +37,7 @@ Después de estabilizar el núcleo:
 - mapa interactivo fiable;
 - automatizaciones y programación;
 - perfiles de limpieza;
+- paquetes de voz personalizados compatibles con el B112 (opción futura, con restauración segura);
 - diagnóstico simplificado para usuarios;
 - logs técnicos exportables;
 - actualización más transparente.
