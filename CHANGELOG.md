@@ -4,6 +4,16 @@ Este archivo resume **hitos importantes**, no cada build interno. Para el detall
 
 ## Unreleased
 
+### V106 · densidad 2x2 sin inflar el mapa
+
+- El preview Xiaomi ya no convierte automáticamente cada bloque ambiguo 2×2 en 0,16 m² completos.
+- Conserva cuántas de las cuatro subceldas de 0,20 m están realmente ocupadas en cada bloque, dato que es invariante a la permutación `tile2`.
+- Usa mediana baja sobre hasta 5 frames recientes para eliminar ocupaciones transitorias sin unión acumulativa.
+- Reconstruye un preview de 0,20 m preservando el área observada; las subceldas ambiguas se colocan hacia el núcleo/dock para evitar expandir el borde.
+- Mantiene el mapa congelado de V105 durante retorno y dock.
+- Si V57 valida el mapa completo, el preview se reemplaza automáticamente por el grid Xiaomi exacto.
+
+
 ### V105 · preview retenido + consenso temporal
 
 - El último mapa Xiaomi preliminar ya no desaparece cuando `mapping_active` pasa a `False` durante el retorno a base.
