@@ -88,6 +88,18 @@ flowchart TD
 - El archivo Cloud puede ser histórico; la frescura y la coherencia se validan antes de usarlo.
 - `255_255` se trata como sentinela y nunca como una base real dentro del plano.
 
+## Gate de arranque V90
+
+V90 separa explícitamente tres estados de una sesión nueva:
+
+1. **Preparando**: el usuario inició el mapeo pero `v74_mapping_started` todavía no confirmó el START.
+2. **START confirmado**: la orden fue aceptada para el serial vigente, pero el robot todavía debe demostrar que salió físicamente del dock.
+3. **Salida confirmada**: después del START se observó `status 5/6/7`. Sólo desde este estado un posterior `status=3/4` puede representar un retorno real.
+
+Esto evita que cambios tempranos de `10/24`, telemetría atrasada o un `status=4` que todavía pertenece al estado inicial del dock cierren el mapa con tiempo/cobertura cero.
+
+Si el START no se confirma dentro de 60 segundos, V90 cancela el intento, ejecuta `stop + dock` y deja el motivo en F12. Un evento START que llegue después de esa cancelación se descarta y no reactiva la sesión.
+
 ## Diagnóstico F12
 
 F12 conserva los bloques de diagnóstico históricos para comparar versiones. V88 añade la fuente visual activa, métricas del grid, base cruda/corregida y cantidad de actualizaciones/reutilizaciones persistidas.
