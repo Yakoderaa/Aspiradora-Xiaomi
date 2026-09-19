@@ -177,15 +177,27 @@ class App(app_v89.App):
                     vacuum.stop()
                 except Exception:
                     pass
+                time.sleep(0.35)
+                try:
+                    vacuum.dock()
+                except Exception:
+                    pass
             threading.Thread(target=worker, daemon=True).start()
 
     # ======================================================= eventos / status
     def _handle_ui_event(self, kind, payload):
         if kind == "v74_mapping_started" and payload:
             try:
-                self._v90_confirm_start(int(payload[0]))
+                accepted = self._v90_confirm_start(int(payload[0]))
             except Exception:
-                pass
+                accepted = False
+            if not accepted:
+                # El START llegó tarde, pertenece a otro serial o la sesión ya
+                # fue cancelada. No dejamos que V74 reactive el watcher.
+                self._v90_last_gate_reason = (
+                    "START tardío/obsoleto descartado por V90"
+                )
+                return
         elif kind == "v74_mapping_start_error":
             self._v90_last_gate_reason = "START rechazado/error de arranque"
         return super()._handle_ui_event(kind, payload)
