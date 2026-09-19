@@ -39,6 +39,36 @@ class DATA_BLOB(ctypes.Structure):
     ]
 
 
+if os.name == "nt":
+    _crypt32 = ctypes.WinDLL("crypt32", use_last_error=True)
+    _kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    _crypt32.CryptProtectData.argtypes = [
+        ctypes.POINTER(DATA_BLOB),
+        wintypes.LPCWSTR,
+        ctypes.POINTER(DATA_BLOB),
+        ctypes.c_void_p,
+        ctypes.c_void_p,
+        wintypes.DWORD,
+        ctypes.POINTER(DATA_BLOB),
+    ]
+    _crypt32.CryptProtectData.restype = wintypes.BOOL
+    _crypt32.CryptUnprotectData.argtypes = [
+        ctypes.POINTER(DATA_BLOB),
+        ctypes.POINTER(wintypes.LPWSTR),
+        ctypes.POINTER(DATA_BLOB),
+        ctypes.c_void_p,
+        ctypes.c_void_p,
+        wintypes.DWORD,
+        ctypes.POINTER(DATA_BLOB),
+    ]
+    _crypt32.CryptUnprotectData.restype = wintypes.BOOL
+    _kernel32.LocalFree.argtypes = [ctypes.c_void_p]
+    _kernel32.LocalFree.restype = ctypes.c_void_p
+else:
+    _crypt32 = None
+    _kernel32 = None
+
+
 def _ensure_dir():
     APP_DATA.mkdir(parents=True, exist_ok=True)
 
@@ -50,9 +80,9 @@ def _protect_windows(data: bytes) -> bytes:
     in_blob = DATA_BLOB(len(data), ctypes.cast(buf, ctypes.POINTER(ctypes.c_byte)))
     out_blob = DATA_BLOB()
     flags = 0x01  # CRYPTPROTECT_UI_FORBIDDEN
-    ok = ctypes.windll.crypt32.CryptProtectData(
+    ok = _crypt32.CryptProtectData(
         ctypes.byref(in_blob),
-        "Aspiradora Xiaomi ChatGPT".encode("utf-16-le"),
+        "Aspiradora Xiaomi ChatGPT",
         None,
         None,
         None,
@@ -60,11 +90,11 @@ def _protect_windows(data: bytes) -> bytes:
         ctypes.byref(out_blob),
     )
     if not ok:
-        raise ctypes.WinError()
+        raise ctypes.WinError(ctypes.get_last_error())
     try:
         return ctypes.string_at(out_blob.pbData, out_blob.cbData)
     finally:
-        ctypes.windll.kernel32.LocalFree(out_blob.pbData)
+        _kernel32.LocalFree(ctypes.cast(out_blob.pbData, ctypes.c_void_p))
 
 
 def _unprotect_windows(data: bytes) -> bytes:
@@ -74,9 +104,10 @@ def _unprotect_windows(data: bytes) -> bytes:
     in_blob = DATA_BLOB(len(data), ctypes.cast(buf, ctypes.POINTER(ctypes.c_byte)))
     out_blob = DATA_BLOB()
     flags = 0x01
-    ok = ctypes.windll.crypt32.CryptUnprotectData(
+    description = wintypes.LPWSTR()
+    ok = _crypt32.CryptUnprotectData(
         ctypes.byref(in_blob),
-        None,
+        ctypes.byref(description),
         None,
         None,
         None,
@@ -84,11 +115,13 @@ def _unprotect_windows(data: bytes) -> bytes:
         ctypes.byref(out_blob),
     )
     if not ok:
-        raise ctypes.WinError()
+        raise ctypes.WinError(ctypes.get_last_error())
     try:
         return ctypes.string_at(out_blob.pbData, out_blob.cbData)
     finally:
-        ctypes.windll.kernel32.LocalFree(out_blob.pbData)
+        if description:
+            _kernel32.LocalFree(ctypes.cast(description, ctypes.c_void_p))
+        _kernel32.LocalFree(ctypes.cast(out_blob.pbData, ctypes.c_void_p))
 
 
 def save_runtime_key(key: str):
@@ -153,9 +186,10 @@ def atomic_write_snapshot(payload: dict):
     os.replace(tmp, SNAPSHOT_PATH)
 
 
-def load_snapshot() -> dict:
+def load_snapshot(path=SNAPSHOT_PATH) -> dict:
+    path = Path(path)
     try:
-        return json.loads(SNAPSHOT_PATH.read_text(encoding="utf-8"))
+        return json.loads(path.read_text(encoding="utf-8"))
     except Exception:
         return {
             "schema": 1,
@@ -185,7 +219,7 @@ class AspiradoraMCPServer:
         self._mcp = None
 
     def _snapshot(self):
-        return load_snapshot()
+        return load_snapshot(self.snapshot_path)
 
     def _build(self):
         mcp = MCPServer(

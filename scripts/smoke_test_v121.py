@@ -33,7 +33,27 @@ phase2 = source.split(
 )[1].split(
     "    # ====================================== status=4", 1
 )[0]
-assert "arm_new_map(" not in phase2
+# Ignoramos comentarios/string literals: lo importante es que no exista una
+# llamada real a arm_new_map dentro de _v121_request_phase2.
+phase2_tree = ast.parse(
+    "def _probe(self, vacuum, serial, source, sweep_type=None):\n"
+    + "\n".join("    " + line for line in phase2.splitlines()[1:])
+)
+calls = [
+    node for node in ast.walk(phase2_tree)
+    if isinstance(node, ast.Call)
+]
+assert not any(
+    (
+        isinstance(call.func, ast.Attribute)
+        and call.func.attr == "arm_new_map"
+    )
+    or (
+        isinstance(call.func, ast.Name)
+        and call.func.id == "arm_new_map"
+    )
+    for call in calls
+)
 assert "start_mapping_interior()" in phase2
 
 # Un grid inválido no puede volver a guardarse como 'final'.
