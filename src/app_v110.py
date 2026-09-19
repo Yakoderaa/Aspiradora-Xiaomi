@@ -4,6 +4,7 @@ from tkinter import messagebox, simpledialog
 
 import app_v109
 import app_v9
+from xiaomi_e10_map_v110 import XiaomiE10MapV110
 
 
 BG = app_v109.BG
@@ -21,7 +22,9 @@ RED_SOFT = app_v109.RED_SOFT
 
 
 class App(app_v109.App):
-    """V110: habitaciones como contenedor obligatorio de todas las zonas."""
+    """V110: habitaciones ancladas + mapa final con escala física Mi Home."""
+
+    AUTO_PHYSICAL_SCALE_PX_PER_M = 72.0
 
     def __init__(self):
         self._v110_section = "rooms"
@@ -34,6 +37,9 @@ class App(app_v109.App):
         self._v110_orphans_deleted = 0
         self._v110_cascade_deletes = 0
         self._v110_diag_compat_hits = 0
+        self._v110_cleaning_area_m2 = 0.0
+        self._v110_cleaning_area_raw = 0
+        self._v110_scale_cap_hits = 0
         super().__init__()
         self.after(450, self._v110_reconcile_room_zones)
         self.after(600, lambda: self._v110_render_side(force=True))
@@ -53,6 +59,73 @@ class App(app_v109.App):
             except Exception:
                 snapshot = {}
         return super()._v87_floor_cells(snapshot)
+
+    # =========================================== escala física / mapa final
+    def _v72_fit_scale_about_center(self, bounds, center, cw, ch, pad):
+        fit = super()._v72_fit_scale_about_center(
+            bounds,
+            center,
+            cw,
+            ch,
+            pad,
+        )
+        if fit is None:
+            return float(self.AUTO_PHYSICAL_SCALE_PX_PER_M)
+        capped = min(float(fit), float(self.AUTO_PHYSICAL_SCALE_PX_PER_M))
+        if capped < float(fit) - 1e-9:
+            self._v110_scale_cap_hits += 1
+        return capped
+
+    def _render_status(self, status):
+        try:
+            self._v110_cleaning_area_m2 = max(
+                0.0,
+                float(getattr(status, "cleaning_area", 0.0) or 0.0),
+            )
+        except Exception:
+            self._v110_cleaning_area_m2 = 0.0
+        try:
+            self._v110_cleaning_area_raw = int(
+                getattr(status, "cleaning_area_raw", 0) or 0
+            )
+        except Exception:
+            self._v110_cleaning_area_raw = 0
+
+        client = getattr(self, "_v40_client", None)
+        if isinstance(client, XiaomiE10MapV110):
+            try:
+                client.set_v110_target_area(self._v110_cleaning_area_m2)
+            except Exception:
+                pass
+
+        return super()._render_status(status)
+
+    def _v40_map_client(self, vacuum, settings):
+        if (
+            self._v40_client is None
+            or self._v40_client_vacuum is not vacuum
+            or not isinstance(self._v40_client, XiaomiE10MapV110)
+        ):
+            self._v40_client = XiaomiE10MapV110(vacuum, settings)
+            self._v40_client_vacuum = vacuum
+
+        try:
+            points = (
+                list(self.local_map.snapshot().get("points") or [])
+                if self.local_map
+                else []
+            )
+            self._v40_client.set_v109_reference_path(points)
+        except Exception:
+            pass
+
+        try:
+            self._v40_client.set_v110_target_area(
+                self._v110_cleaning_area_m2
+            )
+        except Exception:
+            pass
+        return self._v40_client
 
     # ========================================================= UI lateral
     def _build_map_page_v22(self):
@@ -1036,6 +1109,18 @@ class App(app_v109.App):
             (
                 f"compat diagnóstico _v87_floor_cells sin snapshot="
                 f"{self._v110_diag_compat_hits}"
+            ),
+            (
+                f"escala física: cleaning_area raw="
+                f"{self._v110_cleaning_area_raw} · "
+                f"Mi Home={self._v110_cleaning_area_m2:.2f} m² · "
+                f"auto={self.AUTO_PHYSICAL_SCALE_PX_PER_M:.1f} px/m · "
+                f"caps={self._v110_scale_cap_hits}"
+            ),
+            (
+                "regla V110: la selección final usa trayectoria + área Xiaomi "
+                "en m² + topología; no se acepta una máscara de superficie "
+                "muy distinta a Mi Home"
             ),
             (
                 "regla V110: no existe zona nueva sin habitación activa; toda "
