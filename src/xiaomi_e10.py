@@ -33,7 +33,7 @@ class VacuumStatus:
     suction: int = 0
     water: int = 0
     cleaning_time: int = 0
-    cleaning_area: int = 0
+    cleaning_area: float = 0.0
     door_state: int = 0
     cloth_state: int = 0
     side_brush_life: int = 0
@@ -107,7 +107,20 @@ class XiaomiE10:
             ("cleaning_area", 7, 23),
         ]
         v = self._get_many(defs)
-        return VacuumStatus(**{k: int(v.get(k, 0) or 0) for k, _, _ in defs})
+        values = {}
+        for key, _siid, _piid in defs:
+            raw = v.get(key, 0) or 0
+            if key == "cleaning_area":
+                try:
+                    values[key] = float(raw)
+                except Exception:
+                    values[key] = 0.0
+            else:
+                try:
+                    values[key] = int(raw)
+                except Exception:
+                    values[key] = 0
+        return VacuumStatus(**values)
 
     def set_mode(self, mode: int):
         if mode not in (0, 1, 2):
