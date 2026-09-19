@@ -11,6 +11,8 @@ Este archivo resume **hitos importantes**, no cada build interno. Para el detall
 - La limpieza normal fuerza `sweep-type=0` para no heredar el patrón anterior.
 - Los patrones especiales respetan el modo seleccionado: aspirar, aspirar + trapear o trapear.
 - Se conserva el cierre V86: el aviso de mapeo sólo aparece una vez confirmado físicamente el dock.
+- Nuevo renderer de mapa inspirado en Mi Home: superficie explorada continua, contorno exterior azul, sin grilla visible, base verde y robot orientado.
+- El cambio visual no modifica coordenadas, cobertura ni la lógica física del mapeo.
 - Personalización de voz: queda fuera de V87 y se evaluará como función futura mediante paquetes compatibles.
 
 
