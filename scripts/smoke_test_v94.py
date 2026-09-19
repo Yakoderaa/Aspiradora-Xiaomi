@@ -39,9 +39,29 @@ for code, fault, mapping, expected_text, expected_style in cases:
     assert text == expected_text, (code, text)
     assert style == expected_style, (code, style)
 
+# Un fault residual no debe tapar un estado físico activo.
+text, style = app_v94.App._v94_display_state(
+    4,
+    "Cargando",
+    2105,
+    mapping_active=False,
+)
+assert text == "Cargando"
+assert style == "charging"
+
 text, style = app_v94.App._v94_display_state(
     5,
     "Aspirando",
+    12,
+    mapping_active=False,
+)
+assert text == "Aspirando"
+assert style == "cleaning"
+
+# Fuera de un estado físico activo, el fault sí sigue siendo visible.
+text, style = app_v94.App._v94_display_state(
+    1,
+    "En espera",
     12,
     mapping_active=False,
 )

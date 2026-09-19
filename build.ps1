@@ -20,6 +20,7 @@ Invoke-PythonChecked "-m" "pip" "install" "pyinstaller==6.22.3"
 
 Invoke-PythonChecked "scripts\make_mihome_icon.py"
 Invoke-PythonChecked "scripts\fetch_e10_product_image.py"
+Invoke-PythonChecked "scripts\make_windows_version_info.py"
 
 Invoke-PythonChecked "-m" "compileall" "-q" "src" "scripts"
 Invoke-PythonChecked "scripts\smoke_test.py"
@@ -115,6 +116,7 @@ if ($LASTEXITCODE -ne 0) { throw "PyInstaller falló con código $LASTEXITCODE."
 pyinstaller --noconfirm --clean --windowed --onedir `
     --name "Aspiradora Xiaomi" `
     --icon "assets\mi_home.ico" `
+    --version-file "build\aspiradora_version_info.txt" `
     --add-data "assets\mi_home.ico;assets" `
     --add-data "assets\mi_home.png;assets" `
     --add-data "assets\xiaomi_robot_vacuum_e10.jpg;assets" `
@@ -123,6 +125,8 @@ pyinstaller --noconfirm --clean --windowed --onedir `
     --collect-all Crypto `
     --collect-all PIL `
     --collect-all pystray `
+    --collect-all pycaw `
+    --collect-all comtypes `
     --collect-all google.protobuf `
     --collect-all vacuum_map_parser_base `
     --collect-all vacuum_map_parser_xiaomi `

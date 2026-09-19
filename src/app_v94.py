@@ -64,9 +64,6 @@ class App(app_v93.App):
         except Exception:
             fault_code = 0
 
-        if fault_code:
-            return f"Error · código {fault_code}", "error"
-
         names = {
             0: ("Dormido", "idle"),
             1: ("En espera", "idle"),
@@ -78,6 +75,12 @@ class App(app_v93.App):
             7: ("Trapeando", "cleaning"),
             8: ("Actualizando firmware", "updating"),
         }
+        # El E10 puede conservar un fault histórico aunque físicamente ya esté
+        # cargando/retornando/limpiando. En esos estados, status es la fuente
+        # autoritativa para la barra superior y el fault queda en Diagnóstico.
+        if fault_code and code not in (3, 4, 5, 6, 7, 8):
+            return f"Error · código {fault_code}", "error"
+
         text, style = names.get(
             code,
             (str(status_name or f"Estado {code if code is not None else '—'}"), "idle"),
@@ -186,6 +189,10 @@ class App(app_v93.App):
             (
                 "regla V94: durante status 5/6/7 agrega 'mapeando' únicamente "
                 "si la sesión de mapeo local está activa"
+            ),
+            (
+                "regla V94: status 3/4/5/6/7/8 manda sobre un fault residual; "
+                "el fault se conserva en F12 pero no reemplaza Cargando/Aspirando"
             ),
             "",
             "",

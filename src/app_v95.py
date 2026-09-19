@@ -4,6 +4,7 @@ import tkinter as tk
 from tkinter import messagebox
 
 import app_v94
+import windows_audio_identity
 
 
 class App(app_v94.App):
@@ -366,6 +367,7 @@ class App(app_v94.App):
     def _diagnostic_text(self):
         inherited = super()._diagnostic_text()
         now = time.monotonic()
+        audio_diag = windows_audio_identity.snapshot()
         lines = [
             "DIAGNÓSTICO V95 ACTIVO · watchdog de mapa + controles globales",
             "=================================================================",
@@ -391,6 +393,13 @@ class App(app_v94.App):
                 f"kicks cloud={self._v95_cloud_kicks}"
             ),
             f"última recuperación: {self._v95_last_recovery_reason}",
+            (
+                "audio Windows: "
+                f"nombre={audio_diag.get('display_name', '—')} · "
+                f"AppUserModelID={audio_diag.get('app_user_model_id', '—')} · "
+                f"sesiones renombradas={audio_diag.get('renamed_sessions', 0)} · "
+                f"último error={audio_diag.get('last_error') or '—'}"
+            ),
             (
                 "controles superiores: "
                 "Iniciar limpieza = modo/succión/agua seleccionados · "

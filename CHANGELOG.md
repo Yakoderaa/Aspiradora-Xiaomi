@@ -6,6 +6,10 @@ Este archivo resume **hitos importantes**, no cada build interno. Para el detall
 
 ### V95 · recuperación del mapa vivo + controles globales
 
+- La barra superior prioriza el estado físico real del E10 sobre faults residuales cuando está retornando/cargando/limpiando; un `fault=2105` ya no reemplaza `status=4` por “Error”.
+- El fault residual se conserva en F12 para diagnóstico.
+- Identidad de audio de Windows explícita como **Aspiradora**: AppUserModelID, metadatos del ejecutable y nombre de sesión Core Audio para que SteelSeries Sonar no la muestre como “unknown”.
+
 - Corrige el caso observado en F12 donde el E10 estaba físicamente en `status=5` pero la app seguía con **0 frames V92, 0 puntos 10/24 y 0 lecturas de mapa**, mientras Mi Home sí actualizaba.
 - Durante un mapeo, `status 5/6/7` ahora puede despertar directamente el lector Cloud aunque la telemetría LAN todavía no haya entregado ninguna pose.
 - El loop de mapa LAN deja de morir si encuentra un worker ya activo: reprograma el siguiente intento en vez de abandonar el sondeo.

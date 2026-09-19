@@ -12,6 +12,8 @@ import app_v95
 for path in (
     SRC / "app_v95.py",
     SRC / "main_v95.py",
+    SRC / "windows_audio_identity.py",
+    ROOT / "scripts" / "make_windows_version_info.py",
 ):
     ast.parse(path.read_text(encoding="utf-8"))
 
@@ -25,6 +27,12 @@ assert due(30.0, 10.0, 18.0, 22.0, 6.0) is True
 assert due(30.0, 0.0, 0.0, 0.0, 6.0) is False
 
 source = (SRC / "app_v95.py").read_text(encoding="utf-8")
+audio_source = (SRC / "windows_audio_identity.py").read_text(encoding="utf-8")
+main_source = (SRC / "main_v95.py").read_text(encoding="utf-8")
+assert 'DISPLAY_NAME = "Aspiradora"' in audio_source
+assert "SetCurrentProcessExplicitAppUserModelID" in audio_source
+assert "SetDisplayName" in audio_source
+assert "windows_audio_identity.install()" in main_source
 for required in (
     "Iniciar limpieza",
     "Volver a base",

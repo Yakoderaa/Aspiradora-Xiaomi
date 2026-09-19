@@ -4,6 +4,7 @@ import traceback
 import app_v95
 import app_v9
 import device_metadata_patch
+import windows_audio_identity
 
 
 def main():
@@ -11,6 +12,7 @@ def main():
         return 0
 
     device_metadata_patch.install()
+    windows_audio_identity.install()
     app_v9._save_crash_log("")
     try:
         app_v95.App().mainloop()
