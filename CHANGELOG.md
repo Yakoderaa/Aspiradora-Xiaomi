@@ -4,6 +4,17 @@ Este archivo resume **hitos importantes**, no cada build interno. Para el detall
 
 ## Unreleased
 
+### V97 · mapa temprano prudente + Sonar
+
+- El fallback estimado ya no convierte unos pocos puntos casi lineales en una habitación completa.
+- Antes de tener geometría 2D madura se dibuja sólo una **huella temprana** del recorrido real, sin cierre de huecos ni relleno interior.
+- El fallback completo V91 requiere al menos 24 puntos, 1,00 m de extensión mayor, 0,55 m de extensión menor y ratio 2D ≥ 0,35.
+- Mientras la geometría aún es temprana, el viewport mantiene un marco mínimo de **4×4 m alrededor de la base**, evitando que un recorrido de menos de un metro ocupe media pantalla.
+- Un grid Xiaomi validado sigue teniendo prioridad inmediata sobre cualquier fallback.
+- Para SteelSeries Sonar, la app crea una sesión de audio silenciosa propia y persistente, identifica el PID por varias rutas de Core Audio y fuerza `DisplayName=Aspiradora`.
+- F12 V97 muestra `silent_session_started`, sesiones propias detectadas, sesiones renombradas y el último nombre observado.
+
+
 ### V96 · arranque tardío seguro + rendimiento
 
 - Corrige el caso observado en V95 donde `10/24` tenía movimiento real (25 cambios / 26 puntos) pero V80 rechazaba toda la trayectoria y el mapa seguía en 0 puntos.

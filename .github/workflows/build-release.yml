@@ -68,10 +68,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V96 para Windows 10/11 x64. Corrige el caso diagnosticado donde 10/24 sí entregaba movimiento real pero V80 descartaba todas las muestras: el gate inicial acepta una primera secuencia tardía hasta 0,90 m únicamente si mantiene continuidad, y V85 no puede crear rebases antes de que ese gate quede validado. También reduce el consumo y el lag: un solo worker LAN, un solo worker Cloud sin resets que dejen hilos huérfanos, Cloud limitado a intervalos de 12 s, cola UI procesada por lotes y repintados del mapa coalescidos. F12 V96 muestra motivo del gate, discontinuidades, rebases bloqueados, workers reales y contadores de render/UI."
+          $notes = "V97 para Windows 10/11 x64. Corrige el mapa prematuro observado en V96: mientras la trayectoria siga siendo casi lineal o tenga poca expansión lateral, la UI muestra sólo una huella temprana derivada del recorrido real, sin cerrar huecos ni rellenar una habitación. El fallback completo recién se habilita con exploración 2D madura y, antes de eso, el viewport conserva 4×4 m alrededor de la base para evitar zoom agresivo. También refuerza SteelSeries Sonar: la app crea una sesión WASAPI silenciosa propia, la mantiene viva y la etiqueta Aspiradora mediante Core Audio; F12 V97 muestra si la sesión fue creada, detectada y renombrada."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V96" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V97" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
