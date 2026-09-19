@@ -4,6 +4,18 @@ Este archivo resume **hitos importantes**, no cada build interno. Para el detall
 
 ## Unreleased
 
+### V96 · arranque tardío seguro + rendimiento
+
+- Corrige el caso observado en V95 donde `10/24` tenía movimiento real (25 cambios / 26 puntos) pero V80 rechazaba toda la trayectoria y el mapa seguía en 0 puntos.
+- El gate inicial de V79/V80 se unifica en **0,90 m** y ya no exige que la primera muestra útil llegue dentro de 0,35 m del dock.
+- Una primera muestra tardía sólo se acepta después de **4 muestras continuas**; una discontinuidad superior a 0,40 m reinicia el gate en vez de inventar trayectoria.
+- Antes de validar el arranque, V85 no puede crear un rebase persistente: las coordenadas permanecen en el marco físico `10/24 - base`.
+- El worker LAN deja de multiplicar callbacks: existe un único temporizador pendiente y un único worker de lectura.
+- Cloud nunca libera artificialmente un worker lento; no se crean hilos huérfanos/solapados. El intervalo de lectura pesada sube a 12 s.
+- La cola de eventos de Tk se procesa con presupuesto por ciclo y los repintados del mapa se coalescen, reduciendo el lag al pulsar botones o mover la ventana.
+- F12 V96 muestra motivo del gate inicial, discontinuidades, rebases pre-gate bloqueados, polls LAN, starts Cloud reales, stalls y renders coalescidos.
+
+
 ### V95 · recuperación del mapa vivo + controles globales
 
 - La barra superior prioriza el estado físico real del E10 sobre faults residuales cuando está retornando/cargando/limpiando; un `fault=2105` ya no reemplaza `status=4` por “Error”.

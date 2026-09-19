@@ -68,10 +68,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V95 para Windows 10/11 x64. Incluye la recuperación del mapa vivo LAN/Cloud y los controles globales ya preparados, y además corrige dos detalles de la prueba de interfaz: si el E10 está físicamente en status=3/4/5/6/7/8, ese estado manda sobre un fault residual como 2105, por lo que Cargando/Aspirando ya no se reemplaza por Error; el código sigue visible en Diagnóstico. Para SteelSeries Sonar/mezcladores de Windows, el proceso registra AppUserModelID Yakoderaa.Aspiradora, metadatos de ejecutable ProductName/FileDescription/InternalName=Aspiradora y renombra explícitamente cualquier sesión Core Audio del propio proceso a Aspiradora mediante IAudioSessionControl::SetDisplayName. F12 V95 muestra también cuántas sesiones de audio fueron renombradas."
+          $notes = "V96 para Windows 10/11 x64. Corrige el caso diagnosticado donde 10/24 sí entregaba movimiento real pero V80 descartaba todas las muestras: el gate inicial acepta una primera secuencia tardía hasta 0,90 m únicamente si mantiene continuidad, y V85 no puede crear rebases antes de que ese gate quede validado. También reduce el consumo y el lag: un solo worker LAN, un solo worker Cloud sin resets que dejen hilos huérfanos, Cloud limitado a intervalos de 12 s, cola UI procesada por lotes y repintados del mapa coalescidos. F12 V96 muestra motivo del gate, discontinuidades, rebases bloqueados, workers reales y contadores de render/UI."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V95" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V96" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
