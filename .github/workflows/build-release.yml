@@ -68,10 +68,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V90 para Windows 10/11 x64. Corrige el falso cierre de mapeo observado en V89: status=4 ya no puede cerrar una sesión sólo porque aparezcan puntos 10/24 antes de confirmar el START. V90 exige START confirmado para el serial vigente y luego una salida física real del dock observada como status 5/6/7; recién después status=3/4 puede representar un retorno válido. Los status=3/4 tempranos quedan bloqueados y contabilizados en F12. Si START no se confirma en 60 s, el intento se cancela de forma controlada, se ejecuta stop+dock y un START tardío se descarta para que no reactive la sesión. Se conserva íntegramente V89: recorrido oculto sólo visualmente, perímetro+relleno+base+robot, trayectoria completa disponible para diagnóstico/cobertura/antiatasco, y toda la geometría V88."
+          $notes = "V91 para Windows 10/11 x64. Corrige la interpretación del payload B112 observado: 3628 bytes post-hex se tratan como type8 + version8 + length16be, con 24 bytes de cabecera y 3600 bytes de grid 120x120 a 2bpp. V91 prueba MSB/LSB y las capas 1/2/3 por separado, pero V57 sigue siendo el gate final: ningún grid se dibuja si no es espacialmente coherente. El grid candidato usa resolución 0.20 m, coherente con el área real observada en Mi Home; esto no cambia todavía RAW_TO_METERS de la lógica física V77/V85. Si el grid no valida, el fallback visual se reconstruye con radio físico de 0.18 m, unión de huecos cortos y relleno sólo de huecos encerrados. Se mantienen V90 y V89 completos: START/salida física protegidos y recorrido oculto en UI."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V90" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V91" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
