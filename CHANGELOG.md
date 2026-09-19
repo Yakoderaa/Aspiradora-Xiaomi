@@ -4,6 +4,20 @@ Este archivo resume **hitos importantes**, no cada build interno. Para el detall
 
 ## Unreleased
 
+### V109 · mapa físico + panel lateral + diagnóstico seguro
+
+- El mapa final ya no acepta el layout 2bpp sólo por conectividad: compara layout, máscara y orientación global contra la trayectoria física real del E10.
+- Prueba reflejos/rotaciones alrededor de la base y puntúa cobertura del recorrido, distancia media, percentil 90, tamaño físico y fragmentación.
+- La limpieza de habitaciones y zonas corrige la escala: el mapa local está en metros y el E10 usa 1 raw = 0,10 m.
+- El origen de limpieza localizada se repara con la base raw real de V77/V78, evitando guardar el (0,0) normalizado como origen físico.
+- La franja inferior del mapa queda exclusivamente para **Administrar mapas**.
+- Habitaciones y zonas pasan a un panel derecho con pestañas; permite seleccionar, limpiar, bloquear/desbloquear, crear y eliminar.
+- F12 tiene salida de emergencia y ya no puede quedar en blanco si falla una sección heredada.
+- Copiar diagnóstico usa la misma ruta protegida.
+- La interfaz de conexión muestra sólo **Conectado** y las direcciones IPv4 se redactan del diagnóstico.
+- Se conservan el renderer moderno V108, la estrategia final-first V107 y las optimizaciones anti-freeze.
+
+
 ### V108 · renderer moderno obligatorio
 
 - El último pase visual de mapa grande y miniatura borra cualquier dibujo heredado antes de presentar la interfaz.
