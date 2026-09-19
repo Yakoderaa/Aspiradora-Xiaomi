@@ -89,10 +89,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V107 para Windows 10/11 x64. Cambia la estrategia de mapeo para priorizar fidelidad a Mi Home y fluidez. Durante la limpieza no reconstruye ni descarga la planta Cloud en tiempo real: sólo mantiene pose/base por LAN y espera al dock. Al confirmar status=4 hace tres lecturas finales del slot Xiaomi, selecciona un frame actual repetido/estable y evita la unión histórica acum[N] que deformaba la planta. El mapa final conserva sólo el componente principal literal, sin rellenos inventados, y refleja el eje Y alrededor del dock para igualar la orientación visual observada en Mi Home. Rendimiento: render completo limitado a 1,5 s, galería a 12 s, refresh global de tema/i18n a 15 s, eventos UI en lotes de 4, sin configure redundante de canvas y sin polling Cloud live durante la limpieza."
+          $notes = "V108 para Windows 10/11 x64. Restaura de forma obligatoria la interfaz moderna del mapa sin modificar la estrategia final-first de V107. El último pase visual del canvas borra cualquier dibujo heredado y sólo presenta fondo azul limpio, piso/contorno azul cuando corresponde, base verde, robot y zonas. El recorrido interno, grilla antigua, base naranja y elementos/perímetros naranjas no pueden quedar visibles. Durante un mapeo nuevo, mientras se espera el mapa Xiaomi final, se muestran únicamente fondo moderno + base/robot. Los mapas viejos sin grid final usan el piso estimado moderno con contorno y sin recorrido. Mapa grande y miniatura comparten el mismo renderer final. Se conservan todas las optimizaciones anti-freeze y la captura final Xiaomi de V107."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V107" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V108" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
