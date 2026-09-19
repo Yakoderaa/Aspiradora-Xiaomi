@@ -4,6 +4,16 @@ Este archivo resume **hitos importantes**, no cada build interno. Para el detall
 
 ## Unreleased
 
+### V104 · preview Xiaomi independiente del layout
+
+- El mapa parcial ya no queda bloqueado porque el frame actual y el acumulado elijan permutaciones `tile2` diferentes.
+- Mientras Xiaomi todavía no tenga un grid V57 válido, cada bloque 2×2 de la rejilla de 0,20 m se resume en una celda física de 0,40 m.
+- Esa reducción hace que `tile2-1203`, `tile2-0213` y las demás permutaciones locales produzcan la misma planta preliminar.
+- El preview preliminar puede aparecer tras 2 hashes distintos y 25 s, sin esperar las 100 celdas de V103.
+- Los saltos fuertes de crecimiento reinician la acumulación coarse.
+- Cuando V57 valida el grid completo, la app vuelve automáticamente a la resolución Xiaomi de 0,20 m.
+
+
 ### V103 · geometría Xiaomi con espera de confianza
 
 - La planta parcial deja de aparecer apenas salen los primeros blobs del dock.
