@@ -68,10 +68,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V92 para Windows 10/11 x64. Mantiene la cabecera B112 real de V91 y añade búsqueda de disposición espacial del grid: 4 celdas horizontales por byte, 4 verticales por byte y bloques 2x2 con las 24 permutaciones locales, cada una probada con las siete máscaras 2bpp. Además acumula por candidato los hashes nuevos de una misma sesión para detectar si Xiaomi publica frames/deltas en lugar del plano completo. V57 sigue siendo el gate final: ningún frame ni acumulado reemplaza el mapa estimado si continúa fragmentado. El score usa conectividad y proximidad a la base; 255_255 queda excluido y se corrige a 60_60 sólo para geometría. F12 informa mejor frame, mejor acumulado, candidato seleccionado y top de layouts. Se conservan V91/V90/V89, el recorrido oculto y la lógica física V77/V85 sin cambios."
+          $notes = "V93 para Windows 10/11 x64. Parte del grid Xiaomi válido conseguido por V92 y añade un desempate físico/temporal de layouts: cada candidato se contrasta con la base, la posición 10/24 del robot y la zona donde aparecen celdas nuevas entre frames. Entre candidatos equivalentes usa densidad y perímetro sólo como tie-break visual. Después aplica una limpieza conservadora del componente principal, huecos encerrados y apéndices finos, revirtiéndola si degrada la validez V57. Un grid Xiaomi validado pasa a contar como evidencia de mapeo completo para evitar que los umbrales antiguos de trayectoria V81 lo marquen como incompleto. Al confirmar status=4 se hacen tres lecturas finales en dock antes de congelar la geometría. La cabecera deja de mostrar Mapeando cuando la sesión ya terminó y muestra el estado real del grid guardado. Se conservan V92/V90/V89, la trayectoria física oculta y las protecciones V77/V85."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V92" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V93" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
