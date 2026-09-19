@@ -141,7 +141,6 @@ def _launch_update_helper(installer: Path, version: str, theme="light", language
             "--language", str(language or "es"),
         ],
         creationflags=creationflags,
-        startupinfo=_hidden_startupinfo(),
         close_fds=True,
         stdin=subprocess.DEVNULL,
         stdout=subprocess.DEVNULL,
