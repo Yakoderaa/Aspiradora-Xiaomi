@@ -4,6 +4,22 @@ Este archivo resume **hitos importantes**, no cada build interno. Para el detall
 
 ## Unreleased
 
+### V114 · mapa Xiaomi operativo
+
+- Conserva exactamente la geometría final V113/V111; esta versión no modifica decoder, layout ni selección del mapa final.
+- Habitaciones, zonas y puntos requieren un `native_grid` Xiaomi final antes de poder ejecutar limpieza dirigida.
+- Cada selección se recorta contra las celdas ocupadas reales del grid de 0,20 m.
+- Las zonas bloqueadas se restan de la geometría operativa antes de generar órdenes al robot.
+- Una forma irregular se divide en rectángulos seguros; nunca se amplía a un rectángulo que incluya superficie exterior al mapa.
+- El marco visual final y la conversión física comparten el mismo origen de dock; luego se convierte a raw con `1 raw = 0,10 m`.
+- Durante limpieza dirigida se activa un guard en el E10: `arm_new_map`, `build-map` y las rutas `start_mapping_*` quedan bloqueadas por código.
+- Mientras una limpieza dirigida está activa no se puede iniciar mapeo, cambiar mapa, crear mapa ni eliminar el mapa activo.
+- El `native_grid` final queda congelado durante la limpieza y se restaura automáticamente si cambia su huella.
+- Las programaciones que apuntan a zonas usan la misma ruta operativa segura.
+- F12 V114 informa selección local, área pedida/limpiable, subzonas, coordenadas raw, comandos completados, hash del mapa y bloqueos de mapeo.
+- Conserva V113 retorno sin frenado automático, renderer compatible, panel Habitaciones/Zonas, privacidad de IP y anti-freeze.
+
+
 ### V113 · geometría V111 congelada + retorno seguro
 
 - Conserva exactamente el selector geométrico V111, cuya salida final fue visualmente cercana a Mi Home en la última prueba.
