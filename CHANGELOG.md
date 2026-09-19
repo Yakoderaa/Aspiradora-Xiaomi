@@ -4,6 +4,19 @@ Este archivo resume **hitos importantes**, no cada build interno. Para el detall
 
 ## Unreleased
 
+### V99 · mapa estable, dark theme e i18n completa
+
+- Durante una sesión nueva no se dibuja ninguna superficie estimada hasta disponer de un grid Xiaomi validado o exploración 2D realmente madura.
+- El fallback 2D exige ahora al menos 60 puntos, 1,40 m de extensión principal, 0,90 m lateral, ratio 2D ≥ 0,45 y al menos 7 filas/columnas exploradas.
+- El viewport de mapeo parte de 4×4 m centrado en la base y sus límites son **monotónicos**: pueden expandirse, pero nunca encogerse ni cambiar de centro por un frame parcial.
+- Una vez validado un grid Xiaomi, V99 lo retiene como fuente visual aunque un frame posterior llegue incompleto; puede actualizarse con otro grid válido, pero no alterna visualmente con el fallback.
+- Tema oscuro reescrito sobre la paleta real de la interfaz heredada: páginas, tarjetas, labels, canvas, entries, comboboxes, bordes y diálogos.
+- Los botones de acción azules mantienen texto blanco en normal, hover y disabled.
+- Localización dinámica para Español / English / Português: los textos que se regeneran al refrescar mapa/estado vuelven a pasar por el traductor.
+- “Administrar mapas” muestra **Eliminar** siempre. Si se elimina el último mapa, se borran geometría/rooms/zonas/puntos/rutinas y queda automáticamente un slot vacío válido.
+- F12 V99 informa fuente visual, bounds acumulados, contracciones bloqueadas, grid retenido, tema e idioma.
+
+
 ### V98 · tema, idiomas, updater integrado y arranque estable
 
 - Configuración incorpora tema **Claro/Oscuro**, persistente entre reinicios.

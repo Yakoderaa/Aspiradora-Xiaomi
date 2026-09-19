@@ -58,7 +58,13 @@ La trayectoria real continúa guardada completa y se usa para cobertura, complet
 
 La leyenda queda fija en la esquina superior izquierda y sólo identifica la fuente del mapa. La rueda controla el zoom y el doble clic con la rueda ejecuta **Zoom Extents**. El encuadre inicial conserva la base como centro de referencia.
 
-Si Xiaomi todavía no entrega un grid válido, V88 usa el fallback de trayectoria de V87 a resolución de 10 cm en lugar de inventar una planta desde datos incoherentes.
+Desde V99, si Xiaomi todavía no entrega un grid válido y la exploración sigue siendo temprana o casi lineal, **no se dibuja ninguna superficie estimada**: sólo base, robot y overlays configurados. El fallback geométrico se habilita recién con exploración 2D madura (mínimo 60 puntos, extensión principal ≥1,40 m, extensión lateral ≥0,90 m, ratio 2D ≥0,45 y al menos 7 filas/columnas exploradas).
+
+### 6. Viewport estable V99
+
+Durante `mapping_active`, el encuadre parte de un marco de 4×4 m centrado en la base. Los límites acumulados son monotónicos: un frame nuevo puede expandirlos si contiene geometría real fuera del marco, pero nunca puede reducirlos. Así, un delta parcial no puede achicar el plano, correrlo hacia un lado o producir alternancia visual entre fotogramas.
+
+Cuando aparece el primer grid Xiaomi válido, V99 retiene esa fuente durante la sesión. Los siguientes grids válidos pueden actualizarla, pero un frame incompleto no hace volver al fallback.
 
 ## Fuentes de mapa
 
@@ -71,7 +77,7 @@ flowchart TD
     D --> E
     E --> F{"Validación espacial V57"}
     F -->|válido| G["Grid Xiaomi V88"]
-    F -->|inválido| H["Fallback visual desde recorrido"]
+    F -->|inválido / temprano| H["Sin superficie hasta exploración 2D madura"]
     B --> I["Trayectoria física V85/V86"]
     G --> J["Renderer"]
     H --> J

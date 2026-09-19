@@ -22,7 +22,7 @@ Mi Home is the official experience, but a desktop workflow can be useful for peo
 - Start cleaning, stop, return to dock, locate, suction and water controls.
 - Persistent top-bar robot state: cleaning, returning, charging, idle and related states.
 - Live map view with CAD-like zoom/pan behavior.
-- Four local map slots, rooms, points, zones and virtual-wall tooling.
+- Four local map slots, rooms, points, zones and virtual-wall tooling. Maps can be renamed or deleted from the map manager.
 - Scheduler and Windows system-tray integration.
 - Xiaomi account linking by QR plus local IP/token fallback.
 - Automatic update checks with SHA-256 verification and an in-app GUI update flow.
@@ -41,7 +41,7 @@ The E10/B112 does not expose its map in the same way as newer Xiaomi robot vacuu
 - A decoded 120×120 2-bit grid candidate at 0.20 m resolution.
 - Multi-frame accumulation and spatial validation before a native Xiaomi grid is allowed to replace the estimated view.
 
-A key design rule is **do not invent room geometry**. Early, nearly linear movement is rendered only as a small observed footprint. Closed/flood-filled estimated rooms are delayed until there is genuine 2D exploration, while a validated Xiaomi grid always has priority.
+A key design rule is **do not invent room geometry**. During early or nearly linear movement, the app shows the dock and robot but **no estimated room surface**. A fallback surface is allowed only after genuine 2D exploration, while a validated Xiaomi grid always has priority. During an active mapping session the viewport is monotonic: it may expand as new geometry appears, but it never shrinks or jumps between partial frames.
 
 More detail: [docs/MAPPING.md](docs/MAPPING.md).
 

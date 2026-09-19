@@ -12,7 +12,7 @@ Aplicativo desktop para Windows focado no **Xiaomi Robot Vacuum E10 (`xiaomi.vac
 - Iniciar limpeza, parar, voltar à base, localizar, sucção e água.
 - Estado do robô sempre visível na barra superior.
 - Mapa ao vivo com navegação semelhante a CAD.
-- Quatro mapas locais, cômodos, zonas, pontos e bloqueios.
+- Quatro mapas locais, cômodos, zonas, pontos e bloqueios. Os mapas podem ser renomeados ou excluídos no gerenciador.
 - Agendamento e integração com a bandeja do sistema.
 - Vinculação da conta Xiaomi por QR.
 - Atualização pela própria interface com verificação SHA-256.
@@ -25,7 +25,7 @@ Aplicativo desktop para Windows focado no **Xiaomi Robot Vacuum E10 (`xiaomi.vac
 
 O E10/B112 usa um formato diferente de modelos Xiaomi mais novos. O aplicativo combina telemetria MIoT, estado físico da base, blobs do Xiaomi Cloud e um grid B112 candidato de 120×120.
 
-A visualização é conservadora: enquanto o movimento for quase linear, somente a área realmente observada é exibida. O aplicativo não preenche um cômodo inteiro antes de existir exploração 2D suficiente. Um grid Xiaomi validado sempre tem prioridade.
+A visualização é conservadora: no início ou durante um movimento quase linear, base e robô são exibidos, mas **nenhuma superfície estimada é desenhada**. O fallback só aparece com exploração 2D suficiente. Um grid Xiaomi validado sempre tem prioridade e o viewport não encolhe nem salta entre frames parciais.
 
 Mais detalhes: [docs/MAPPING.md](docs/MAPPING.md).
 

@@ -89,10 +89,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V98 para Windows 10/11 x64. Reúne los últimos cambios: mapa temprano prudente y sin habitaciones inventadas; SteelSeries Sonar con sesión Core Audio Aspiradora; tema Claro/Oscuro e idiomas Español/English/Português persistentes; actualización visual con descarga y SHA dentro de la app, helper GUI sin consola e instalador VERYSILENT; y arranque de ventana corregido para que se construya oculta y aparezca una sola vez en su geometría/estado guardados, neutralizando los múltiples restore de V39. El README principal pasa a inglés con documentación ES/PT separada."
+          $notes = "V99 para Windows 10/11 x64. Corrige los últimos problemas visuales y de UX: durante un mapeo no se dibuja ninguna superficie estimada hasta tener grid Xiaomi válido o exploración 2D madura; el viewport queda anclado a la base y sus bounds sólo pueden crecer, por lo que no alterna tamaño/centro entre fotogramas; un grid Xiaomi validado se retiene como fuente visual de la sesión. El tema oscuro ahora reconoce la paleta real heredada y aplica fondos/textos/inputs/canvas correctamente; los botones azules mantienen texto blanco en normal, hover y disabled. La localización Español/English/Português vuelve a traducir textos dinámicos regenerados. Administrar mapas permite eliminar cualquier mapa; si es el último, se limpia por completo y queda un slot vacío."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V98" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V99" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
