@@ -1,7 +1,7 @@
 git+https://github.com/rytilahti/python-miio.git
 micloud
 requests>=2.31,<3
-Pillow>=10,<13
+Pillow>=12.3.0,<13
 pystray>=0.19.5,<1
 pycryptodome>=3.20,<4
 protobuf>=3.20.3,<7
