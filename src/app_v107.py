@@ -29,7 +29,7 @@ class App(app_v106.App):
     FULL_UI_REFRESH_SECONDS = 15.0
 
     def __init__(self):
-        self._v107_hide_surface_until_final = True
+        self._v107_hide_surface_until_final = False
         self._v107_final_saved = False
         self._v107_final_grid = None
         self._v107_final_candidates = 0
@@ -355,8 +355,20 @@ class App(app_v106.App):
             text = f"Mapa Xiaomi final guardado · {cells} celdas nativas"
             color = "#4f46e5"
         else:
-            text = "Esperando mapa Xiaomi final"
-            color = "#64748b"
+            try:
+                snapshot = self.local_map.snapshot() if self.local_map else {}
+                saved = super()._v88_native_grid(snapshot)
+            except Exception:
+                saved = None
+            if isinstance(saved, dict):
+                cells = sum(
+                    1 for value in list(saved.get("cells") or []) if int(value)
+                )
+                text = f"Mapa Xiaomi guardado · {cells} celdas"
+                color = "#4f46e5"
+            else:
+                text = "Esperando mapa Xiaomi final"
+                color = "#64748b"
 
         self._v93_last_status_text = text
         try:
