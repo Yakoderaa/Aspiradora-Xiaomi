@@ -89,10 +89,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V119 para Windows 10/11 x64. Corrige el retorno prematuro observado durante el mapeo de toda la vivienda. V81 trataba como mapa completo la combinación de cobertura mínima + corredor repetido y ejecutaba stop+dock aunque quedaran habitaciones sin recorrer. V119 elimina ese cierre heurístico: no-new-area y corredor repetido nunca ejecutan stop, dock ni v74_mapping_complete. Los eventos de corredor tampoco reinician el sweep; se prioriza la autorrecuperación del firmware y sólo los casos realmente estacionarios/oscilando conservan recovery. El cierre queda reservado al retorno físico del propio E10 o a Detener mapeo. También corrige el falso positivo V118: status 5/6/7 durante mapping_active=True ya no se cuenta como limpieza global. Conserva V117/V118 para pose viva, START único y auditoría."
+          $notes = "V120 para Windows 10/11 x64. Mapear vivienda deja de iniciar un sweep global normal después de build-map. La ruta nueva es 10/17 build-map-ii(mode=1) -> ECO/agua=0 -> sweep-type=2 -> una única acción 7/3 con room ids vacíos y modo Edge para explorar la vivienda. No hay start global 2/1 o 2/3 ni segunda fase automática. El START se valida por status físico 5/6/7 y F12 guarda respuesta, status y sweep-type. Conserva V119: corredor/no-new-area no pueden finalizar ni mandar al dock; el preview live sigue fuera de prioridad y el mapa se evalúa al dock."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V119" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V120" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }

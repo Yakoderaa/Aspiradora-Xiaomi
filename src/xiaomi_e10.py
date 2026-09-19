@@ -82,6 +82,7 @@ class XiaomiE10:
         self._blocked_duplicate_starts = 0
         self._last_blocked_duplicate_start = None
         self._motor_start_audit = []
+        self._last_mapping_exploration_diag = {}
 
     def info(self):
         return self.device.info(skip_cache=True)
@@ -1069,6 +1070,97 @@ class XiaomiE10:
         self.arm_new_map(1)
         self._prepare_mapping_vacuum()
         return self.device.call_action_by(7, 3, ["", 2, 1])
+
+    def start_mapping_exploration(self, confirm_timeout: float = 5.0):
+        """V120: explora toda la vivienda con el modo Edge nativo del B112.
+
+        Debe llamarse después de arm_new_map(). A diferencia de
+        start_mapping_interior(), no lanza un sweep global normal.
+        """
+        self._reject_mapping_during_targeted_clean("start_mapping_exploration")
+        self._prepare_mapping_vacuum()
+
+        diag = {
+            "command": "7/3 set-room-clean",
+            "params": ["", 2, 1],
+            "sweep_type_requested": 2,
+            "status_before": None,
+            "status_after": None,
+            "sweep_type_after": None,
+            "response": None,
+            "success": False,
+            "error": None,
+        }
+
+        try:
+            before = self._get_many([
+                ("status", 2, 1),
+                ("sweep_type", 2, 8),
+            ])
+            diag["status_before"] = before.get("status")
+        except Exception as exc:
+            diag["status_before_error"] = (
+                str(exc).strip() or type(exc).__name__
+            )
+
+        # Evita heredar repetición o un patrón anterior.
+        try:
+            self.device.set_property_by(7, 1, 0)
+        except Exception as exc:
+            diag["repeat_reset_error"] = (
+                str(exc).strip() or type(exc).__name__
+            )
+
+        try:
+            self.set_sweep_type(2)
+        except Exception as exc:
+            diag["sweep_type_set_error"] = (
+                str(exc).strip() or type(exc).__name__
+            )
+
+        try:
+            response = self.device.call_action_by(7, 3, ["", 2, 1])
+            diag["response"] = repr(response)[:500]
+        except Exception as exc:
+            diag["error"] = str(exc).strip() or type(exc).__name__
+            self._last_mapping_exploration_diag = dict(diag)
+            raise
+
+        deadline = time.monotonic() + max(0.5, float(confirm_timeout or 0.0))
+        last_status = None
+        last_sweep = None
+        while True:
+            try:
+                state = self._get_many([
+                    ("status", 2, 1),
+                    ("sweep_type", 2, 8),
+                ])
+                last_status = state.get("status")
+                last_sweep = state.get("sweep_type")
+                diag["status_after"] = last_status
+                diag["sweep_type_after"] = last_sweep
+                try:
+                    if int(last_status) in (5, 6, 7):
+                        diag["success"] = True
+                        self._last_mapping_exploration_diag = dict(diag)
+                        return response
+                except Exception:
+                    pass
+            except Exception as exc:
+                diag["readback_error"] = (
+                    str(exc).strip() or type(exc).__name__
+                )
+
+            if time.monotonic() >= deadline:
+                break
+            time.sleep(0.35)
+
+        diag["error"] = (
+            "El E10 no confirmó movimiento físico en modo exploración "
+            f"(status={last_status!r}, sweep-type={last_sweep!r})."
+        )
+        self._last_mapping_exploration_diag = dict(diag)
+        raise RuntimeError(diag["error"])
 
     def start_mapping_interior(self):
         self._reject_mapping_during_targeted_clean("start_mapping_interior")

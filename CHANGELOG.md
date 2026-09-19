@@ -1,5 +1,18 @@
 # Changelog
 
+### V120 · exploración de vivienda en vez de limpieza global
+
+- **Mapear vivienda** conserva `10/17 build-map-ii(mode=1)`, ECO y agua apagada.
+- Después del build ya no ejecuta `start_mapping_interior()` ni un START global normal.
+- La única orden de movimiento es `7/3 set-room-clean(["", 2, 1])`: habitaciones vacías = toda la vivienda, modo Edge, Start.
+- Antes del comando fija `sweep-type=2` y limpia repetición heredada.
+- El arranque sólo se acepta si el estado físico pasa a 5/6/7; si no, se aborta con error visible en vez de caer a una limpieza normal.
+- No existe segunda fase automática ni segundo START.
+- F12 V120 registra build, comando exacto, respuesta, status y sweep-type observados.
+- Se mantiene V119: corredor repetido y falta temporal de área nueva no pueden finalizar el mapa ni mandarlo a la base.
+- La vista provisional sigue fuera de prioridad; la geometría se juzga al capturar el mapa Xiaomi final en dock.
+
+
 ### V119 · mapeo completo sin cierre heurístico prematuro
 
 - Corrige el retorno observado con habitaciones todavía sin recorrer: V81 consideraba “completo” el mapa por cobertura mínima + corredor repetido y ejecutaba `stop + dock`.
