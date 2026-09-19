@@ -1,5 +1,6 @@
 import hashlib
 import json
+import math
 import threading
 import time
 from tkinter import messagebox
@@ -91,12 +92,27 @@ class App(app_v113.App):
                 "La geometría y el plan de limpieza pertenecen a mapas "
                 "distintos. Volvé a seleccionar el mapa antes de limpiar."
             )
-        if not self._v109_prepare_plan_origin():
+        refreshed_origin = self._v109_prepare_plan_origin()
+        plan = self.plan_store.snapshot()
+        origin = plan.get("device_origin")
+        origin_valid = False
+        if isinstance(origin, dict):
+            try:
+                ox = float(origin.get("x"))
+                oy = float(origin.get("y"))
+                origin_valid = (
+                    math.isfinite(ox)
+                    and math.isfinite(oy)
+                    and ox < 250.0
+                    and oy < 250.0
+                )
+            except Exception:
+                origin_valid = False
+        if not refreshed_origin and not origin_valid:
             raise RuntimeError(
                 "No pude calibrar la base física para este mapa. "
                 "Dejá el E10 acoplado unos segundos y volvé a intentar."
             )
-        plan = self.plan_store.snapshot()
         return map_id, snapshot, dict(native), plan
 
     def _v88_prepare_live_grid(self, snapshot):
@@ -259,6 +275,13 @@ class App(app_v113.App):
                 parent=self,
             )
             return
+
+        if float(constrained["coverage_ratio"]) < 0.999:
+            self._set_banner(
+                f"{label} · ajustada al mapa Xiaomi: "
+                f"{float(constrained['coverage_ratio']):.0%} de la selección "
+                "es superficie limpiable."
+            )
 
         original_grid = dict(native)
         original_fp = self._v114_grid_fingerprint(original_grid)
