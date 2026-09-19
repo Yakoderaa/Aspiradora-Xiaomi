@@ -1,4 +1,4 @@
-import re
+import time
 
 import app_v102
 import app_v9
@@ -7,7 +7,10 @@ import app_v9
 class App(app_v102.App):
     """V103: no muestra un acumulado Xiaomi dudoso como planta real."""
 
-    LIVE_CONFIDENCE_FRAMES = 3
+    LIVE_CONFIDENCE_FRAMES = 4
+    LIVE_MIN_PREVIEW_SECONDS = 60.0
+    LIVE_MIN_PREVIEW_CELLS = 100
+    LIVE_MAX_GROWTH_RATIO = 2.4
 
     def __init__(self):
         # V88 consulta este atributo sin getattr. Inicializarlo antes de toda la
@@ -24,6 +27,9 @@ class App(app_v102.App):
         self._v103_last_selected_key = None
         self._v103_last_streak = 0
         self._v103_last_sha = None
+        self._v103_last_nonzero = 0
+        self._v103_last_age = 0.0
+        self._v103_growth_resets = 0
         super().__init__()
 
     @staticmethod
@@ -46,6 +52,7 @@ class App(app_v102.App):
                 "streak": 0,
                 "trusted": False,
                 "reason": "sin candidato",
+                "last_nonzero": 0,
             },
         )
 
@@ -56,6 +63,8 @@ class App(app_v102.App):
         self._v103_last_selected_key = None
         self._v103_last_streak = 0
         self._v103_last_sha = None
+        self._v103_last_nonzero = 0
+        self._v103_last_age = 0.0
         return super().start_new_mapping()
 
     def _v74_reset_session(self):
@@ -119,32 +128,78 @@ class App(app_v102.App):
             self._v103_last_gate_reason = state["reason"]
             return None
 
+        metrics = dict(grid.get("metrics") or {})
+        nonzero = int(metrics.get("nonzero", 0) or 0)
+        components = int(metrics.get("components", 999) or 999)
+        largest_ratio = float(metrics.get("largest_ratio", 0.0) or 0.0)
+        adjacency = float(metrics.get("adjacency_ratio", 0.0) or 0.0)
+        self._v103_last_nonzero = nonzero
+
+        started = getattr(self, "_v74_started_at", None)
+        try:
+            age = max(0.0, time.monotonic() - float(started)) if started is not None else 0.0
+        except Exception:
+            age = 0.0
+        self._v103_last_age = age
+
         if state.get("key") != selected_key:
             state["key"] = selected_key
             state["sha"] = None
             state["streak"] = 0
             state["trusted"] = False
+            state["last_nonzero"] = 0
 
-        if sha and sha == state.get("sha"):
+        previous_nonzero = int(state.get("last_nonzero", 0) or 0)
+        new_hash = bool(sha) and sha != state.get("sha")
+
+        if sha and not new_hash:
             self._v103_same_hash_reuses += 1
-        else:
-            state["sha"] = sha or state.get("sha")
+        elif new_hash:
+            growth_limit = max(
+                float(previous_nonzero) * float(self.LIVE_MAX_GROWTH_RATIO),
+                float(previous_nonzero + 24),
+            )
+            if previous_nonzero > 0 and float(nonzero) > growth_limit:
+                state["sha"] = sha
+                state["streak"] = 0
+                state["trusted"] = False
+                state["last_nonzero"] = nonzero
+                state["reason"] = (
+                    f"salto geométrico {previous_nonzero}→{nonzero}; "
+                    "reiniciando confianza"
+                )
+                self._v103_growth_resets += 1
+                self._v103_live_gate_rejects += 1
+                self._v103_last_streak = 0
+                self._v103_last_gate_reason = state["reason"]
+                return None
+
+            state["sha"] = sha
             state["streak"] = int(state.get("streak", 0) or 0) + 1
+            state["last_nonzero"] = nonzero
 
         self._v103_last_streak = int(state.get("streak", 0) or 0)
 
-        # Un grid que ya pasó el gate fuerte V57 no necesita esperar.
-        metrics = dict(grid.get("metrics") or {})
+        # Un grid que ya pasó V57 puede verse inmediatamente. Un preview
+        # todavía inválido sólo aparece tras tiempo + tamaño + estabilidad.
         strong_valid = bool(metrics.get("valid"))
-        trusted = strong_valid or self._v103_last_streak >= int(
-            self.LIVE_CONFIDENCE_FRAMES
+        delayed_preview_ready = bool(
+            age >= float(self.LIVE_MIN_PREVIEW_SECONDS)
+            and self._v103_last_streak >= int(self.LIVE_CONFIDENCE_FRAMES)
+            and nonzero >= int(self.LIVE_MIN_PREVIEW_CELLS)
+            and components <= 1
+            and largest_ratio >= 0.95
+            and adjacency >= 1.0
         )
+        trusted = strong_valid or delayed_preview_ready
 
         if not trusted:
             state["trusted"] = False
             state["reason"] = (
-                f"candidato estable {self._v103_last_streak}/"
-                f"{self.LIVE_CONFIDENCE_FRAMES}: {selected_key}"
+                f"esperando mapa estable: {self._v103_last_streak}/"
+                f"{self.LIVE_CONFIDENCE_FRAMES} frames · "
+                f"{age:.0f}/{self.LIVE_MIN_PREVIEW_SECONDS:.0f}s · "
+                f"{nonzero}/{self.LIVE_MIN_PREVIEW_CELLS} celdas"
             )
             self._v103_live_gate_rejects += 1
             self._v103_last_gate_reason = state["reason"]
@@ -155,8 +210,9 @@ class App(app_v102.App):
             "V57 válido"
             if strong_valid
             else (
-                f"layout estable {self._v103_last_streak}/"
-                f"{self.LIVE_CONFIDENCE_FRAMES}"
+                f"preview demorado estable · {self._v103_last_streak}/"
+                f"{self.LIVE_CONFIDENCE_FRAMES} · {age:.0f}s · "
+                f"{nonzero} celdas"
             )
         )
         self._v103_live_gate_accepts += 1
@@ -244,7 +300,14 @@ class App(app_v102.App):
                 f"gate live: aceptados={self._v103_live_gate_accepts} · "
                 f"rechazados={self._v103_live_gate_rejects} · "
                 f"mismatches layout={self._v103_layout_mismatches} · "
+                f"saltos geométricos={self._v103_growth_resets} · "
                 f"hash repetido={self._v103_same_hash_reuses}"
+            ),
+            (
+                f"espera deliberada: edad={self._v103_last_age:.1f}s · "
+                f"celdas={self._v103_last_nonzero} · mínimo="
+                f"{self.LIVE_MIN_PREVIEW_SECONDS:.0f}s/"
+                f"{self.LIVE_MIN_PREVIEW_CELLS} celdas"
             ),
             f"último gate: {self._v103_last_gate_reason}",
             (
@@ -258,7 +321,11 @@ class App(app_v102.App):
             (
                 "regla V103: un preview no validado por V57 requiere el mismo "
                 f"layout/máscara durante {self.LIVE_CONFIDENCE_FRAMES} hashes "
-                "distintos antes de convertirse en planta visible"
+                "distintos, 60 s y 100 celdas antes de convertirse en planta visible"
+            ),
+            (
+                "regla V103: un salto fuerte de área entre blobs reinicia la "
+                "confianza en vez de agrandar la planta de golpe"
             ),
             (
                 "regla V103: durante el gate se mantienen base/robot y la UI "
