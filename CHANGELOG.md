@@ -4,6 +4,16 @@ Este archivo resume **hitos importantes**, no cada build interno. Para el detall
 
 ## Unreleased
 
+### V101 · grid Xiaomi realmente dibujado
+
+- Corrige el fallo de renderer que dejaba el canvas vacío aunque V100 ya hubiera aceptado un grid Xiaomi live parcial.
+- La causa estaba en el contrato heredado V88/V87: V88 llamaba `_v87_xy(canvas, transform)`, pero V87 definía `_v87_xy(point)`.
+- V101 agrega un adaptador dual que soporta ambos usos sin romper el parser de puntos.
+- Después de cada render cuenta los objetos `v88_xiaomi_floor`; si hay grid Xiaomi y el canvas queda con 0, fuerza la capa nativa.
+- La miniatura activa se refresca inmediatamente con cada frame Xiaomi recibido.
+- F12 V101 muestra celdas disponibles, objetos realmente dibujados, hits del adaptador, redraws forzados y errores de renderer.
+
+
 ### V100 · Xiaomi live-first + mapa sin flicker
 
 - La geometría Xiaomi pasa a ser la fuente visual prioritaria durante el mapeo.

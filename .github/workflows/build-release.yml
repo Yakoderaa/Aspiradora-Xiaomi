@@ -89,10 +89,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V100 para Windows 10/11 x64. La vista pasa a Xiaomi live-first real: durante mapping_active se usa un fast-path directo al slot 0 B112, evitando el ciclo estructurado largo V60. Un grid parcial coherente se muestra en vivo aunque V57 todavía no lo considere mapa completo; V57 sigue siendo obligatorio para persistencia definitiva. El refresco rota una sola acción oficial 10/18, 10/15 o 10/6 por ciclo, sin workers superpuestos. Fondo grande y miniaturas quedan fijados en #dfe9f2 sin titileo. También simplifica el texto visible del actualizador a La instalación está en proceso. Conserva V99: viewport monotónico, dark theme, i18n dinámica y eliminación de mapas."
+          $notes = "V101 para Windows 10/11 x64. Corrige el bug que impedía dibujar el grid Xiaomi live aunque V100 ya lo hubiera recibido y aceptado. La causa estaba en V88: llamaba _v87_xy(canvas, transform) aunque V87 definía _v87_xy(point). V101 agrega un adaptador dual compatible, verifica cuántos objetos v88_xiaomi_floor existen realmente y fuerza el dibujo nativo si hay grid pero el canvas queda vacío. También fuerza el refresh inmediato de la miniatura activa con cada frame Xiaomi. Conserva el fast-path slot 0, fondo azul fijo, viewport monotónico, dark theme, i18n dinámica y eliminación de mapas."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V100" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V101" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
