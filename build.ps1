@@ -84,7 +84,9 @@ Invoke-PythonChecked "scripts\smoke_test_v80.py"
 Invoke-PythonChecked "scripts\smoke_test_v81.py"
 Invoke-PythonChecked "scripts\smoke_test_v82.py"
 Invoke-PythonChecked "scripts\smoke_test_v83.py"
-Invoke-PythonChecked "scripts\smoke_test_v84.py"\nInvoke-PythonChecked "scripts\smoke_test_v85.py"\nInvoke-PythonChecked "scripts\smoke_test_v86.py"
+Invoke-PythonChecked "scripts\smoke_test_v84.py"
+Invoke-PythonChecked "scripts\smoke_test_v85.py"
+Invoke-PythonChecked "scripts\smoke_test_v86.py"
 
 pyinstaller --noconfirm --clean --windowed --onefile `
     --name "Aspiradora Xiaomi Updater" `
