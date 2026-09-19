@@ -68,10 +68,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V85 para Windows 10/11 x64. Corrige el salto de coordenadas observado en V84: una muestra 10/24 ya no puede teletransportar el robot varios metros ni contaminar cobertura, extensión o completitud. V85 detecta discontinuidades consecutivas físicamente imposibles (umbral conservador 0.80 m), reancla el marco de coordenadas sobre la última posición válida sin mover el robot y continúa usando los deltas posteriores reales. Un salto aislado que luego vuelve al marco anterior se absorbe con un segundo reanclaje, sin dibujar diagonales falsas. El diagnóstico V85 informa saltos bloqueados, rebases, offset activo y máximo salto raw observado. Conserva íntegramente V84: status=4 autoritativo, timeout anulado, antiatasco cancelado durante retorno y robot visual fijado al dock. El pipeline ejecuta smoke tests estrictos hasta V85."
+          $notes = "V86 para Windows 10/11 x64. Corrige el pipeline para que el instalador empaquete realmente la versión activa: V85 había publicado notas de V85 pero build.ps1 todavía compilaba main_v84.py. V86 compila main_v86.py y ejecuta smoke tests V85 y V86, por lo que queda activo el reanclaje anti-salto de 10/24. Además, el aviso de Mapeo terminado queda diferido hasta confirmar físicamente status=4 y dock confirmado; antes de eso la UI muestra que el mapa está completo pero regresando a base. La cabecera de batería ahora estima tiempo restante de carga y autonomía de aspirado usando la tasa real observada de subida o bajada de batería; hasta tener una muestra fiable muestra calculando en vez de inventar un valor. El diagnóstico V86 informa aviso pendiente, dock listo, batería, modo, tasas, ETA, cambios observados y resets. Conserva V84/V85: dock autoritativo, antiatasco bloqueado en retorno, robot fijado al dock y filtro de teletransportes."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V85" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V86" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
