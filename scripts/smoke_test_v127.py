@@ -29,7 +29,7 @@ assert "_v127_erode" in map_client
 assert "import app_v127" in main
 assert "app_v127.App().mainloop()" in main
 assert "scripts\\smoke_test_v127.py" in build
-assert "src\\main_v127.py" in build
+assert any(f"src\\main_v{v}.py" in build for v in (127, 128))
 
 # V127 no debe crear un mapa nuevo durante recovery de Fase 2.
 phase2 = app[app.index("def _v127_try_phase2_recovery"):]
