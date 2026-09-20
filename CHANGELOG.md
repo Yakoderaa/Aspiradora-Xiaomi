@@ -1,3 +1,11 @@
+## V129 · antiatasco pasivo de Fase 2
+
+- Se elimina cualquier comando automático de recovery mientras el E10 está en Fase 2.
+- Un patrón repetitivo o período largo sin zona nueva sólo genera aviso/diagnóstico; no se envían STOP, manual, 7/3, 2/3, 2/1 ni dock automático.
+- Si el firmware pasa a status=1 durante el mapeo, V129 lo informa como pausa/atasco y deja la decisión de volver a base al usuario.
+- Se mantienen sin cambios la secuencia V123, la geometría V128, el preview final inmediato y el regreso asistido iniciado desde la app.
+- Los smokes V126/V127/V128 aceptan entrypoints posteriores.
+
 ## V128 · recovery seguro de Fase 2 + pulido de contorno
 
 - Conserva V123 para el arranque y transición del mapeo, el preview inmediato V127 y el regreso asistido.
