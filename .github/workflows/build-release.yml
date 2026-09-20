@@ -89,10 +89,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V126 para Windows 10/11 x64. Conserva el mapeo V123 probado físicamente; publica el grid Xiaomi final desde el candidato V93 actual antes de los filtros posteriores; el área numérica queda sólo como diagnóstico; agrega asistencia prudente ante espirales prolongadas durante el retorno; y retira la integración experimental de diagnóstico externo y sus dependencias."
+          $notes = "V127 para Windows 10/11 x64. Mantiene la secuencia de mapeo V123; hace que Volver a la base desde la app arme una vigilancia asistida más temprana; añade escape prudente de patrones repetitivos en Fase 2 sin crear otro mapa; muestra el primer grid final válido mientras las tres lecturas continúan; y reconstruye una superficie continua desde el grid Xiaomi con límites estrictos de crecimiento."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V126" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V127" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
