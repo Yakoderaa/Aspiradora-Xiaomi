@@ -89,10 +89,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V124 para Windows 10/11 x64. Conserva V123 para la Fase 2 del mapeo y agrega Conectar ChatGPT: servidor MCP local read-only dentro de Aspiradora Xiaomi, snapshot estructurado del estado/mapa/F12, descarga y verificación SHA-256 del tunnel-client oficial de OpenAI, Secure MCP Tunnel sin puertos públicos, clave de ejecución cifrada con Windows DPAPI, reconexión opcional y asistente gráfico paso a paso. La integración no expone ninguna acción para mover, limpiar, volver a base ni modificar mapas."
+          $notes = "V125 para Windows 10/11 x64. Conserva V123/V124 y corrige el asistente Conectar ChatGPT: ahora es desplazable con rueda y scrollbar, incluye acceso directo al Paso 4 y separa explícitamente Túnel OpenAI conectado de App vinculada en ChatGPT. Añade aviso de compatibilidad actual de planes según documentación oficial: Pro admite MCP personalizado read/fetch; Business/Enterprise/Edu soporte MCP ampliado; Plus puede no ofrecer registro de MCP personalizado. No cambia la lógica física de mapeo ni las tools read-only."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V124" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V125" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }

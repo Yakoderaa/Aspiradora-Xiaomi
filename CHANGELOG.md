@@ -1,5 +1,18 @@
 # Changelog
 
+### V125 · asistente ChatGPT visible y estado de conexión correcto
+
+- Corrige la ventana de **Conectar ChatGPT** que quedaba cortada después del Paso 3 con determinados escalados de Windows.
+- El asistente ahora usa scroll vertical, rueda del mouse y un botón **Ya conecté el túnel · ir al Paso 4**.
+- El Paso 4 **Vincular Aspiradora Xiaomi dentro de ChatGPT** queda accesible siempre.
+- Se elimina el texto ambiguo “ChatGPT conectado” cuando sólo está activo el Secure MCP Tunnel.
+- El estado distingue **Túnel OpenAI conectado** de **app vinculada en ChatGPT**.
+- Añade una advertencia de compatibilidad basada en la documentación actual de OpenAI: Pro admite MCP personalizado para lectura/fetch; Business/Enterprise/Edu tienen soporte MCP más amplio; Plus puede no mostrar la creación de MCP personalizados.
+- Incluye botones a la ayuda oficial y a la configuración de ChatGPT.
+- No modifica V123: la lógica de mapeo físico permanece intacta.
+- No modifica la seguridad V124: MCP sigue siendo sólo lectura y las credenciales permanecen fuera del snapshot.
+
+
 ### V124 · Conectar ChatGPT · MCP read-only
 
 - Conserva íntegramente V123 para la transición de mapeo `7/3 whole-home → 2/3 start-only-sweep` cuando el B112 queda cargando.
