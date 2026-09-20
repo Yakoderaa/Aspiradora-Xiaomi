@@ -1,3 +1,13 @@
+## V126 · mapa final V93 + retorno asistido
+
+- Conserva sin cambios la navegación V123 validada físicamente: perímetro EDGE y Fase 2 whole-home mediante 7/3 + trigger 2/3 sólo si el E10 continúa en dock.
+- El mapa final ya no atraviesa los selectores posteriores que en la prueba redujeron un candidato V93 válido de 256 celdas a una geometría demasiado rala.
+- La captura final toma el frame actual elegido por V93, aplica únicamente la orientación V107 y recalcula la validación directamente sobre las celdas que se van a persistir.
+- El área numérica deja de ser un gate o criterio de ranking; se conserva sólo como diagnóstico porque el B112/Mi Home puede reportar valores incompletos.
+- El retorno incorpora detección de patrón circular prolongado lejos de la base. Primer evento: reafirma dock una sola vez. Segundo evento: referencia física corta y reanudación inmediata del dock nativo. Un retorno que progresa normalmente no se modifica.
+- Se retira la integración experimental de diagnóstico externo, su UI, runtime, dependencias y archivos de build.
+- Al primer arranque se limpian únicamente claves/carpetas obsoletas de esa integración; mapas y configuración Xiaomi no se tocan.
+
 # Changelog
 
 ### V125 · asistente ChatGPT visible y estado de conexión correcto
