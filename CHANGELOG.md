@@ -1,3 +1,12 @@
+## V128 · recovery seguro de Fase 2 + pulido de contorno
+
+- Conserva V123 para el arranque y transición del mapeo, el preview inmediato V127 y el regreso asistido.
+- El recovery de Fase 2 ya no ejecuta `stop()`, `manual()` ni modo remoto. Mientras el E10 siga en 5/6/7 sólo reafirma whole-home con 7/3 y verifica que continúe activo.
+- Si el firmware cae por sí mismo a status=1 durante esa reafirmación, se permite un único segundo 7/3. No se usa 2/3 fuera del dock ni 2/1.
+- Se conserva la superficie V127 completa. Encima se rellenan únicamente concavidades locales muy pequeñas; nunca se eliminan celdas originales.
+- El pulido final admite como máximo 12% de crecimiento adicional y se revierte si pierde validación espacial.
+- Los smokes V126/V127 quedan preparados para aceptar entrypoints posteriores sin bloquear una release válida.
+
 ## V127 · regreso asistido + superficie continua
 
 - `Volver a la base` desde la app arma un guard asistido desde el primer segundo. El retorno nativo sigue mandando, pero el detector de patrón circular usa una ventana más corta cuando el regreso fue solicitado desde nuestra UI.
