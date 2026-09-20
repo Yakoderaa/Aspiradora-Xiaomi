@@ -1,3 +1,12 @@
+## V127 · regreso asistido + superficie continua
+
+- `Volver a la base` desde la app arma un guard asistido desde el primer segundo. El retorno nativo sigue mandando, pero el detector de patrón circular usa una ventana más corta cuando el regreso fue solicitado desde nuestra UI.
+- Los retornos iniciados desde Mi Home o desde el botón físico siguen siendo detectados y conservan la asistencia V126.
+- Fase 2 recupera patrones repetitivos sólo después de un período largo sin descubrir zona nueva. La maniobra es limitada, no ejecuta `build-map` ni `arm_new_map`, y reanuda el mismo whole-home V123.
+- El primer grid Xiaomi final válido se persiste y muestra apenas llega; las tres lecturas finales continúan en segundo plano y pueden reemplazarlo por un frame confirmado.
+- La geometría final aplica un cierre morfológico conservador de 2 celdas (0,40 m), conserva todas las celdas Xiaomi originales, rellena huecos encerrados y revierte automáticamente si el crecimiento supera 2,8× o pierde validez espacial.
+- El área numérica sigue siendo sólo diagnóstico y no decide la geometría.
+
 ## V126 · mapa final V93 + retorno asistido
 
 - Conserva sin cambios la navegación V123 validada físicamente: perímetro EDGE y Fase 2 whole-home mediante 7/3 + trigger 2/3 sólo si el E10 continúa en dock.
