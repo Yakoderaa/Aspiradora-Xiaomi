@@ -89,10 +89,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V128 para Windows 10/11 x64. Mantiene el mapeo V123, el preview final inmediato y el regreso asistido V127; reemplaza el recovery de Fase 2 por una reafirmación whole-home 7/3 sin STOP ni control manual; permite un único retry 7/3 si el firmware cae a idle; y aplica un pulido final conservador de concavidades sobre la superficie V127 con máximo 12% de crecimiento adicional."
+          $notes = "V129 para Windows 10/11 x64. Mantiene V123, el mapa V128 y el regreso asistido; elimina todos los comandos automáticos de recovery durante Fase 2. El antiatasco sólo detecta y avisa patrones repetitivos o status=1, sin STOP, manual, 7/3, 2/3, 2/1 ni dock automático."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V128" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V129" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
