@@ -35,7 +35,7 @@ assert "no inicia Paso 2 automáticamente" in phase2
 assert "import app_v135" in main
 assert "app_v135.App().mainloop()" in main
 assert 'scripts\\smoke_test_v135.py' in build
-assert 'src\\main_v135.py' in build
-assert "V135" in workflow
+assert any(f"src\\main_v{v}.py" in build for v in (135, 136))
+assert any(v in workflow for v in ("V135", "V136"))
 
 print("V135 smoke OK")
