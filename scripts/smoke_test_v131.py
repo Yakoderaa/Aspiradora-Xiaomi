@@ -45,7 +45,7 @@ assert "primer 10/24 post-START" in pose
 assert "import app_v131" in main
 assert "app_v131.App().mainloop()" in main
 assert 'scripts\\smoke_test_v131.py' in build
-assert any(f"src\\main_v{v}.py" in build for v in (131, 132, 133))
-assert any(v in workflow for v in ("V131", "V132", "V133"))
+assert any(f"src\\main_v{v}.py" in build for v in (131, 132, 133, 134))
+assert any(v in workflow for v in ("V131", "V132", "V133", "V134"))
 
 print("V131 smoke OK")
