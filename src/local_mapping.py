@@ -500,6 +500,42 @@ class LocalMapStore:
             self._save_locked()
             return json.loads(json.dumps(room))
 
+    def update_polygon_room(self, room_id: int, points) -> dict[str, Any]:
+        polygon = []
+        for point in list(points or []):
+            try:
+                if isinstance(point, dict):
+                    x = float(point["x"])
+                    y = float(point["y"])
+                else:
+                    x = float(point[0])
+                    y = float(point[1])
+            except Exception:
+                continue
+            if math.isfinite(x) and math.isfinite(y):
+                polygon.append({"x": x, "y": y})
+
+        if len(polygon) < 3:
+            raise ValueError("Una habitación por puntos necesita al menos 3 vértices.")
+
+        xs = [point["x"] for point in polygon]
+        ys = [point["y"] for point in polygon]
+        with self._lock:
+            item = self._active_locked()
+            for room in item.get("rooms", []):
+                if int(room.get("id", -1)) != int(room_id):
+                    continue
+                room["shape"] = "polygon"
+                room["polygon"] = polygon
+                room["x0"] = min(xs)
+                room["y0"] = min(ys)
+                room["x1"] = max(xs)
+                room["y1"] = max(ys)
+                self._touch_active_locked()
+                self._save_locked()
+                return json.loads(json.dumps(room))
+        raise KeyError("La habitación no existe.")
+
     def delete_room(self, room_id: int):
         with self._lock:
             item = self._active_locked()
