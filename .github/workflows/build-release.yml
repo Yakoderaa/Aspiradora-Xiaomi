@@ -89,10 +89,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V136 para Windows 10/11 x64. Restaura el flujo completo que funcionaba en V64/V68/V67: Paso 1 usa XiaomiE10Edge.start_mapping_perimeter, el watcher V68 protege EDGE y bloquea una transición prematura a global, luego V67 confirma la base y arranca el Paso 2 con start_mapping_interior. Volver a base durante Paso 1 cancela la transición automática. Conserva pose moderna, mapa Xiaomi y reacople progresivo."
+          $notes = "V137 para Windows 10/11 x64. Restaura el comportamiento físico de mapeo de V123 sobre la app actual: Fase 1 usa arm_new_map(1) + start_mapping_exploration de V121/V123 sin watcher EDGE V68; al dock natural pasa a Fase 2 con whole-home 7/3 ids vacíos modo 0 y usa 2/3 solamente si el E10 sigue físicamente en status=4. No usa start_mapping_interior para Fase 2. Conserva UI moderna, pose, captura final, habitaciones y reacople progresivo. Volver a base durante Fase 1 cancela la transición."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V136" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V137" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
