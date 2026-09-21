@@ -40,7 +40,7 @@ assert "class XiaomiE10MapV130(XiaomiE10MapV128)" in map_client
 assert "import app_v130" in main
 assert "app_v130.App().mainloop()" in main
 assert "scripts\\smoke_test_v130.py" in build
-assert any(f"src\\main_v{v}.py" in build for v in (130, 131, 132, 133, 134, 135, 136))
+assert any(f"src\\main_v{v}.py" in build for v in (130, 131, 132, 133, 134, 135, 136, 137))
 
 # V130 no reintroduce comandos automáticos para antiatasco de Fase 2.
 phase_watch = text("src/app_v129.py")
