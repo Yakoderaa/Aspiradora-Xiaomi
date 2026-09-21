@@ -1,3 +1,16 @@
+## V130 · final robusto + origen físico + habitaciones por puntos
+
+- El inicio de una sesión ya no usa `10/24` previo al START como origen. V130 intenta `10/22 chargingbase` y, si todavía no está disponible, espera a la telemetría de base en vez de anclar un pose viejo.
+- Al entrar en retorno `status=3`, V130 captura en segundo plano hasta tres candidatos de mapa sin mover el robot. Las tres lecturas finales del dock siguen siendo primarias.
+- Si las lecturas de dock son inválidas o colapsan por debajo del 62% de una captura válida del regreso, se usa la captura de retorno. También se cubre el caso en que esa lectura termine unos segundos después del cierre del dock.
+- Una sesión nueva vacía explícitamente los cachés/flags visuales del grid anterior para no presentar un mapa viejo como si perteneciera al mapeo actual.
+- Se elimina la selección y limpieza de punto aislado del mapa.
+- Habitaciones ofrece dos métodos: rectángulo y polígono por puntos. Los polígonos pueden editar sus vértices después de crearse y se guardan en la misma biblioteca local.
+- La limpieza de una habitación poligonal rasteriza sólo celdas válidas del grid Xiaomi y las agrupa en rectángulos compatibles con el E10.
+- La limpieza dirigida vuelve a liberar siempre `_zone_job_running` al finalizar y mantiene la validación física `status=5/6/7`.
+- F12 añade comparación de cobertura Paso 1/Paso 2 para aislar sectores recorridos por EDGE pero omitidos por el whole-home.
+- El antiatasco de Fase 2 continúa siendo completamente pasivo como en V129.
+
 ## V129 · antiatasco pasivo de Fase 2
 
 - Se elimina cualquier comando automático de recovery mientras el E10 está en Fase 2.
