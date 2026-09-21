@@ -232,6 +232,213 @@ def constrain_rect_to_native_grid(
     }
 
 
+def _point_in_polygon(x, y, polygon):
+    points = []
+    for point in list(polygon or []):
+        try:
+            if isinstance(point, dict):
+                points.append((float(point["x"]), float(point["y"])))
+            else:
+                points.append((float(point[0]), float(point[1])))
+        except Exception:
+            continue
+    if len(points) < 3:
+        return False
+
+    inside = False
+    j = len(points) - 1
+    for i in range(len(points)):
+        xi, yi = points[i]
+        xj, yj = points[j]
+        intersects = (
+            (yi > y) != (yj > y)
+            and x < (xj - xi) * (y - yi) / ((yj - yi) or 1e-12) + xi
+        )
+        if intersects:
+            inside = not inside
+        j = i
+    return inside
+
+
+def _polygon_area(polygon):
+    points = []
+    for point in list(polygon or []):
+        try:
+            if isinstance(point, dict):
+                points.append((float(point["x"]), float(point["y"])))
+            else:
+                points.append((float(point[0]), float(point[1])))
+        except Exception:
+            continue
+    if len(points) < 3:
+        return 0.0
+    total = 0.0
+    for index, current in enumerate(points):
+        nxt = points[(index + 1) % len(points)]
+        total += current[0] * nxt[1] - nxt[0] * current[1]
+    return abs(total) * 0.5
+
+
+def constrain_polygon_to_native_grid(
+    polygon,
+    native_grid,
+    no_go=None,
+    max_rectangles=48,
+):
+    """Rasteriza una habitación poligonal sobre el grid Xiaomi final.
+
+    Cada celda se toma por su centro. Luego las celdas contiguas se fusionan en
+    rectángulos compatibles con la limpieza por zona del E10. La geometría
+    original nunca se expande fuera del polígono por más de media celda.
+    """
+    if not isinstance(native_grid, dict):
+        raise RuntimeError(
+            "Este mapa todavía no tiene una geometría Xiaomi final válida."
+        )
+    try:
+        side = int(native_grid.get("side", 0) or 0)
+        resolution = float(native_grid.get("resolution", 0.0) or 0.0)
+        base = list(native_grid.get("base_cell") or [])
+        cells = list(native_grid.get("cells") or [])
+    except Exception as exc:
+        raise RuntimeError("La geometría Xiaomi guardada no es válida.") from exc
+
+    if (
+        side <= 0
+        or resolution <= 0.0
+        or len(base) < 2
+        or len(cells) != side * side
+        or not any(int(value) != 0 for value in cells)
+    ):
+        raise RuntimeError("La geometría Xiaomi guardada no es válida.")
+
+    normalized = []
+    for point in list(polygon or []):
+        try:
+            if isinstance(point, dict):
+                x = float(point["x"])
+                y = float(point["y"])
+            else:
+                x = float(point[0])
+                y = float(point[1])
+            normalized.append({"x": x, "y": y})
+        except Exception:
+            continue
+    if len(normalized) < 3:
+        raise RuntimeError("La habitación poligonal necesita al menos 3 puntos.")
+
+    blockers = []
+    for item in list(no_go or []):
+        try:
+            blockers.append(_rect_bounds(item))
+        except Exception:
+            continue
+
+    pieces_by_row = {}
+    selected_cells = 0
+    blocked_cells = 0
+    for index, value in enumerate(cells):
+        if int(value) == 0:
+            continue
+        gx = index % side
+        gy = index // side
+        cell_rect = _grid_cell_local_rect(native_grid, gx, gy)
+        cx = (cell_rect["x0"] + cell_rect["x1"]) * 0.5
+        cy = (cell_rect["y0"] + cell_rect["y1"]) * 0.5
+        if not _point_in_polygon(cx, cy, normalized):
+            continue
+
+        blocked = any(
+            _rect_intersection(cell_rect, wall) is not None
+            for wall in blockers
+        )
+        if blocked:
+            blocked_cells += 1
+            continue
+
+        selected_cells += 1
+        pieces_by_row.setdefault(gy, []).append(dict(cell_rect))
+
+    if selected_cells <= 0:
+        raise RuntimeError(
+            "La habitación no contiene superficie limpiable del mapa Xiaomi "
+            "o está completamente bloqueada."
+        )
+
+    row_runs = []
+    for gy in sorted(pieces_by_row):
+        pieces = sorted(
+            pieces_by_row[gy],
+            key=lambda item: (item["x0"], item["x1"]),
+        )
+        current = None
+        for piece in pieces:
+            if current is None:
+                current = dict(piece)
+                continue
+            if _rects_touch_horizontally(current, piece):
+                current["x1"] = float(piece["x1"])
+            else:
+                row_runs.append(current)
+                current = dict(piece)
+        if current is not None:
+            row_runs.append(current)
+
+    merged = []
+    for run in sorted(
+        row_runs,
+        key=lambda item: (
+            round(float(item["x0"]), 8),
+            round(float(item["x1"]), 8),
+            float(item["y0"]),
+        ),
+    ):
+        match = None
+        for previous in reversed(merged):
+            if _rects_touch_vertically(previous, run):
+                match = previous
+                break
+        if match is None:
+            merged.append(dict(run))
+        else:
+            match["y1"] = float(run["y1"])
+
+    merged = [
+        _rect_bounds(item)
+        for item in merged
+        if _rect_area(item) > 1e-6
+    ]
+    merged.sort(
+        key=lambda item: (
+            -_rect_area(item),
+            item["y0"],
+            item["x0"],
+        )
+    )
+    if len(merged) > int(max_rectangles):
+        raise RuntimeError(
+            "La habitación es demasiado irregular para limpiarla de forma "
+            "segura en una sola tarea. Simplificá algunos vértices."
+        )
+
+    requested_area = _polygon_area(normalized)
+    allowed_area = sum(_rect_area(item) for item in merged)
+    return {
+        "requested": {"polygon": normalized},
+        "rectangles": merged,
+        "requested_area": requested_area,
+        "allowed_area": allowed_area,
+        "coverage_ratio": (
+            min(1.0, allowed_area / requested_area)
+            if requested_area > 1e-9
+            else 0.0
+        ),
+        "selected_cells": int(selected_cells),
+        "blocked_cells": int(blocked_cells),
+        "resolution": resolution,
+    }
+
+
 def native_grid_contains_point(point, native_grid, no_go=None):
     try:
         x = float(point["x"])
