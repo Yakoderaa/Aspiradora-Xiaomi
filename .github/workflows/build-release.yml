@@ -89,10 +89,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V130 para Windows 10/11 x64. Mantiene V123 y el antiatasco pasivo V129; fija el origen de cada sesión con chargingbase 10/22 en vez de un 10/24 previo; captura un grid válido durante el retorno como fallback si el frame de dock colapsa; elimina la selección/limpieza puntual; añade habitaciones rectangulares o poligonales con edición de vértices; y corrige la limpieza dirigida para liberar su estado y exigir movimiento físico del E10."
+          $notes = "V131 para Windows 10/11 x64. Corrige la prueba física de V130: la Fase 1 deja de usar 7/3 y arranca EDGE por sweep_type=2 + START Sweep nativo; mantiene el robot visualmente en la base hasta recibir un 10/24 posterior al START; y refuerza el acople en bases con rampa detectando antes el patinaje, retrocediendo 1,55 s para tomar carrera y permitiendo hasta tres reintentos antes de la parada de seguridad."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V130" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V131" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
