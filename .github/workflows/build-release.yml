@@ -89,10 +89,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V134 para Windows 10/11 x64. Restaura el Paso 1 probado en V64/V68: build-map único, preparación ECO, repeat=0, sweep_type=2 y una sola acción EDGE 7/3 en modo borde, sin START 2/1, sin START 2/3 y sin fallback de movimiento. Conserva el reacople progresivo V133, la pose inicial sobre el dock, el pipeline de dos fases y la captura final Xiaomi."
+          $notes = "V135 para Windows 10/11 x64. El Paso 1 vuelve al EDGE nativo que usaba Limpiar bordes: modo normal, sweep_type=2 y una sola acción 2/3, sin armar build-map antes. Al volver al dock la prueba termina y no inicia automáticamente el Paso 2, evitando un segundo aspirado después de una interrupción. Conserva pose inicial, reacople progresivo y el resto de la interfaz."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V134" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V135" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
