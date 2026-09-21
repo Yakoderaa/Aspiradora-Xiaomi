@@ -7,6 +7,8 @@ import app_v9
 class App(app_v133.App):
     """V134: restaura el EDGE probado de V64/V68, sin segundo START."""
 
+    # Release V134: EDGE único V64/V68 validado por CI.
+
     def __init__(self):
         self._v134_edge_starts = 0
         self._v134_edge_diag = {}
