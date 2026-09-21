@@ -16,7 +16,7 @@ class LocalMapStore:
     """
 
     MAX_MAPS = 4
-    LIBRARY_VERSION = 5
+    LIBRARY_VERSION = 6
 
     def __init__(self, app_folder: Path):
         self.folder = Path(app_folder)
@@ -136,7 +136,30 @@ class LocalMapStore:
         result["updated_at"] = source.get("updated_at")
         result["robot"] = source.get("robot") if isinstance(source.get("robot"), dict) else None
         result["charging_base"] = source.get("charging_base") if isinstance(source.get("charging_base"), dict) else None
-        result["rooms"] = list(source.get("rooms") or [])
+        result["rooms"] = []
+        for room in list(source.get("rooms") or []):
+            if not isinstance(room, dict):
+                continue
+            clone = dict(room)
+            polygon = []
+            for point in list(clone.get("polygon") or []):
+                try:
+                    x = float(point["x"])
+                    y = float(point["y"])
+                    if math.isfinite(x) and math.isfinite(y):
+                        polygon.append({"x": x, "y": y})
+                except Exception:
+                    continue
+            if len(polygon) >= 3:
+                clone["shape"] = "polygon"
+                clone["polygon"] = polygon
+                xs = [point["x"] for point in polygon]
+                ys = [point["y"] for point in polygon]
+                clone["x0"] = min(xs)
+                clone["y0"] = min(ys)
+                clone["x1"] = max(xs)
+                clone["y1"] = max(ys)
+            result["rooms"].append(clone)
         result["points"] = list(source.get("points") or [])
         result["native_grid"] = cls._normalize_native_grid(source.get("native_grid"))
         for point in result["points"]:
@@ -437,6 +460,45 @@ class LocalMapStore:
             self._touch_active_locked()
             self._save_locked()
             return dict(room)
+
+    def add_polygon_room(self, name: str, points) -> dict[str, Any]:
+        polygon = []
+        for point in list(points or []):
+            try:
+                if isinstance(point, dict):
+                    x = float(point["x"])
+                    y = float(point["y"])
+                else:
+                    x = float(point[0])
+                    y = float(point[1])
+            except Exception:
+                continue
+            if math.isfinite(x) and math.isfinite(y):
+                polygon.append({"x": x, "y": y})
+
+        if len(polygon) < 3:
+            raise ValueError("Una habitación por puntos necesita al menos 3 vértices.")
+
+        xs = [point["x"] for point in polygon]
+        ys = [point["y"] for point in polygon]
+        with self._lock:
+            item = self._active_locked()
+            rooms = item.setdefault("rooms", [])
+            next_id = max([int(r.get("id", 0)) for r in rooms] + [0]) + 1
+            room = {
+                "id": next_id,
+                "name": str(name).strip() or f"Habitación {next_id}",
+                "shape": "polygon",
+                "polygon": polygon,
+                "x0": min(xs),
+                "y0": min(ys),
+                "x1": max(xs),
+                "y1": max(ys),
+            }
+            rooms.append(room)
+            self._touch_active_locked()
+            self._save_locked()
+            return json.loads(json.dumps(room))
 
     def delete_room(self, room_id: int):
         with self._lock:
