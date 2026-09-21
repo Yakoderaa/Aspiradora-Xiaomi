@@ -27,7 +27,7 @@ assert "No se ejecutó fallback" in method
 assert "import app_v132" in main
 assert "app_v132.App().mainloop()" in main
 assert 'scripts\\smoke_test_v132.py' in build
-assert any(f"src\\main_v{v}.py" in build for v in (132, 133))
-assert any(v in workflow for v in ("V132", "V133"))
+assert any(f"src\\main_v{v}.py" in build for v in (132, 133, 134))
+assert any(v in workflow for v in ("V132", "V133", "V134"))
 
 print("V132 smoke OK")
