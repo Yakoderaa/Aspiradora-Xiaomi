@@ -573,14 +573,34 @@ class App(app_v129.App):
         points = list(polygon or [])
         if len(points) < 3:
             return False
+
+        # El borde cuenta como interior: una zona puede apoyar exactamente
+        # sobre el muro dibujado sin ser rechazada.
+        px, py = float(x), float(y)
+        for index, current in enumerate(points):
+            nxt = points[(index + 1) % len(points)]
+            ax, ay = float(current[0]), float(current[1])
+            bx, by = float(nxt[0]), float(nxt[1])
+            dx, dy = bx - ax, by - ay
+            length2 = dx * dx + dy * dy
+            if length2 <= 1e-12:
+                continue
+            t = max(
+                0.0,
+                min(1.0, ((px - ax) * dx + (py - ay) * dy) / length2),
+            )
+            qx, qy = ax + t * dx, ay + t * dy
+            if math.hypot(px - qx, py - qy) <= 1e-6:
+                return True
+
         inside = False
         j = len(points) - 1
         for i in range(len(points)):
             xi, yi = float(points[i][0]), float(points[i][1])
             xj, yj = float(points[j][0]), float(points[j][1])
             if (
-                (yi > y) != (yj > y)
-                and x < (xj - xi) * (y - yi) / ((yj - yi) or 1e-12) + xi
+                (yi > py) != (yj > py)
+                and px < (xj - xi) * (py - yi) / ((yj - yi) or 1e-12) + xi
             ):
                 inside = not inside
             j = i
