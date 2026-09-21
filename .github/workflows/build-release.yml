@@ -89,10 +89,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V133 para Windows 10/11 x64. Integra la prueba EDGE de V132 por sweep_type=2 + START 2/1, sin fallback a las rutas 7/3 y 2/3 ya observadas como limpieza normal. Además refuerza el acople en bases con rampa con cuatro maniobras progresivas de retroceso, pequeñas correcciones angulares alternadas y detención segura si no se confirma status=4."
+          $notes = "V134 para Windows 10/11 x64. Restaura el Paso 1 probado en V64/V68: build-map único, preparación ECO, repeat=0, sweep_type=2 y una sola acción EDGE 7/3 [\"\",2,1], sin 2/1, sin 2/3 y sin fallback de movimiento. Conserva el reacople progresivo V133, la pose inicial sobre el dock, el pipeline de dos fases y la captura final Xiaomi."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V133" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V134" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
