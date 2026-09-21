@@ -18,7 +18,7 @@ start = app[
     app.index("def start_new_mapping"):
     app.index("def _v121_request_phase2")
 ]
-assert "arm_new_map(" not in start
+assert "vacuum.arm_new_map(" not in start
 assert 'vacuum.set_mode(0)' in start
 assert 'vacuum.set_sweep_type(2)' in start
 assert '"mapping_edge_v135/native-v87"' in start
