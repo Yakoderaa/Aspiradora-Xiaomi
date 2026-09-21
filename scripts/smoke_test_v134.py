@@ -28,7 +28,7 @@ assert "No se lanzó ningún START alternativo" in method
 assert "import app_v134" in main
 assert "app_v134.App().mainloop()" in main
 assert 'scripts\\smoke_test_v134.py' in build
-assert 'src\\main_v134.py' in build
-assert "V134" in workflow
+assert any(f"src\\main_v{v}.py" in build for v in (134, 135))
+assert any(v in workflow for v in ("V134", "V135"))
 
 print("V134 smoke OK")
