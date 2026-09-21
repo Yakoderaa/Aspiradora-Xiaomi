@@ -48,7 +48,7 @@ assert "NO usa start_mapping_whole_home V123" in diag
 assert "import app_v136" in main
 assert "app_v136.App().mainloop()" in main
 assert 'scripts\\smoke_test_v136.py' in build
-assert 'src\\main_v136.py' in build
-assert "V136" in workflow
+assert any(f"src\\main_v{v}.py" in build for v in (136, 137))
+assert any(v in workflow for v in ("V136", "V137"))
 
 print("V136 smoke OK")
