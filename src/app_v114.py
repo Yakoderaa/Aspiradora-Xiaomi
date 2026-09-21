@@ -404,6 +404,7 @@ class App(app_v113.App):
                     map_id,
                 )
                 self._v114_target_clean_active = False
+                self._zone_job_running = False
 
         threading.Thread(
             target=worker,
