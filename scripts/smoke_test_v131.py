@@ -32,7 +32,7 @@ assert '"mapping_edge_v131/start-sweep-fallback"' in edge
 assert "2,\n                    3," in edge
 assert "2,\n                        1," in edge
 assert '7, 3, ["", 2, 1]' not in edge
-assert "vacuum.stop()" in edge
+assert "vacuum.stop()" in app[app.index("def _v131_wait_edge_start"):app.index("def _v131_start_edge_exploration")]
 
 pose = app[
     app.index("def _v117_update_live_pose"):
