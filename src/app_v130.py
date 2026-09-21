@@ -1219,6 +1219,45 @@ class App(app_v129.App):
             ),
         }
 
+    def _v130_persist_late_return_candidate(self):
+        candidate = (
+            dict(self._v130_return_candidate)
+            if isinstance(self._v130_return_candidate, dict)
+            else None
+        )
+        if candidate is None or not getattr(self, "local_map", None):
+            return False
+        try:
+            self.local_map.set_native_grid(candidate)
+            self._v107_final_grid = dict(candidate)
+            self._v107_final_saved = True
+            self._v107_hide_surface_until_final = False
+            self._v130_final_capture_failed = False
+            self._v130_final_source = "retorno status=3 tardío"
+            self._v107_final_choice_reason = (
+                "V130 fallback tardío: retorno válido tras dock inválido"
+            )
+
+            map_id = self._v105_map_id()
+            self._v105_frozen_previews[map_id] = (
+                self._v105_copy_grid(candidate)
+            )
+            self._v100_live_grids[map_id] = dict(candidate)
+            self._v70_refresh_map_overview(force=True)
+            self._v96_last_render_at = 0.0
+            self._render_maps()
+            self._set_banner(
+                "Mapa Xiaomi final recuperado desde la captura válida "
+                "del regreso a base."
+            )
+            return True
+        except Exception as exc:
+            self._v130_return_candidate_errors.append(
+                "persistencia tardía: "
+                + (str(exc).strip() or type(exc).__name__)
+            )
+            return False
+
     # =============================================================== eventos
     def _handle_ui_event(self, kind, payload):
         if kind == "v130_return_candidate_done":
@@ -1230,6 +1269,18 @@ class App(app_v129.App):
             if isinstance(candidate, dict):
                 self._v130_return_candidate = dict(candidate)
                 self._v130_return_candidate_cells = cells
+
+                # Si las 3 lecturas de dock ya terminaron y fueron inválidas,
+                # la captura de retorno puede llegar unos segundos después.
+                # En ese caso se publica ahora, sin esperar otro evento.
+                finalized = (
+                    int(getattr(self, "_v93_finalized_serial", -1) or -1)
+                    == int(getattr(self, "_v74_mapping_serial", 0) or 0)
+                )
+                if finalized and not bool(
+                    getattr(self, "_v107_final_saved", False)
+                ):
+                    self._v130_persist_late_return_candidate()
             return None
 
         if kind == "v107_final_grid_done":
