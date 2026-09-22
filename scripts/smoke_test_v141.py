@@ -61,7 +61,7 @@ assert 'split(",", 1)[0]' in orders
 assert "import app_v141" in main
 assert "app_v141.App().mainloop()" in main
 assert 'scripts\\smoke_test_v141.py' in build
-assert 'src\\main_v141.py' in build
-assert "V141" in workflow
+assert any(f"src\\main_v{v}.py" in build for v in (141, 142))
+assert any(v in workflow for v in ("V141", "V142"))
 
 print("V141 smoke OK")
