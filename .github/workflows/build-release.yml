@@ -91,10 +91,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V142-IA para Windows 10/11 x64. Añade navegación adaptativa local con memoria persistente por habitación: puntúa cobertura proxy, tiempo, fallos y estabilidad; puede repetir automáticamente una habitación hasta tres veces si el resultado mejora y conserva la estrategia que mejor funcionó para futuras limpiezas. Clasifica patrones reales de recorrido como expansión, bucle/espiral o atasco sin inventar sensores. Mantiene V141 para EDGE nativo 2/1, diagnóstico realmente borrable y reset profundo manual. Backups pre-IA disponibles en backup-v140-pre-ia y backup-v141-pre-ia. Las versiones IA muestran el sufijo -IA en la interfaz y release."
+          $notes = "V143-IA para Windows 10/11 x64. Corrige el aprendizaje de V142: una sesión física de mapeo se guarda una sola vez y la migración elimina las mapping_sessions ruidosas de V142 conservando aprendizaje de habitaciones. El clasificador detecta bucle/espiral y atasco con mayor sensibilidad. Antes de iniciar Paso 2 exige que el Paso 1 tenga calidad suficiente; status=4 por sí solo ya no cuenta como éxito, y un Volver a base durante Paso 1 invalida la transición automática. Mantiene EDGE nativo 2/1, diagnóstico borrable, reset profundo manual y aprendizaje adaptativo por habitación."
 
           gh release create $tag `
-            --title "Aspiradora-IA $env:APP_DISPLAY_VERSION · V142-IA" `
+            --title "Aspiradora-IA $env:APP_DISPLAY_VERSION · V143-IA" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }

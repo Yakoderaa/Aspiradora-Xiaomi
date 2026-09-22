@@ -36,7 +36,7 @@ assert "backup-v141-pre-ia" in app
 assert "import app_v142" in main
 assert "app_v142.App().mainloop()" in main
 assert 'scripts\\smoke_test_v142.py' in build
-assert 'src\\main_v142.py' in build
+assert any(f"src\\main_v{v}.py" in build for v in (142, 143))
 
 assert 'APP_DISPLAY_VERSION' in workflow
 assert '-IA' in workflow

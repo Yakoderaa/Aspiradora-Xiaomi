@@ -5,13 +5,9 @@ from pathlib import Path
 
 
 class AdaptiveNavigationMemory:
-    """Memoria local y persistente de navegación/limpieza por habitación.
+    """Memoria local persistente de navegación/limpieza por habitación."""
 
-    No es un modelo generativo: aprende de resultados observados y conserva
-    estrategias que históricamente dieron mejor cobertura con menos fallos.
-    """
-
-    VERSION = 1
+    VERSION = 2
     STRATEGIES = ("single", "verified_double", "verified_triple")
 
     def __init__(self, folder):
@@ -19,23 +15,48 @@ class AdaptiveNavigationMemory:
         self.folder.mkdir(parents=True, exist_ok=True)
         self.path = self.folder / "ai_navigation_memory.json"
         self._lock = threading.RLock()
-        self._data = {
-            "version": self.VERSION,
+        self._data = self._defaults()
+        self._load()
+
+    @classmethod
+    def _defaults(cls):
+        return {
+            "version": cls.VERSION,
             "rooms": {},
             "mapping": {"sessions": [], "patterns": {}},
+            "migration": {"v142_mapping_noise_cleared": False},
         }
-        self._load()
 
     def _load(self):
         with self._lock:
+            raw = None
             try:
                 raw = json.loads(self.path.read_text(encoding="utf-8"))
-                if isinstance(raw, dict):
-                    self._data.update(raw)
             except Exception:
-                pass
+                raw = None
+
+            if isinstance(raw, dict):
+                old_version = int(raw.get("version", 1) or 1)
+                rooms = raw.get("rooms") if isinstance(raw.get("rooms"), dict) else {}
+                if old_version < 2:
+                    # V142 registraba múltiples observaciones del mismo mapeo
+                    # como sesiones distintas. Conservamos aprendizaje de
+                    # habitaciones pero descartamos sólo esa memoria de mapa.
+                    self._data = self._defaults()
+                    self._data["rooms"] = rooms
+                    self._data["migration"]["v142_mapping_noise_cleared"] = True
+                else:
+                    self._data = raw
+
+            self._data["version"] = self.VERSION
             self._data.setdefault("rooms", {})
             self._data.setdefault("mapping", {"sessions": [], "patterns": {}})
+            self._data["mapping"].setdefault("sessions", [])
+            self._data["mapping"].setdefault("patterns", {})
+            self._data.setdefault(
+                "migration",
+                {"v142_mapping_noise_cleared": False},
+            )
             self._save()
 
     def _save(self):
@@ -58,9 +79,7 @@ class AdaptiveNavigationMemory:
             coords = []
             for p in poly:
                 try:
-                    coords.append(
-                        f"{float(p['x']):.2f},{float(p['y']):.2f}"
-                    )
+                    coords.append(f"{float(p['x']):.2f},{float(p['y']):.2f}")
                 except Exception:
                     continue
             return "poly:" + name + ":" + "|".join(coords)
@@ -121,10 +140,7 @@ class AdaptiveNavigationMemory:
         with self._lock:
             profile = dict(self._data["rooms"].get(key) or {})
             attempts = list(profile.get("attempts") or [])
-            attempts.append({
-                "strategy": str(strategy),
-                **dict(metrics),
-            })
+            attempts.append({"strategy": str(strategy), **dict(metrics)})
             attempts = attempts[-30:]
             best = max(attempts, key=lambda x: float(x.get("score", 0.0) or 0.0))
             failures = int(profile.get("failures", 0) or 0)
@@ -182,24 +198,42 @@ class AdaptiveNavigationMemory:
             return False
         return int(pass_index) < max_passes
 
-    def record_mapping_pattern(self, metrics):
-        metrics = dict(metrics or {})
+    def record_mapping_session(self, session_key, metrics):
+        """Una sesión física = una fila. Si cambia, se actualiza en lugar de sumar."""
+        session_key = str(session_key)
+        row = {"session_key": session_key, **dict(metrics or {})}
         with self._lock:
             sessions = list(self._data["mapping"].get("sessions") or [])
-            sessions.append(metrics)
+            replaced = False
+            for index, old in enumerate(sessions):
+                if str((old or {}).get("session_key")) == session_key:
+                    sessions[index] = row
+                    replaced = True
+                    break
+            if not replaced:
+                sessions.append(row)
             self._data["mapping"]["sessions"] = sessions[-40:]
-            pattern = str(metrics.get("pattern") or "unknown")
-            stats = dict(
-                (self._data["mapping"].get("patterns") or {}).get(pattern) or {}
-            )
-            stats["count"] = int(stats.get("count", 0) or 0) + 1
-            stats["last_confidence"] = float(
-                metrics.get("confidence", 0.0) or 0.0
-            )
-            patterns = dict(self._data["mapping"].get("patterns") or {})
-            patterns[pattern] = stats
+
+            patterns = {}
+            for item in self._data["mapping"]["sessions"]:
+                pattern = str((item or {}).get("pattern") or "unknown")
+                stats = dict(patterns.get(pattern) or {})
+                stats["count"] = int(stats.get("count", 0) or 0) + 1
+                stats["last_confidence"] = float(
+                    (item or {}).get("confidence", 0.0) or 0.0
+                )
+                patterns[pattern] = stats
             self._data["mapping"]["patterns"] = patterns
             self._save()
+            return {"replaced": replaced, "count": len(sessions)}
+
+    def record_mapping_pattern(self, metrics):
+        # Compatibilidad: desde V143 un patrón observado no debe convertirse
+        # en otra "sesión". Se requiere una clave física explícita.
+        key = str((metrics or {}).get("session_key") or "")
+        if not key:
+            return {"ignored": True, "reason": "missing session_key"}
+        return self.record_mapping_session(key, metrics)
 
     def summary(self):
         with self._lock:
@@ -217,13 +251,21 @@ class AdaptiveNavigationMemory:
                 "mapping_sessions": len(
                     (self._data.get("mapping") or {}).get("sessions") or []
                 ),
+                "schema": self.VERSION,
+                "v142_noise_cleared": bool(
+                    (self._data.get("migration") or {}).get(
+                        "v142_mapping_noise_cleared", False
+                    )
+                ),
             }
 
     def reset_learning(self):
         with self._lock:
-            self._data = {
-                "version": self.VERSION,
-                "rooms": {},
-                "mapping": {"sessions": [], "patterns": {}},
-            }
+            migrated = bool(
+                (self._data.get("migration") or {}).get(
+                    "v142_mapping_noise_cleared", False
+                )
+            )
+            self._data = self._defaults()
+            self._data["migration"]["v142_mapping_noise_cleared"] = migrated
             self._save()
