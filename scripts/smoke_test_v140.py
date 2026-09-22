@@ -54,7 +54,7 @@ assert "voz/idioma y contadores de consumibles: no se modifican" in diag
 assert "import app_v140" in main
 assert "app_v140.App().mainloop()" in main
 assert 'scripts\\smoke_test_v140.py' in build
-assert 'src\\main_v140.py' in build
-assert "V140" in workflow
+assert any(f"src\\main_v{v}.py" in build for v in (140, 141, 142))
+assert any(v in workflow for v in ("V140", "V141", "V142", "V142"))
 
 print("V140 smoke OK")

@@ -89,10 +89,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V140 para Windows 10/11 x64. Agrega en Ajustes > Mantenimiento avanzado un restablecimiento profundo con doble confirmación que conserva Wi-Fi y vinculación Xiaomi. Normaliza limpieza, sale de remoto, limpia objetivos, repetición y twice-clean, borra reservas B112 detectadas, remember-state y mop-route, ejecuta reset-map-ii con fallback reset-map y recrea desde cero mapas/zonas/rutinas locales. No modifica IP, token, cuenta, voz/idioma ni contadores de consumibles. El mapeo V139 queda intacto para aislar el efecto del reset."
+          $notes = "V142 experimental para Windows 10/11 x64. Incluye la corrección V141: Paso 1 usa sweep_type=2 + start-sweep 2/1, sin reset automático, 7/3 ni 2/3; Borrar diagnóstico crea una captura realmente nueva y el parser de reservas toma sólo order-id. Agrega aprendizaje adaptativo persistente por habitación: evalúa cobertura, finalización y área física 7/23, prueba hasta dos estrategias alternativas si la calidad es baja, aprende la mejor por habitación y la reutiliza en futuras limpiezas. Estrategias: area_first, row_sweep, reverse y fine_split. Todas las subzonas quedan recortadas al native_grid Xiaomi y no-go. Añade análisis de bordes/paredes del grid y Ajustes > Navegación inteligente con opción para borrar sólo el aprendizaje. Backup previo a IA: backup-v140-pre-ia."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V140" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V142 IA adaptativa" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
