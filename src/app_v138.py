@@ -171,6 +171,10 @@ class App(app_v137.App):
                 "repeat-off",
                 lambda: vacuum.device.set_property_by(7, 1, 0),
             )
+            attempt(
+                "twice-clean-off",
+                lambda: vacuum.device.set_property_by(8, 10, 0),
+            )
             attempt("water-off", lambda: vacuum.set_water(0))
             attempt("suction-eco", lambda: vacuum.set_suction(1))
             attempt("mode-sweep", lambda: vacuum.set_mode(0))
@@ -789,7 +793,7 @@ class App(app_v137.App):
             f"progreso Paso2={self._v138_phase2_progress or '—'}",
             (
                 "reset V138: room STOP -> vacuum STOP -> remote Exit -> "
-                "targets vacíos -> repeat=0 -> mode=0 -> sweep=0"
+                "targets vacíos -> repeat=0 -> twice-clean=0 -> mode=0 -> sweep=0"
             ),
             (
                 "ruta Paso1 V138: build-map único -> sweep_type=2 -> "

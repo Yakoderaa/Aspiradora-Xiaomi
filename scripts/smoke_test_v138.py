@@ -25,6 +25,7 @@ assert '["", 4, 2]' in reset
 assert "vacuum.stop" in reset
 assert "vacuum.manual(10)" in reset
 assert "set_property_by(7, 1, 0)" in reset
+assert "set_property_by(8, 10, 0)" in reset
 assert "vacuum.set_mode(0)" in reset
 assert "vacuum.set_sweep_type(0)" in reset
 
