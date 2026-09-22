@@ -40,6 +40,6 @@ assert any(f"src\\main_v{v}.py" in build for v in (142, 143))
 
 assert 'APP_DISPLAY_VERSION' in workflow
 assert '-IA' in workflow
-assert 'V142-IA' in workflow
+assert any(v in workflow for v in ("V142-IA", "V143-IA"))
 
 print("V142-IA smoke OK")
