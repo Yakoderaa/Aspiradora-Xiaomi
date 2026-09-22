@@ -20,7 +20,7 @@ assert "v129_phase2_idle" in app
 assert "import app_v129" in main
 assert "app_v129.App().mainloop()" in main
 assert "scripts\\smoke_test_v129.py" in build
-assert any(f"src\\main_v{v}.py" in build for v in (129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144))
+assert any(f"src\\main_v{v}.py" in build for v in (129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145))
 
 method = app[
     app.index("def _v127_try_phase2_recovery"):

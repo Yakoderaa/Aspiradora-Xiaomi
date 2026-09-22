@@ -275,6 +275,19 @@ class App(app_v136.App):
                         str(exc).strip() or type(exc).__name__
                     )
 
+                # V145: un worker de Paso 2 puede haber quedado esperando
+                # mientras otra ruta cerró/resetó la sesión. Revalidamos justo
+                # antes del comando físico para que jamás reviva una sesión.
+                if (
+                    serial != int(getattr(self, "_v74_mapping_serial", -1))
+                    or not bool(getattr(self, "mapping_active", False))
+                    or bool(getattr(self, "_v145_session_latched", False))
+                    or bool(getattr(self, "_v145_reset_guard", False))
+                ):
+                    raise RuntimeError(
+                        "Paso 2 cancelado antes del comando físico: sesión cerrada"
+                    )
+
                 # Ésta es la corrección V123 que sustituyó
                 # start_mapping_interior(): whole-home 7/3, con 2/3 solamente
                 # como trigger si el firmware acepta 7/3 pero sigue en dock.
