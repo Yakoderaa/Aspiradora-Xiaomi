@@ -49,6 +49,6 @@ assert "import app_v136" in main
 assert "app_v136.App().mainloop()" in main
 assert 'scripts\\smoke_test_v136.py' in build
 assert any(f"src\\main_v{v}.py" in build for v in (136, 137, 138, 139, 140, 141, 142, 143, 144))
-assert any(v in workflow for v in ("V136", "V137", "V138", "V139", "V140", "V141", "V142", "V142", "V142-IA", "V143-IA"))
+assert any(v in workflow for v in ("V136", "V137", "V138", "V139", "V140", "V141", "V142", "V142", "V142-IA", "V143-IA", "V144-IA"))
 
 print("V136 smoke OK")
