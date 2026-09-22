@@ -41,7 +41,7 @@ assert "mcp[" not in requirements
 assert "--collect-all mcp" not in build
 assert "--collect-all starlette" not in build
 assert "--collect-all uvicorn" not in build
-assert any(f"main_v{v}.py" in build for v in (126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137))
+assert any(f"main_v{v}.py" in build for v in (126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138))
 assert "smoke_test_v126.py" in build
 
 print("V126 smoke OK")

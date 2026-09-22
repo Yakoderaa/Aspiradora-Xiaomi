@@ -42,7 +42,7 @@ assert "NO usa watcher EDGE V68" in diag
 assert "import app_v137" in main
 assert "app_v137.App().mainloop()" in main
 assert 'scripts\\smoke_test_v137.py' in build
-assert 'src\\main_v137.py' in build
-assert "V137" in workflow
+assert any(f"src\\main_v{v}.py" in build for v in (137, 138))
+assert any(v in workflow for v in ("V137", "V138"))
 
 print("V137 smoke OK")
