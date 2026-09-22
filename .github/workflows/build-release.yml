@@ -89,10 +89,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V139 para Windows 10/11 x64. Conserva el reset frío V138 pero elimina el START genérico 2/3 del Paso 1: EDGE usa una sola orden de movimiento 7/3 con ids vacíos, modo 2 y Start; 2/3 y 2/1 quedan prohibidos durante Paso 1. Mantiene el gate físico de salida de habitación, whole-home V123 en Paso 2 y remote Exit tras reacoples. Se elimina únicamente el botón superior Iniciar limpieza. La ventana de diagnóstico agrega Borrar diagnóstico con confirmación y una nueva sesión diferencial que no modifica el robot ni el mapa."
+          $notes = "V140 para Windows 10/11 x64. Agrega en Ajustes > Mantenimiento avanzado un restablecimiento profundo con doble confirmación que conserva Wi-Fi y vinculación Xiaomi. Normaliza limpieza, sale de remoto, limpia objetivos, repetición y twice-clean, borra reservas B112 detectadas, remember-state y mop-route, ejecuta reset-map-ii con fallback reset-map y recrea desde cero mapas/zonas/rutinas locales. No modifica IP, token, cuenta, voz/idioma ni contadores de consumibles. El mapeo V139 queda intacto para aislar el efecto del reset."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V139" `
+            --title "Aspiradora Xiaomi $env:APP_VERSION · V140" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }

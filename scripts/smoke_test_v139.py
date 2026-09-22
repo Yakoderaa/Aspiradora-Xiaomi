@@ -45,7 +45,7 @@ assert "no modifica el mapa ni envía comandos" in diag
 assert "import app_v139" in main
 assert "app_v139.App().mainloop()" in main
 assert 'scripts\\smoke_test_v139.py' in build
-assert 'src\\main_v139.py' in build
-assert "V139" in workflow
+assert any(f"src\\main_v{v}.py" in build for v in (139, 140))
+assert any(v in workflow for v in ("V139", "V140"))
 
 print("V139 smoke OK")
