@@ -64,7 +64,7 @@ assert "proceso finalizó" in app
 assert "import app_v138" in main
 assert "app_v138.App().mainloop()" in main
 assert 'scripts\\smoke_test_v138.py' in build
-assert 'src\\main_v138.py' in build
-assert "V138" in workflow
+assert any(f"src\\main_v{v}.py" in build for v in (138, 139))
+assert any(v in workflow for v in ("V138", "V139"))
 
 print("V138 smoke OK")
