@@ -30,7 +30,7 @@ assert "conserva íntegramente la prueba EDGE 2/1 de V132" in app
 assert "import app_v133" in main
 assert "app_v133.App().mainloop()" in main
 assert 'scripts\\smoke_test_v133.py' in build
-assert any(f"src\\main_v{v}.py" in build for v in (133, 134, 135, 136, 137, 138, 139, 140, 141))
-assert any(v in workflow for v in ("V133", "V134", "V135", "V136", "V137", "V138", "V139", "V140", "V141"))
+assert any(f"src\\main_v{v}.py" in build for v in (133, 134, 135, 136, 137, 138, 139, 140, 141, 142))
+assert any(v in workflow for v in ("V133", "V134", "V135", "V136", "V137", "V138", "V139", "V140", "V141", "V142-IA"))
 
 print("V133 smoke OK")

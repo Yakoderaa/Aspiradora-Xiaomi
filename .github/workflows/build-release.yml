@@ -40,9 +40,11 @@ jobs:
         shell: pwsh
         run: |
           $version = "0.1.${{ github.run_number }}"
-          "VERSION = `"$version`"" | Set-Content -Encoding UTF8 src\_build_version.py
+          $display = "$version-IA"
+          "VERSION = `"$display`"" | Set-Content -Encoding UTF8 src\_build_version.py
           "APP_VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append
-          "RELEASE_TAG=v$version" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "APP_DISPLAY_VERSION=$display" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "RELEASE_TAG=v$display" | Out-File -FilePath $env:GITHUB_ENV -Append
 
       - name: Install Inno Setup
         shell: pwsh
@@ -76,7 +78,7 @@ jobs:
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Aspiradora-Xiaomi-Setup-${{ env.APP_VERSION }}
+          name: Aspiradora-Xiaomi-Setup-${{ env.APP_DISPLAY_VERSION }}
           path: |
             installer_output/Aspiradora-Xiaomi-Setup.exe
             installer_output/Aspiradora-Xiaomi-Setup.exe.sha256
@@ -89,10 +91,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V141 para Windows 10/11 x64. El Paso 1 deja de usar 7/3 set-room-clean y 2/3: fija sweep_type=2 y arranca exclusivamente con el start-sweep nativo 2/1. Mapear vivienda ya no ejecuta el reset agresivo V138 antes de comenzar; el reset profundo queda exclusivamente en Ajustes y conserva Wi-Fi. Se elimina el gate de salida basado en 10/24 congelado y la transición a Paso 2 vuelve a V137/V123. Borrar diagnóstico ahora vacía de verdad la captura y crea una sesión V141 independiente. También corrige el parser de reservas del reset profundo para tomar sólo el order-id real."
+          $notes = "V142-IA para Windows 10/11 x64. Añade navegación adaptativa local con memoria persistente por habitación: puntúa cobertura proxy, tiempo, fallos y estabilidad; puede repetir automáticamente una habitación hasta tres veces si el resultado mejora y conserva la estrategia que mejor funcionó para futuras limpiezas. Clasifica patrones reales de recorrido como expansión, bucle/espiral o atasco sin inventar sensores. Mantiene V141 para EDGE nativo 2/1, diagnóstico realmente borrable y reset profundo manual. Backups pre-IA disponibles en backup-v140-pre-ia y backup-v141-pre-ia. Las versiones IA muestran el sufijo -IA en la interfaz y release."
 
           gh release create $tag `
-            --title "Aspiradora Xiaomi $env:APP_VERSION · V141" `
+            --title "Aspiradora-IA $env:APP_DISPLAY_VERSION · V142-IA" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }

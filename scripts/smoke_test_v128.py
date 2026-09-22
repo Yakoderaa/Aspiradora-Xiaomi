@@ -23,7 +23,7 @@ assert "orthogonal >= 3 or around >= 6" in map_client
 assert "import app_v128" in main
 assert "app_v128.App().mainloop()" in main
 assert "scripts\\smoke_test_v128.py" in build
-assert any(f"src\\main_v{v}.py" in build for v in (128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141))
+assert any(f"src\\main_v{v}.py" in build for v in (128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142))
 
 method = app[
     app.index("def _v127_try_phase2_recovery"):
