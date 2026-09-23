@@ -51,6 +51,25 @@ Name: "desktopicon"; Description: "Crear un acceso directo en el escritorio"; Gr
 [Registry]
 Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "AspiradoraXiaomiScheduler"; ValueData: """{app}\{#MySchedulerExeName}"""; Flags: uninsdeletevalue
 
+
+[Code]
+function PrepareToInstall(var NeedsRestart: Boolean): String;
+var
+  ResultCode: Integer;
+begin
+  { Un scheduler de una versión anterior no puede quedar vivo durante el
+    reemplazo: no conoce el árbitro Fresh Core y podría controlar el E10. }
+  Exec(
+    ExpandConstant('{sys}\taskkill.exe'),
+    '/IM "{#MySchedulerExeName}" /F',
+    '',
+    SW_HIDE,
+    ewWaitUntilTerminated,
+    ResultCode
+  );
+  Result := '';
+end;
+
 [Run]
 Filename: "{app}\{#MySchedulerExeName}"; Description: "Iniciar programador de limpiezas"; Flags: nowait runhidden
 Filename: "{app}\{#MyAppExeName}"; Description: "Abrir Aspiradora Xiaomi"; Flags: nowait postinstall skipifsilent
