@@ -55,3 +55,5 @@ q = probe._v142_classify_path(old_false_positive)
 assert q["pattern"] != "oscillation_corridor", q
 
 print("V147-IA smoke OK")
+
+# Trigger final V147 tras actualizar workflow/release.
