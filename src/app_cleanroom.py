@@ -551,18 +551,19 @@ class App(app_v151.App):
             return
 
         mode = str(schedule.get("mode", "vacuum"))
-        mode_id = {
-            "vacuum": 0,
-            "vacuum_mop": 1,
-            "mop": 2,
-        }.get(mode, 0)
+        passes = (
+            ["vacuum", "mop"]
+            if mode == "vacuum_then_mop"
+            else [mode]
+        )
         suction = int(schedule.get("suction", 1) or 1)
         water = int(schedule.get("water", 1) or 0)
+        plan = self.plan_store.snapshot() if self.plan_store else None
 
-        def started(diag):
+        def stage(index, total, pass_name):
             self._post_ui(
                 "plan_job_stage",
-                "Programación · Fresh Core inició limpieza global.",
+                f"Programación · pasada {index}/{total}: {pass_name}.",
             )
 
         def finished(diag):
@@ -575,14 +576,14 @@ class App(app_v151.App):
                 )
 
         try:
-            return self._fresh().start_global_async(
-                mode=mode_id,
+            return self._fresh().run_global_sequence_async(
+                passes,
                 suction=suction,
                 water=water,
-                mapping=False,
-                on_started=started,
+                on_stage=stage,
                 on_finished=finished,
                 purpose="schedule-now",
+                plan=plan,
             )
         except Exception as exc:
             self._post_ui(
