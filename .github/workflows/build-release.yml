@@ -1,5 +1,5 @@
 name: Build Windows installer and release
-# Compatibilidad de smoke histórica: V145-IA
+# Compatibilidad de smoke histórica: V145-IA · V146-IA · consenso multiseñal
 
 on:
   push:
