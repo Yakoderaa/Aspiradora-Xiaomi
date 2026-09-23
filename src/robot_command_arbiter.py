@@ -245,10 +245,10 @@ class ReadMostlyMiotProxy:
 
     def send(self, command, *args, **kwargs):
         command = str(command or "")
-        if self._arbiter.active and command != "get_properties":
+        if command != "get_properties":
             self._arbiter.note_legacy_block("send", value=command)
             raise LegacyWriteBlocked(
-                f"Fresh Core bloqueó una escritura heredada: send({command})."
+                f"Fresh Core bloqueó transporte heredado no-lectura: send({command})."
             )
         return self._raw_device.send(command, *args, **kwargs)
 
