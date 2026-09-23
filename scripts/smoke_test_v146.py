@@ -55,3 +55,5 @@ stuck_metrics = probe._v142_classify_path(stuck)
 assert stuck_metrics["pattern"] == "stuck", stuck_metrics
 
 print("V146-IA smoke OK")
+
+# Trigger final tras compatibilidad V145-IA
