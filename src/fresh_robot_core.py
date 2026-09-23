@@ -368,6 +368,8 @@ class FreshRobotCore:
         mapping,
         on_started,
         on_finished,
+        plan=None,
+        force_wall_sync=False,
     ):
         session = None
         diag = {
@@ -390,6 +392,13 @@ class FreshRobotCore:
 
             neutral = self._neutralize_navigation_state()
             diag["neutralization"] = neutral
+            if plan is not None:
+                self.sync_virtual_walls(
+                    plan,
+                    force=bool(force_wall_sync),
+                    _inside_session=True,
+                )
+                diag["walls_synced"] = True
             before, normalized, suction, water = self._normalize(
                 mode, suction, water
             )
@@ -456,6 +465,8 @@ class FreshRobotCore:
         on_started=None,
         on_finished=None,
         purpose=None,
+        plan=None,
+        force_wall_sync=False,
     ):
         if self._worker is not None and self._worker.is_alive():
             raise RobotBusyError("Fresh Core ya tiene una sesión activa.")
@@ -470,12 +481,121 @@ class FreshRobotCore:
                 bool(mapping),
                 on_started,
                 on_finished,
+                plan,
+                bool(force_wall_sync),
             ),
             name=f"FreshRobotCore-{purpose}",
             daemon=True,
         )
         self._worker = worker
         worker.start()
+        return True
+
+    def run_global_sequence_async(
+        self,
+        passes,
+        suction=1,
+        water=0,
+        on_stage=None,
+        on_finished=None,
+        purpose="global_sequence",
+        plan=None,
+        force_wall_sync=False,
+    ):
+        if self._worker is not None and self._worker.is_alive():
+            raise RobotBusyError("Fresh Core ya tiene una sesión activa.")
+
+        pass_names = [str(x) for x in list(passes or [])]
+        if not pass_names:
+            raise ValueError("La secuencia no tiene pasadas.")
+        mode_map = {
+            "vacuum": 0,
+            "vacuum_mop": 1,
+            "mop": 2,
+        }
+        for name in pass_names:
+            if name not in mode_map:
+                raise ValueError(f"Modo de pasada inválido: {name}")
+
+        def worker():
+            session = None
+            diag = {
+                "purpose": str(purpose),
+                "passes": list(pass_names),
+                "completed": 0,
+                "runs": [],
+                "error": None,
+            }
+            try:
+                session = self.arbiter.begin(purpose, self.source)
+                if plan is not None:
+                    self.sync_virtual_walls(
+                        plan,
+                        force=bool(force_wall_sync),
+                        _inside_session=True,
+                    )
+
+                total = len(pass_names)
+                for index, pass_name in enumerate(pass_names, 1):
+                    if session.cancel_action:
+                        reason = self._perform_cancel(session)
+                        raise RuntimeError(
+                            f"Secuencia cancelada ({reason or 'cancel'})."
+                        )
+
+                    mode = mode_map[pass_name]
+                    pass_water = 0 if mode == 0 else max(1, int(water or 1))
+                    neutral = self._neutralize_navigation_state()
+                    before, normalized, _suction, _water = self._normalize(
+                        mode,
+                        suction,
+                        pass_water,
+                    )
+                    action, response = self._start_standard(mode)
+                    started = self._wait_started(session)
+                    if callable(on_stage):
+                        on_stage(index, total, pass_name)
+
+                    finish_reason = self._monitor_until_terminal(
+                        session,
+                        mapping=False,
+                    )
+                    diag["runs"].append({
+                        "pass": pass_name,
+                        "neutralization": neutral,
+                        "before": before,
+                        "normalized": normalized,
+                        "start_action": action,
+                        "start_response": repr(response)[:300],
+                        "started_state": started,
+                        "finish_reason": finish_reason,
+                    })
+                    diag["completed"] += 1
+
+                    if finish_reason in ("stop_requested",):
+                        break
+                    if index < total:
+                        # La siguiente pasada sólo comienza desde estado terminal.
+                        time.sleep(0.8)
+            except Exception as exc:
+                diag["error"] = str(exc).strip() or type(exc).__name__
+            finally:
+                self._last_diag = dict(diag)
+                if session is not None:
+                    self.arbiter.finish(
+                        session,
+                        diag.get("error") or "global_sequence_complete",
+                    )
+                self._worker = None
+                if callable(on_finished):
+                    on_finished(dict(diag))
+
+        self._worker = threading.Thread(
+            target=worker,
+            name=f"FreshRobotCore-{purpose}",
+            daemon=True,
+        )
+        self._worker.start()
         return True
 
     def request_stop(self):
