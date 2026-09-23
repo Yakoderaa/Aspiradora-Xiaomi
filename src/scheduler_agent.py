@@ -6,12 +6,8 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 from cleaning_plan import CleaningPlanStore
-from robot_plans import (
-    start_whole_clean,
-    start_zone_clean,
-    sync_virtual_walls,
-    wait_for_cleaning_cycle,
-)
+from fresh_robot_core import FreshRobotCore
+from robot_plans import local_rect_to_device
 from settings_store import SettingsStore
 from xiaomi_e10 import XiaomiE10
 
@@ -74,28 +70,64 @@ def connect_robot():
 
 def execute_schedule(schedule, plan, force_wall_sync=False):
     vacuum = connect_robot()
-    sync_virtual_walls(vacuum, plan, force=bool(force_wall_sync))
+    core = FreshRobotCore(vacuum, source="scheduler")
 
     mode = str(schedule.get("mode", "vacuum"))
     passes = ["vacuum", "mop"] if mode == "vacuum_then_mop" else [mode]
     suction = int(schedule.get("suction", 1) or 1)
-    water = int(schedule.get("water", 1) or 1)
+    water = int(schedule.get("water", 1) or 0)
     target = str(schedule.get("target", "all"))
 
-    zones_by_id = {z.get("id"): z for z in plan.get("zones", [])}
-    chosen_zones = [zones_by_id[zid] for zid in schedule.get("zone_ids", []) if zid in zones_by_id]
+    zones_by_id = {
+        z.get("id"): z
+        for z in plan.get("zones", [])
+        if isinstance(z, dict)
+    }
+    chosen_zones = [
+        zones_by_id[zid]
+        for zid in schedule.get("zone_ids", [])
+        if zid in zones_by_id
+    ]
     if target == "zones" and not chosen_zones:
-        raise RuntimeError("La programación no tiene zonas válidas seleccionadas.")
+        raise RuntimeError(
+            "La programación no tiene zonas válidas seleccionadas."
+        )
 
-    for clean_mode in passes:
-        if target == "all":
-            start_whole_clean(vacuum, clean_mode, suction, water)
-            wait_for_cleaning_cycle(vacuum)
-        else:
-            for zone in chosen_zones:
-                start_zone_clean(vacuum, zone, plan, clean_mode, suction, water)
-                wait_for_cleaning_cycle(vacuum)
-                time.sleep(1.2)
+    if target == "all":
+        mode_id = {
+            "vacuum": 0,
+            "vacuum_mop": 1,
+            "mop": 2,
+        }.get(mode, 0)
+        core.start_global_async(
+            mode=mode_id,
+            suction=suction,
+            water=water,
+            mapping=False,
+            purpose="scheduled-whole-clean",
+        )
+    else:
+        raw_rects = [
+            local_rect_to_device(zone, plan)
+            for zone in chosen_zones
+        ]
+        core.run_zone_sequence(
+            raw_rects,
+            passes,
+            suction,
+            water,
+            plan=plan,
+            force_wall_sync=bool(force_wall_sync),
+        )
+
+    worker = core._worker
+    if worker is not None:
+        worker.join()
+
+    diag = core.diagnostic().get("last") or {}
+    if diag.get("error"):
+        raise RuntimeError(str(diag.get("error")))
+    return diag
 
 
 def main():
