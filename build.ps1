@@ -150,13 +150,29 @@ Invoke-PythonChecked "scripts\smoke_test_v145.py"
 Invoke-PythonChecked "scripts\smoke_test_v146.py"
 Invoke-PythonChecked "scripts\smoke_test_v147.py"
 
-# V148+ se descubre automáticamente: no agregar números nuevos a mano.
+# Smoke tests nuevos se descubren automáticamente. El límite se deriva de
+# los tests históricos explícitos presentes arriba: no hay que editar este
+# bloque al crear V148, V149, V150...
+$buildSource = Get-Content $MyInvocation.MyCommand.Path -Raw
+$explicitVersions = [regex]::Matches(
+    $buildSource,
+    'Invoke-PythonChecked "scripts\\smoke_test_v(\d+)\.py"'
+) | ForEach-Object { [int]$_.Groups[1].Value }
+$lastExplicitVersion = if ($explicitVersions.Count -gt 0) {
+    ($explicitVersions | Measure-Object -Maximum).Maximum
+} else {
+    0
+}
+
 $futureSmokeTests = Get-ChildItem "scripts\smoke_test_v*.py" | ForEach-Object {
     $prefix = "smoke_test_v"
     if ($_.BaseName.StartsWith($prefix)) {
         $versionNumber = 0
         $suffix = $_.BaseName.Substring($prefix.Length)
-        if ([int]::TryParse($suffix, [ref]$versionNumber) -and $versionNumber -gt 147) {
+        if (
+            [int]::TryParse($suffix, [ref]$versionNumber) -and
+            $versionNumber -gt $lastExplicitVersion
+        ) {
             [PSCustomObject]@{
                 Version = $versionNumber
                 Path = $_.FullName
