@@ -1,5 +1,5 @@
 {
   "schema": 1,
-  "generation": "V147-IA",
-  "notes": "V147-IA para Windows 10/11 x64. Añade detección específica de oscilación ida/vuelta durante Paso 1. La IA ya no considera progreso real a pequeñas celdas nuevas si hay muchas reversiones, baja eficiencia de recorrido, corredor estrecho y poco desplazamiento neto. Ante una oscilación confirmada intenta escapar sin crear otro build-map: detiene de forma controlada, retrocede, gira de forma alternada y reanuda EDGE 2/1 dentro de la misma sesión. Cada escape debe demostrar expansión real; tras tres escapes consecutivos fallidos, cierra Paso 1 y solicita regreso a base. Conserva el consenso multiseñal V146, el cerrojo V145 y el gate físico V143."
+  "generation": "V148-IA",
+  "notes": "V148-IA para Windows 10/11 x64. Corrige la falsa validación de escape observada en V147. Un desplazamiento largo en un solo eje ya no cuenta como salida del corredor: el escape requiere expansión transversal real, ancho 2D suficiente, relación 2D reciente y tres evaluaciones consecutivas válidas. Si V85 cambia el marco de coordenadas durante la validación, esa distancia queda anulada como progreso. Además, una franja larga y estrecha con muchas reversiones y revisita alta sigue clasificándose como oscilación aunque el extremo aparente avanzar. Conserva los escapes limitados de V147, el consenso V146 y el cerrojo de sesión V145."
 }
