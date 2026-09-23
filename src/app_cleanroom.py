@@ -18,6 +18,7 @@ class App(app_v151.App):
         self._fresh_mapping_active = False
         self._fresh_last_event = {}
         self._fresh_target_context = None
+        self._fresh_manual_map_cancel = False
         super().__init__()
 
     # ====================================================== instalación core
@@ -140,6 +141,8 @@ class App(app_v151.App):
 
     def dock(self):
         try:
+            if bool(getattr(self, "mapping_active", False)):
+                self._fresh_manual_map_cancel = True
             core = self._fresh()
             self._set_banner(
                 "Fresh Core · Volver a base tiene prioridad sobre la sesión actual…"
@@ -289,6 +292,7 @@ class App(app_v151.App):
         if not ok:
             return
 
+        self._fresh_manual_map_cancel = False
         self._v151_prepare_map_layers()
 
         self._v145_session_latched = False
@@ -394,6 +398,38 @@ class App(app_v151.App):
                 str(exc).strip() or type(exc).__name__,
                 parent=self,
             )
+
+    def finish_mapping(self):
+        if self._fresh_mapping_active or bool(
+            getattr(self, "mapping_active", False)
+        ):
+            self._fresh_manual_map_cancel = True
+            try:
+                self._fresh().request_stop()
+            except Exception:
+                pass
+            self._fresh_mapping_active = False
+            self._v151_direct_global_owner = False
+            self._v74_watch_active = False
+            self.mapping_active = False
+            self.mapping_phase = 0
+            self.mapping_transitioning = False
+            self.mapping_step1_complete = False
+            self.mapping_step2_complete = False
+            try:
+                self._v145_latch_session(
+                    "fresh-map-manual-stop",
+                    close_mapping=True,
+                )
+            except Exception:
+                pass
+            self._sync_mapping_step_buttons()
+            self._render_maps()
+            self._set_banner(
+                "Fresh Core · mapeo detenido manualmente. No se marcó como completo."
+            )
+            return None
+        return super().finish_mapping()
 
     # ========================================== limpiezas dirigidas Fresh Core
     def _v114_run_safe_rectangles(
@@ -659,6 +695,24 @@ class App(app_v151.App):
             self._fresh_last_event = {"mapping_finished": diag}
             self._fresh_mapping_active = False
             self._v151_direct_global_owner = False
+
+            if self._fresh_manual_map_cancel:
+                self.mapping_active = False
+                self.mapping_phase = 0
+                self.mapping_transitioning = False
+                try:
+                    self._v145_latch_session(
+                        "fresh-map-manual-return",
+                        close_mapping=True,
+                    )
+                except Exception:
+                    pass
+                self._sync_mapping_step_buttons()
+                self._set_banner(
+                    "Fresh Core · mapeo cancelado por el usuario. "
+                    "El regreso a base no se guardó como mapeo completo."
+                )
+                return None
 
             if diag.get("error"):
                 self.mapping_active = False
