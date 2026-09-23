@@ -243,6 +243,67 @@ class App(app_v151.App):
                 str(exc).strip() or type(exc).__name__,
             )
 
+    def _v138_reset_cleaning_state(
+        self,
+        vacuum,
+        reason,
+        ensure_dock=True,
+    ):
+        core = self._fresh()
+        if vacuum is not core.vacuum:
+            raise RuntimeError("El robot cambió durante la normalización.")
+
+        session = core.arbiter.begin(
+            "maintenance-neutralize",
+            "gui-maintenance",
+        )
+        diag = {
+            "reason": str(reason),
+            "fresh_core": True,
+            "neutralization": None,
+            "dock_confirmed": False,
+            "success": False,
+            "error": None,
+        }
+        try:
+            neutral = core._neutralize_navigation_state()
+            diag["neutralization"] = neutral
+            if ensure_dock:
+                state = core._read()
+                status = core._int(state.get("status"))
+                if status != 4:
+                    core._action(3, 1, label="maintenance dock")
+                    deadline = time.monotonic() + 45.0
+                    while time.monotonic() < deadline:
+                        status = core._int(core._read().get("status"))
+                        if status == 4:
+                            break
+                        time.sleep(0.5)
+                diag["dock_confirmed"] = status == 4
+                if not diag["dock_confirmed"]:
+                    raise RuntimeError(
+                        f"No se confirmó carga en base (status={status!r})."
+                    )
+            else:
+                diag["dock_confirmed"] = None
+            diag["success"] = True
+            return diag
+        except Exception as exc:
+            diag["error"] = str(exc).strip() or type(exc).__name__
+            raise
+        finally:
+            core.arbiter.finish(
+                session,
+                diag.get("error") or "maintenance-neutralized",
+            )
+            try:
+                self._v138_last_reset = dict(diag)
+                self._v138_reset_history = (
+                    list(self._v138_reset_history) + [dict(diag)]
+                )[-8:]
+            except Exception:
+                pass
+
     # ============================================================ mapeo
     def start_new_mapping(self):
         if not getattr(self, "vacuum", None):
@@ -762,9 +823,9 @@ class App(app_v151.App):
                     self._v114_last_target_error,
                 )
             else:
-                self._v114_target_completed += int(
-                    diag.get("completed", 0) or 0
-                )
+                completed = int(diag.get("completed", 0) or 0)
+                self._v114_target_commands += completed
+                self._v114_target_completed += completed
                 self._post_ui(
                     "plan_job_done",
                     f"{label} · limpieza completada con Fresh Core.",
