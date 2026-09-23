@@ -1,5 +1,5 @@
 {
   "schema": 1,
-  "generation": "V148-IA",
-  "notes": "V148-IA para Windows 10/11 x64. Corrige la falsa validación de escape observada en V147. Un desplazamiento largo en un solo eje ya no cuenta como salida del corredor: el escape requiere expansión transversal real, ancho 2D suficiente, relación 2D reciente y tres evaluaciones consecutivas válidas. Si V85 cambia el marco de coordenadas durante la validación, esa distancia queda anulada como progreso. Además, una franja larga y estrecha con muchas reversiones y revisita alta sigue clasificándose como oscilación aunque el extremo aparente avanzar. Conserva los escapes limitados de V147, el consenso V146 y el cerrojo de sesión V145."
+  "generation": "V149-IA",
+  "notes": "V149-IA para Windows 10/11 x64. Cambia la arquitectura del mapeo cuando EDGE queda atrapado. Paso 1 sigue arrancando con EDGE, pero después de dos escapes V148 fallidos ya no intenta un tercer reinicio EDGE ni aborta inmediatamente: cambia a whole-home V123 por 7/3 ['',0,1] dentro del mismo build-map y la misma sesión Xiaomi. No ejecuta arm_new_map de nuevo. El trigger 2/3 sólo se permite si V123 confirma que el robot sigue físicamente en status=4. Si whole-home confirma status 5/6/7, continúa como Fase 2/2; si también falla, recién entonces cierra la sesión y vuelve seguro a la base. Conserva la validación 2D/rebase-neutral V148 y el cerrojo de sesión V145."
 }
