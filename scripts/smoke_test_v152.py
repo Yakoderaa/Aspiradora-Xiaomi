@@ -28,6 +28,8 @@ assert "def dock" in app_source
 assert "def finish_mapping" in app_source
 assert "def _v114_run_safe_rectangles" in app_source
 assert "def _v127_try_phase2_recovery" in app_source
+assert "def _v74_watch_mapping_worker" in app_source
+assert "def _v84_close_mapping_on_dock" in app_source
 assert "return False" in app_source
 
 assert "start_mapping_whole_home" not in core_source
@@ -43,6 +45,8 @@ assert '"twice clean off"' in core_source
 assert "ReadMostlyMiotProxy" in arbiter_source
 assert "_NAV_ACTIONS" in arbiter_source
 assert "_NAV_PROPERTIES" in arbiter_source
+assert "(9, 6)" in arbiter_source
+assert "(8, 10)" in arbiter_source
 
 assert "FreshRobotCore" in scheduler_source
 assert "start_whole_clean" not in scheduler_source
@@ -237,6 +241,18 @@ finally:
 try:
     vacuum.device.send("set_properties", [])
     raise AssertionError("send(set_properties) heredado atravesó el proxy")
+except LegacyWriteBlocked:
+    pass
+
+try:
+    vacuum.device.call_action_by(9, 6, ["[]"])
+    raise AssertionError("paredes heredadas 9/6 atravesaron el proxy")
+except LegacyWriteBlocked:
+    pass
+
+try:
+    vacuum.device.set_property_by(8, 10, 1)
+    raise AssertionError("twice-clean heredado atravesó el proxy")
 except LegacyWriteBlocked:
     pass
 
