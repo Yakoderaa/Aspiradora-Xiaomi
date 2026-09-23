@@ -1,4 +1,5 @@
 from pathlib import Path
+import inspect
 import math
 import sys
 
@@ -32,11 +33,11 @@ probe = object.__new__(app_v150.App)
 # viene de V82, no del clasificador V148.
 bad = []
 t = 0.0
-for cycle in range(9):
-    for i in range(31):
+for cycle in range(12):
+    for i in range(16):
         bad.append((t, i * 0.10, 0.10 * (cycle % 3), 0.0))
         t += 0.55
-    for i in range(30, -1, -1):
+    for i in range(15, -1, -1):
         bad.append((t, i * 0.10, 0.10 * ((cycle + 1) % 3), math.pi))
         t += 0.55
 
@@ -104,6 +105,38 @@ assert probe._v149_can_switch_global(
     12,
     {"v150_strategy_evidence": True},
 ) is False
+
+# El detector de atasco físico sigue disponible por separado: si V148 da
+# evidencia fuerte, whole-home también puede ser el fallback después de escapes.
+probe._v143_manual_return_requested = False
+probe._v150_strategy_confirmed = False
+assert probe._v149_can_switch_global(
+    12,
+    {
+        "v148_persistent_strip": True,
+        "pattern": "oscillation_corridor",
+    },
+) is True
+
+# Una transición global ya solicitada bloquea nuevos escapes. No debe aumentar
+# el contador ni ejecutar la maniobra heredada.
+probe._v149_global_requested = True
+probe._v147_escape_consecutive = 0
+probe._v147_escape_total = 2
+before_total = probe._v147_escape_total
+assert probe._v147_schedule_escape(12, {}) is True
+assert probe._v147_escape_total == before_total
+probe._v149_global_requested = False
+
+# V150 no reemplaza _v121_request_phase2: el camino natural EDGE->dock de
+# V121/V137 queda intacto. Sólo la transición anticipada usa su worker aislado.
+assert "def _v121_request_phase2" not in app
+transition_source = inspect.getsource(app_v150.App._v150_request_phase2)
+assert "arm_new_map(" not in transition_source
+assert ".manual(" not in transition_source
+assert "_v138_start_factory_edge" not in transition_source
+assert "start_mapping_whole_home" in transition_source
+assert "vacuum.stop()" in transition_source
 
 # En transición, el worker sólo es válido en fase 2/transition y con sesión
 # abierta. Esto evita que un worker tardío reviva un mapa cancelado.
