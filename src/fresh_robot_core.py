@@ -174,6 +174,8 @@ class FreshRobotCore:
                 self._assert_not_rejected(response, label)
                 item["ok"] = True
                 item["response"] = repr(response)[:220]
+            except FreshSessionCancelled:
+                raise
             except Exception as exc:
                 item["error"] = str(exc).strip() or type(exc).__name__
             rows.append(item)
@@ -575,6 +577,7 @@ class FreshRobotCore:
                         plan,
                         force=bool(force_wall_sync),
                         _inside_session=True,
+                        session=session,
                     )
 
                 total = len(pass_names)
@@ -781,6 +784,7 @@ class FreshRobotCore:
                         plan,
                         force=bool(force_wall_sync),
                         _inside_session=True,
+                        session=session,
                     )
                 total = max(1, len(rects) * len(passes))
                 index = 0
