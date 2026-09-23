@@ -102,6 +102,10 @@ class FakeVacuum:
 
     def _get_many(self, definitions):
         raw = getattr(self.device, "_raw_device", self.device)
+        if raw.props[(2, 1)] == 5:
+            raw.reads_after_start += 1
+            if raw.reads_after_start >= 3:
+                raw.props[(2, 1)] = 4
         return {
             name: raw.props.get((int(siid), int(piid)))
             for name, siid, piid in definitions
