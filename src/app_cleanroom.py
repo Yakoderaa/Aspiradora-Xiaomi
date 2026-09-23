@@ -669,10 +669,50 @@ class App(app_v151.App):
 
     # =============================================== bloquear viejos writers
     def _sync_no_go_async(self):
-        core = getattr(self, "_fresh_core", None)
-        if core is not None and core.arbiter.active:
+        if not getattr(self, "vacuum", None) or not self.plan_store:
             return None
-        return super()._sync_no_go_async()
+        try:
+            core = self._fresh()
+        except Exception:
+            return None
+        if core.arbiter.active:
+            # El plan queda guardado; se sincroniza en la próxima tarea física.
+            return None
+
+        plan = self.plan_store.snapshot()
+        all_plan = self.plan_store.snapshot_all()
+        any_managed = any(
+            bool(value)
+            for value in (
+                all_plan.get("virtual_walls_managed_maps", {}) or {}
+            ).values()
+        )
+        if not any_managed and not plan.get(
+            "virtual_walls_managed",
+            False,
+        ):
+            return None
+
+        def worker():
+            try:
+                core.sync_virtual_walls(
+                    plan,
+                    force=any_managed,
+                )
+                self._post_ui("plan_sync_ok")
+            except Exception as exc:
+                self._post_ui(
+                    "plan_sync_error",
+                    str(exc).strip()
+                    or "No se pudieron sincronizar los bloqueos.",
+                )
+
+        threading.Thread(
+            target=worker,
+            name="FreshCoreVirtualWalls",
+            daemon=True,
+        ).start()
+        return True
 
     def _v127_try_phase2_recovery(self, reason):
         if self._fresh_mapping_active:
