@@ -1,7 +1,7 @@
 import sys
 import traceback
 
-import app_cleanroom
+import app_safe_baseline
 import app_v9
 import device_metadata_patch
 import windows_audio_identity
@@ -15,7 +15,7 @@ def main():
     windows_audio_identity.install()
     app_v9._save_crash_log("")
     try:
-        app_cleanroom.App().mainloop()
+        app_safe_baseline.App().mainloop()
     except Exception:
         app_v9._save_crash_log(traceback.format_exc())
         raise
