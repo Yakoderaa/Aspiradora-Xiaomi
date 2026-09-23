@@ -94,17 +94,13 @@ def execute_schedule(schedule, plan, force_wall_sync=False):
         )
 
     if target == "all":
-        mode_id = {
-            "vacuum": 0,
-            "vacuum_mop": 1,
-            "mop": 2,
-        }.get(mode, 0)
-        core.start_global_async(
-            mode=mode_id,
+        core.run_global_sequence_async(
+            passes,
             suction=suction,
             water=water,
-            mapping=False,
             purpose="scheduled-whole-clean",
+            plan=plan,
+            force_wall_sync=bool(force_wall_sync),
         )
     else:
         raw_rects = [
