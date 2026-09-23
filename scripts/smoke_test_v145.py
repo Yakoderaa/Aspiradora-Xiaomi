@@ -35,8 +35,8 @@ assert "_v145_session_latched" in v137
 assert "import app_v145" in main
 assert "app_v145.App().mainloop()" in main
 assert 'scripts\\smoke_test_v145.py' in build
-assert 'src\\main_v145.py' in build
-assert "V145-IA" in workflow
+assert "main_current.py" in build
+assert "release_meta.json" in workflow
 assert "APP_DISPLAY_VERSION" in workflow
 assert "-IA" in workflow
 
