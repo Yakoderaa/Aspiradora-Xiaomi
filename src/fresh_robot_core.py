@@ -321,9 +321,11 @@ class FreshRobotCore:
         action = str(session.cancel_action or "")
         if action == "dock":
             self._action(3, 1, label="dock user priority")
+            session.cancel_action = None
             return "dock_requested"
         if action == "stop":
             self._action(2, 2, label="stop user priority")
+            session.cancel_action = None
             return "stop_requested"
         return None
 
@@ -496,16 +498,32 @@ class FreshRobotCore:
 
     def set_suction(self, level):
         level = max(0, min(4, int(level)))
-        return self._set(7, 5, level, "user suction")
+        if self.arbiter.active:
+            return self._set(7, 5, level, "user suction")
+        return self._run_one_shot(
+            "set_suction",
+            lambda: self._set(7, 5, level, "user suction"),
+        )
 
     def set_water(self, level):
         level = max(0, min(3, int(level)))
-        return self._set(7, 6, level, "user water")
+        if self.arbiter.active:
+            return self._set(7, 6, level, "user water")
+        return self._run_one_shot(
+            "set_water",
+            lambda: self._set(7, 6, level, "user water"),
+        )
 
     def locate(self):
         # Find-me es 4/1=1 en este B112; no altera la estrategia de navegación.
-        with self.arbiter._io_lock:
-            return self.raw_device.set_property_by(4, 1, 1)
+        def send():
+            with self.arbiter._io_lock:
+                response = self.raw_device.set_property_by(4, 1, 1)
+            self._assert_not_rejected(response, "find-me 4/1")
+            return response
+        if self.arbiter.active:
+            return send()
+        return self._run_one_shot("locate", send)
 
     def manual(self, direction):
         if self.arbiter.active:
@@ -603,7 +621,14 @@ class FreshRobotCore:
                         index += 1
                         if callable(on_stage):
                             on_stage(index, total)
-                        zone_value = ",".join(str(v) for v in (
+                        def fmt(value):
+                            value = float(value)
+                            return (
+                                str(int(value))
+                                if value.is_integer()
+                                else f"{value:.6f}".rstrip("0").rstrip(".")
+                            )
+                        zone_value = ",".join(fmt(v) for v in (
                             rect["x0"], rect["y0"],
                             rect["x0"], rect["y1"],
                             rect["x1"], rect["y1"],
