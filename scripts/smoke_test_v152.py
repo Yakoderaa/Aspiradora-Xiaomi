@@ -45,6 +45,9 @@ assert "10, 17, [1]" in core_source
 assert "START_ACTION_BY_MODE = {0: 3, 1: 5, 2: 6}" in core_source
 assert "PROCESS_ARBITER = RobotCommandArbiter()" in core_source
 assert "self.arbiter = arbiter or PROCESS_ARBITER" in core_source
+assert "except FreshSessionCancelled:" in core_source
+assert 'with self.arbiter._io_lock:' in core_source
+assert 'with self._io_lock:' in arbiter_source
 assert '"stop latent edge"' in core_source
 assert '"twice clean off"' in core_source
 
