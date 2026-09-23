@@ -10,9 +10,6 @@ def text(path):
 
 
 app = text("src/app_v148.py")
-main_current = text("src/main_current.py")
-meta = text("release_meta.json")
-
 assert "class App(app_v147.App)" in app
 assert "v148_persistent_strip" in app
 assert "def _v148_escape_geometry" in app
