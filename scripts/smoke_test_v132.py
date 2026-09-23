@@ -27,7 +27,7 @@ assert "No se ejecutó fallback" in method
 assert "import app_v132" in main
 assert "app_v132.App().mainloop()" in main
 assert 'scripts\\smoke_test_v132.py' in build
-assert any(f"src\\main_v{v}.py" in build for v in (132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145))
-assert any(v in workflow for v in ("V132", "V133", "V134", "V135", "V136", "V137", "V138", "V139", "V140", "V141", "V142-IA", "V143-IA", "V144-IA", "V145-IA"))
+assert "main_current.py" in build
+assert "release_meta.json" in workflow
 
 print("V132 smoke OK")
