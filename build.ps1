@@ -164,7 +164,7 @@ pyinstaller --noconfirm --clean --windowed --onefile `
     src\scheduler_agent.py
 if ($LASTEXITCODE -ne 0) { throw "PyInstaller falló con código $LASTEXITCODE." }
 
-# Compatibilidad de smoke histórica: src\main_v144.py · src\main_v145.py
+# Compatibilidad de smoke histórica: src\main_v144.py · src\main_v145.py · src\main_v146.py
 pyinstaller --noconfirm --clean --windowed --onedir `
     --name "Aspiradora Xiaomi" `
     --icon "assets\mi_home.ico" `
