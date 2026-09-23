@@ -25,7 +25,7 @@ start_source = inspect.getsource(app_v151.App.start_new_mapping)
 
 # Contrato central: el arranque automático no ejecuta EDGE ni maniobras
 # manuales; arma un mapa una vez y arranca whole-home V123.
-assert start_source.count("arm_new_map(1)") == 1, start_source
+assert start_source.count("build_diag = vacuum.arm_new_map(1)") == 1, start_source
 assert "start_mapping_whole_home(" in start_source
 assert "_v138_start_factory_edge(" not in start_source
 assert "start_mapping_exploration(" not in start_source
