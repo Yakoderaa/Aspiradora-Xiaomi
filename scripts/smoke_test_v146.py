@@ -29,9 +29,8 @@ assert "import app_v146" in main
 assert "app_v146.App().mainloop()" in main
 assert 'scripts\\smoke_test_v146.py' in build
 assert "main_current.py" in build
-assert "main_current.py" in build
 assert "release_meta.json" in workflow
-assert "consenso multiseñal" in workflow
+assert "$meta.notes" in workflow
 
 import app_v146
 
@@ -56,4 +55,3 @@ assert stuck_metrics["pattern"] == "stuck", stuck_metrics
 
 print("V146-IA smoke OK")
 
-# Trigger final tras compatibilidad V145-IA
