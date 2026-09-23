@@ -48,8 +48,6 @@ Name: "{userdesktop}\Aspiradora Xiaomi"; Filename: "{app}\{#MyAppExeName}"; Task
 [Tasks]
 Name: "desktopicon"; Description: "Crear un acceso directo en el escritorio"; GroupDescription: "Accesos directos:"; Flags: unchecked
 
-[Registry]
-Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "AspiradoraXiaomiScheduler"; ValueData: """{app}\{#MySchedulerExeName}"""; Flags: uninsdeletevalue
 
 
 [Code]
@@ -57,22 +55,40 @@ function PrepareToInstall(var NeedsRestart: Boolean): String;
 var
   ResultCode: Integer;
 begin
-  { Un scheduler de una versión anterior no puede quedar vivo durante el
-    reemplazo: no conoce el árbitro Fresh Core y podría controlar el E10. }
+  { V153 debe poder instalarse sin dejar ningún proceso que toque el robot. }
   Exec(
-    ExpandConstant('{sys}\taskkill.exe'),
+    ExpandConstant('{sys}\\taskkill.exe'),
     '/IM "{#MySchedulerExeName}" /F',
     '',
     SW_HIDE,
     ewWaitUntilTerminated,
     ResultCode
   );
+  Exec(
+    ExpandConstant('{sys}\\taskkill.exe'),
+    '/IM "{#MyAppExeName}" /F',
+    '',
+    SW_HIDE,
+    ewWaitUntilTerminated,
+    ResultCode
+  );
+
+  { El baseline no permite tareas automáticas al arrancar Windows. }
+  RegDeleteValue(
+    HKCU,
+    'Software\\Microsoft\\Windows\\CurrentVersion\\Run',
+    'AspiradoraXiaomiScheduler'
+  );
+  RegDeleteValue(
+    HKCU,
+    'Software\\Microsoft\\Windows\\CurrentVersion\\Run',
+    'Aspiradora Xiaomi'
+  );
+
   Result := '';
 end;
 
-[Run]
-Filename: "{app}\{#MySchedulerExeName}"; Description: "Iniciar programador de limpiezas"; Flags: nowait runhidden
-Filename: "{app}\{#MyAppExeName}"; Description: "Abrir Aspiradora Xiaomi"; Flags: nowait postinstall skipifsilent
+{ V153 no tiene sección [Run]: instalar no abre la app ni el Scheduler. }
 
 [UninstallRun]
 Filename: "{sys}\taskkill.exe"; Parameters: "/IM ""{#MySchedulerExeName}"" /F"; Flags: runhidden; RunOnceId: "StopScheduler"
