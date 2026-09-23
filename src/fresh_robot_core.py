@@ -442,13 +442,9 @@ class FreshRobotCore:
             diag["finish_reason"] = reason
             diag["final_state"] = self._read()
             self._last_diag = dict(diag)
-            if callable(on_finished):
-                on_finished(dict(diag))
         except Exception as exc:
             diag["error"] = str(exc).strip() or type(exc).__name__
             self._last_diag = dict(diag)
-            if callable(on_finished):
-                on_finished(dict(diag))
         finally:
             if session is not None:
                 self.arbiter.finish(
@@ -458,6 +454,11 @@ class FreshRobotCore:
                     or "finished",
                 )
             self._worker = None
+
+        # La UI recibe el final recién después de liberar transporte y lease.
+        # Así captura final/mapa no compite con una sesión física todavía viva.
+        if callable(on_finished):
+            on_finished(dict(diag))
 
     def start_global_async(
         self,
