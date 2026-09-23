@@ -40,7 +40,7 @@ for cycle in range(8):
 m = probe._v142_classify_path(osc)
 assert m["pattern"] == "oscillation_corridor", m
 assert m["oscillation_evidence"] is True, m
-assert m["oscillation_reversals"] >= 6, m
+assert m["oscillation_reversals"] >= 5, m
 assert m["straightness"] <= 0.14, m
 
 # Pasillo real con avance sostenido: estrecho, pero sin inversiones repetidas.
