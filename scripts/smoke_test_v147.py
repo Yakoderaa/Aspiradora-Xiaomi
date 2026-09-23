@@ -23,8 +23,9 @@ assert "misma sesión" in app.lower()
 assert "import app_v147" in main
 assert "app_v147.App().mainloop()" in main
 assert 'scripts\\smoke_test_v147.py' in build
-assert 'src\\main_v147.py' in build
-assert "V147-IA" in workflow
+assert 'src\\main_current.py' in build
+assert "release_meta.json" in workflow
+assert "$generation" in workflow
 
 import app_v147
 
@@ -56,6 +57,3 @@ assert q["pattern"] != "oscillation_corridor", q
 
 print("V147-IA smoke OK")
 
-# Trigger final V147 tras actualizar workflow/release.
-
-# Trigger final V147 CI compat.
