@@ -34,8 +34,8 @@ assert "record_mapping_session" in app
 assert "import app_v143" in main
 assert "app_v143.App().mainloop()" in main
 assert 'scripts\\smoke_test_v143.py' in build
-assert any(f"src\\main_v{v}.py" in build for v in (143, 144, 145))
-assert any(v in workflow for v in ("V143-IA", "V144-IA", "V145-IA"))
+assert "main_current.py" in build
+assert "release_meta.json" in workflow
 assert "APP_DISPLAY_VERSION" in workflow
 assert "-IA" in workflow
 
