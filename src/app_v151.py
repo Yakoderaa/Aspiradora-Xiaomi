@@ -41,8 +41,66 @@ class App(app_v150.App):
             and not bool(getattr(self, "_v145_reset_guard", False))
         )
 
+    def _v151_prepare_map_layers(self):
+        """Replica sólo los resets de sesión de wrappers V92-V107."""
+        client = getattr(self, "_v40_client", None)
+        if client is not None:
+            if hasattr(client, "reset_v92_accumulator"):
+                try:
+                    client.reset_v92_accumulator("Mapear vivienda V151")
+                except Exception:
+                    pass
+            if hasattr(client, "reset_v100_live"):
+                try:
+                    client.reset_v100_live("Mapear vivienda V151")
+                except Exception:
+                    pass
+
+        try:
+            map_id = self._v105_map_id()
+            self._v105_histories.pop(map_id, None)
+            self._v105_frozen_previews.pop(map_id, None)
+            self._v105_last_reason = "nueva sesión V151"
+            self._v105_last_history = 0
+            self._v105_last_blocks = 0
+            self._v105_last_area_m2 = 0.0
+        except Exception:
+            pass
+
+        try:
+            map_id = self._v105_map_id()
+            self._v106_histories.pop(map_id, None)
+            self._v106_last_history = 0
+            self._v106_last_raw_cells = 0
+            self._v106_last_density_cells = 0
+            self._v106_last_area_m2 = 0.0
+            self._v106_last_blocks = 0
+            self._v106_last_reason = "nueva sesión V151"
+        except Exception:
+            pass
+
+        self._v107_hide_surface_until_final = True
+        self._v107_final_saved = False
+        self._v107_final_grid = None
+        self._v107_final_candidates = 0
+        self._v107_final_unique = 0
+        self._v107_final_choice_reason = "nueva sesión V151"
+        self._v107_final_capture_errors = []
+
+        self._v93_finalizing = False
+        self._v93_finalized_serial = None
+        self._v93_final_read_success = 0
+        self._v93_final_read_errors = []
+        return True
+
     # ==================================================== arranque directo
     def start_new_mapping(self):
+        try:
+            if self._v114_cleaning_busy():
+                return
+        except Exception:
+            pass
+
         vacuum = getattr(self, "vacuum", None)
         if vacuum is None:
             messagebox.showwarning(
@@ -74,6 +132,7 @@ class App(app_v150.App):
             return
 
         self._v151_reset_direct_state()
+        self._v151_prepare_map_layers()
 
         # Este método reemplaza el wrapper V145, así que abrimos explícitamente
         # el único cerrojo autorizado por el gesto Mapear vivienda.
@@ -81,12 +140,6 @@ class App(app_v150.App):
         self._v145_latch_reason = "explicit-map-request-v151"
         self._v145_active_serial = None
         self._v145_last_block = {}
-
-        # Limpiar estado final/diagnóstico de sesiones anteriores.
-        self._v93_finalizing = False
-        self._v93_finalized_serial = None
-        self._v93_final_read_success = 0
-        self._v93_final_read_errors = []
 
         self._v141_log("V151 Mapear vivienda confirmado · whole-home directo")
         self._v141_edge_diag = {}
