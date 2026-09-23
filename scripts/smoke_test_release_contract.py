@@ -42,7 +42,7 @@ assert isinstance(meta.get("notes"), str) and len(meta["notes"]) >= 40
 match = re.fullmatch(r"V(\d+)-IA", str(meta["generation"]))
 assert match, meta
 active_number = match.group(1)
-active_module = f"app_v{active_number}"
+active_module = str(meta.get("entry_module") or f"app_v{active_number}")
 active_file = ROOT / "src" / f"{active_module}.py"
 assert active_file.exists(), active_file
 assert f"import {active_module}" in main_current, (active_module, main_current)
