@@ -300,7 +300,20 @@ class ReadMostlyMiotProxy:
         )
 
     def __getattr__(self, name):
-        return getattr(self._raw_device, name)
+        attr = getattr(self._raw_device, name)
+        if callable(attr) and str(name).lower().startswith(
+            ("set", "write", "action", "call_action", "send_")
+        ):
+            def blocked(*args, **kwargs):
+                self._arbiter.note_legacy_block(
+                    "dynamic_method",
+                    value=str(name),
+                )
+                raise LegacyWriteBlocked(
+                    f"Fresh Core bloqueó método heredado de escritura: {name}."
+                )
+            return blocked
+        return attr
 
 
 def install_read_mostly_proxy(vacuum, arbiter):
