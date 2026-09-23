@@ -15,6 +15,11 @@ from robot_command_arbiter import (
 ACTIVE = {5, 6, 7}
 IDLE = {0, 1, 2, 4}
 
+# Un único árbitro por proceso. El ProcessLease agrega exclusión entre
+# procesos (GUI/Scheduler); este singleton evita dos FreshRobotCore dentro
+# de la misma aplicación después de una reconexión.
+PROCESS_ARBITER = RobotCommandArbiter()
+
 
 @dataclass
 class FreshStartResult:
@@ -41,7 +46,7 @@ class FreshRobotCore:
 
     def __init__(self, vacuum, arbiter=None, source="gui"):
         self.vacuum = vacuum
-        self.arbiter = arbiter or RobotCommandArbiter()
+        self.arbiter = arbiter or PROCESS_ARBITER
         self.source = str(source)
         self.raw_device = install_read_mostly_proxy(vacuum, self.arbiter)
         self._worker = None
