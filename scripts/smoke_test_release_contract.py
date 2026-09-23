@@ -18,7 +18,9 @@ entry_lines = [
 assert entry_lines == ["src\\main_current.py"], entry_lines
 assert 'Invoke-PythonChecked "scripts\\smoke_test_release_contract.py"' in build
 assert "$futureSmokeTests = Get-ChildItem" in build
-assert "-gt 147" in build
+assert "$lastExplicitVersion" in build
+assert "$buildSource = Get-Content $MyInvocation.MyCommand.Path -Raw" in build
+assert "-gt 147" not in build
 
 # El wrapper actual puede cambiar qué app importa, pero su nombre permanece fijo.
 assert "def main():" in main_current
