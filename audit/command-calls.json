@@ -1,0 +1,2567 @@
+[
+  {
+    "file": "src/app_v22.py",
+    "line": 584,
+    "call": "self.manual(direction)"
+  },
+  {
+    "file": "src/app_v22.py",
+    "line": 585,
+    "call": "self.manual(5)"
+  },
+  {
+    "file": "src/app_v136.py",
+    "line": 192,
+    "call": "threading.Thread(target=worker, name='AspiradoraEdgeV64V68V136', daemon=True).start()"
+  },
+  {
+    "file": "src/app_v136.py",
+    "line": 210,
+    "call": "super().dock()"
+  },
+  {
+    "file": "src/app_v136.py",
+    "line": 302,
+    "call": "threading.Thread(target=self._watch_edge_only, args=(edge_session,), name='AspiradoraEdgeWatchV68V136', daemon=True).start()"
+  },
+  {
+    "file": "src/app_v136.py",
+    "line": 135,
+    "call": "vacuum.start_mapping_perimeter()"
+  },
+  {
+    "file": "src/app_v67.py",
+    "line": 153,
+    "call": "threading.Thread(target=self._v67_watch_base_worker, args=(vacuum, serial), daemon=True).start()"
+  },
+  {
+    "file": "src/app_v67.py",
+    "line": 286,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v67.py",
+    "line": 336,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v67.py",
+    "line": 328,
+    "call": "vacuum.start_mapping_interior()"
+  },
+  {
+    "file": "src/app_v67.py",
+    "line": 414,
+    "call": "threading.Thread(target=self._v67_watch_base_worker, args=(self.vacuum, int(serial)), daemon=True).start()"
+  },
+  {
+    "file": "src/app_v67.py",
+    "line": 198,
+    "call": "vacuum.dock()"
+  },
+  {
+    "file": "src/app_v8.py",
+    "line": 157,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v8.py",
+    "line": 209,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v8.py",
+    "line": 147,
+    "call": "self.vacuum.start_mapping_perimeter()"
+  },
+  {
+    "file": "src/app_v8.py",
+    "line": 199,
+    "call": "self.vacuum.start_mapping_interior()"
+  },
+  {
+    "file": "src/app_v8.py",
+    "line": 280,
+    "call": "threading.Thread(target=self._restore_cleaning_preferences, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v11.py",
+    "line": 57,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v11.py",
+    "line": 146,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v11.py",
+    "line": 65,
+    "call": "threading.Thread(target=self._watch_edge_only, args=(session,), daemon=True).start()"
+  },
+  {
+    "file": "src/app_v11.py",
+    "line": 250,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/app_v11.py",
+    "line": 137,
+    "call": "vacuum.start_mapping_perimeter()"
+  },
+  {
+    "file": "src/app_v11.py",
+    "line": 214,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/app_v11.py",
+    "line": 236,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/app_v11.py",
+    "line": 189,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/app_v33.py",
+    "line": 27,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v73.py",
+    "line": 565,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v73.py",
+    "line": 570,
+    "call": "super().dock()"
+  },
+  {
+    "file": "src/app_v73.py",
+    "line": 582,
+    "call": "threading.Thread(target=self._v73_dock_guard_worker, args=(vacuum, serial, str(reason)), daemon=True).start()"
+  },
+  {
+    "file": "src/app_v73.py",
+    "line": 1017,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v73.py",
+    "line": 512,
+    "call": "threading.Thread(target=abort_worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v73.py",
+    "line": 525,
+    "call": "vacuum.manual(4)"
+  },
+  {
+    "file": "src/app_v73.py",
+    "line": 527,
+    "call": "vacuum.manual(5)"
+  },
+  {
+    "file": "src/app_v73.py",
+    "line": 531,
+    "call": "vacuum.manual(turn)"
+  },
+  {
+    "file": "src/app_v73.py",
+    "line": 533,
+    "call": "vacuum.manual(5)"
+  },
+  {
+    "file": "src/app_v73.py",
+    "line": 536,
+    "call": "vacuum.start_mapping_interior()"
+  },
+  {
+    "file": "src/app_v73.py",
+    "line": 679,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/app_v73.py",
+    "line": 684,
+    "call": "vacuum.manual(4)"
+  },
+  {
+    "file": "src/app_v73.py",
+    "line": 686,
+    "call": "vacuum.manual(5)"
+  },
+  {
+    "file": "src/app_v73.py",
+    "line": 694,
+    "call": "vacuum.dock()"
+  },
+  {
+    "file": "src/app_v73.py",
+    "line": 499,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/app_v73.py",
+    "line": 504,
+    "call": "vacuum.dock()"
+  },
+  {
+    "file": "src/app_v73.py",
+    "line": 520,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/app_v73.py",
+    "line": 663,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/app_v73.py",
+    "line": 667,
+    "call": "vacuum.manual(5)"
+  },
+  {
+    "file": "src/app_v73.py",
+    "line": 796,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/app_v73.py",
+    "line": 801,
+    "call": "vacuum.manual(4)"
+  },
+  {
+    "file": "src/app_v73.py",
+    "line": 803,
+    "call": "vacuum.manual(5)"
+  },
+  {
+    "file": "src/app_v73.py",
+    "line": 811,
+    "call": "vacuum.dock()"
+  },
+  {
+    "file": "src/app_v73.py",
+    "line": 845,
+    "call": "vacuum.dock()"
+  },
+  {
+    "file": "src/app_v73.py",
+    "line": 861,
+    "call": "vacuum.dock()"
+  },
+  {
+    "file": "src/app_v73.py",
+    "line": 546,
+    "call": "vacuum.manual(5)"
+  },
+  {
+    "file": "src/app_v73.py",
+    "line": 550,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/app_v73.py",
+    "line": 555,
+    "call": "vacuum.dock()"
+  },
+  {
+    "file": "src/app_v73.py",
+    "line": 689,
+    "call": "vacuum.manual(5)"
+  },
+  {
+    "file": "src/app_v73.py",
+    "line": 828,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/app_v73.py",
+    "line": 832,
+    "call": "vacuum.manual(5)"
+  },
+  {
+    "file": "src/app_v73.py",
+    "line": 806,
+    "call": "vacuum.manual(5)"
+  },
+  {
+    "file": "src/xiaomi_e10_map_v59.py",
+    "line": 147,
+    "call": "self.vacuum.device.send('get_properties', payload)"
+  },
+  {
+    "file": "src/xiaomi_e10_map_v59.py",
+    "line": 231,
+    "call": "self.vacuum.device.send(command, list(params))"
+  },
+  {
+    "file": "src/xiaomi_e10_map_v59.py",
+    "line": 253,
+    "call": "self.vacuum.device.send('get_map_v1', [])"
+  },
+  {
+    "file": "src/xiaomi_e10_map_v59.py",
+    "line": 283,
+    "call": "self.vacuum.device.call_action_by(10, 1, [])"
+  },
+  {
+    "file": "src/xiaomi_e10_map_v59.py",
+    "line": 311,
+    "call": "self.vacuum.device.call_action_by(10, aiid, [int(map_id)])"
+  },
+  {
+    "file": "src/app_v13.py",
+    "line": 150,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v13.py",
+    "line": 222,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v13.py",
+    "line": 46,
+    "call": "threading.Thread(target=self._ensure_return_to_base_after_edge, args=(vacuum,), daemon=True).start()"
+  },
+  {
+    "file": "src/app_v13.py",
+    "line": 141,
+    "call": "vacuum.start_mapping_perimeter()"
+  },
+  {
+    "file": "src/app_v13.py",
+    "line": 159,
+    "call": "vacuum.dock()"
+  },
+  {
+    "file": "src/app_v13.py",
+    "line": 214,
+    "call": "vacuum.start_mapping_interior()"
+  },
+  {
+    "file": "src/xiaomi_e10_map_v41.py",
+    "line": 391,
+    "call": "self.vacuum.device.set_property_by(10, 23, int(self.privacy_original))"
+  },
+  {
+    "file": "src/xiaomi_e10_map_v41.py",
+    "line": 415,
+    "call": "self.vacuum.device.call_action_by(10, 1, [])"
+  },
+  {
+    "file": "src/xiaomi_e10_map_v41.py",
+    "line": 378,
+    "call": "self.vacuum.device.set_property_by(10, 23, 0)"
+  },
+  {
+    "file": "src/xiaomi_e10_map_v41.py",
+    "line": 439,
+    "call": "self.vacuum.device.call_action_by(10, aiid, params)"
+  },
+  {
+    "file": "src/app_v137.py",
+    "line": 174,
+    "call": "threading.Thread(target=worker, name='AspiradoraMapPhase1V123Restored', daemon=True).start()"
+  },
+  {
+    "file": "src/app_v137.py",
+    "line": 194,
+    "call": "super().dock()"
+  },
+  {
+    "file": "src/app_v137.py",
+    "line": 338,
+    "call": "threading.Thread(target=worker, name='AspiradoraMapWholeHomeV123Restored', daemon=True).start()"
+  },
+  {
+    "file": "src/app_v137.py",
+    "line": 117,
+    "call": "vacuum.arm_new_map(1)"
+  },
+  {
+    "file": "src/app_v137.py",
+    "line": 127,
+    "call": "vacuum.start_mapping_exploration(confirm_timeout=5.0)"
+  },
+  {
+    "file": "src/app_v137.py",
+    "line": 294,
+    "call": "vacuum.start_mapping_whole_home(confirm_timeout=self.PHASE2_CONFIRM_TIMEOUT)"
+  },
+  {
+    "file": "src/app_v140.py",
+    "line": 150,
+    "call": "threading.Thread(target=self._v140_reset_worker, args=(vacuum,), name='AspiradoraDeepResetPreserveWifiV140', daemon=True).start()"
+  },
+  {
+    "file": "src/app_v140.py",
+    "line": 220,
+    "call": "vacuum.device.call_action_by(8, 3)"
+  },
+  {
+    "file": "src/app_v140.py",
+    "line": 243,
+    "call": "vacuum.device.call_action_by(8, 2, [int(order_id)])"
+  },
+  {
+    "file": "src/app_v140.py",
+    "line": 265,
+    "call": "vacuum.device.call_action_by(10, aiid)"
+  },
+  {
+    "file": "src/app_v140.py",
+    "line": 372,
+    "call": "vacuum.device.set_property_by(10, 1, 0)"
+  },
+  {
+    "file": "src/app_v140.py",
+    "line": 381,
+    "call": "vacuum.device.set_property_by(7, 7, 0)"
+  },
+  {
+    "file": "src/app_v48.py",
+    "line": 87,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v95.py",
+    "line": 249,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v95.py",
+    "line": 136,
+    "call": "self.vacuum.start(mode)"
+  },
+  {
+    "file": "src/app_v128.py",
+    "line": 191,
+    "call": "threading.Thread(target=worker, name='AspiradoraPhase2RecoveryV128', daemon=True).start()"
+  },
+  {
+    "file": "src/app_v128.py",
+    "line": 114,
+    "call": "vacuum._send_motor_start('v128_phase2_reassert', 7, 3, ['', 0, 1], allow_when_guarded=True)"
+  },
+  {
+    "file": "src/app_v128.py",
+    "line": 108,
+    "call": "vacuum.set_sweep_type(0)"
+  },
+  {
+    "file": "src/app_v128.py",
+    "line": 150,
+    "call": "vacuum._send_motor_start('v128_phase2_idle_retry', 7, 3, ['', 0, 1], allow_when_guarded=True)"
+  },
+  {
+    "file": "src/app_v133.py",
+    "line": 143,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/app_v133.py",
+    "line": 149,
+    "call": "vacuum.manual(4)"
+  },
+  {
+    "file": "src/app_v133.py",
+    "line": 151,
+    "call": "vacuum.manual(5)"
+  },
+  {
+    "file": "src/app_v133.py",
+    "line": 173,
+    "call": "vacuum.dock()"
+  },
+  {
+    "file": "src/app_v133.py",
+    "line": 191,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/app_v133.py",
+    "line": 195,
+    "call": "vacuum.manual(5)"
+  },
+  {
+    "file": "src/app_v133.py",
+    "line": 111,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/app_v133.py",
+    "line": 115,
+    "call": "vacuum.manual(5)"
+  },
+  {
+    "file": "src/app_v133.py",
+    "line": 162,
+    "call": "vacuum.manual(turn)"
+  },
+  {
+    "file": "src/app_v133.py",
+    "line": 164,
+    "call": "vacuum.manual(5)"
+  },
+  {
+    "file": "src/app_v133.py",
+    "line": 154,
+    "call": "vacuum.manual(5)"
+  },
+  {
+    "file": "src/app_v133.py",
+    "line": 167,
+    "call": "vacuum.manual(5)"
+  },
+  {
+    "file": "src/app_v145.py",
+    "line": 159,
+    "call": "super().dock()"
+  },
+  {
+    "file": "src/app_v145.py",
+    "line": 284,
+    "call": "threading.Thread(target=worker, name='AspiradoraV145LateStartCounterReturn', daemon=True).start()"
+  },
+  {
+    "file": "src/app_v145.py",
+    "line": 272,
+    "call": "vacuum.dock()"
+  },
+  {
+    "file": "src/app_v145.py",
+    "line": 217,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/app_v145.py",
+    "line": 225,
+    "call": "vacuum.dock()"
+  },
+  {
+    "file": "src/app_v96.py",
+    "line": 320,
+    "call": "threading.Thread(target=worker, name='AspiradoraLocalMap', daemon=True).start()"
+  },
+  {
+    "file": "src/app_v130.py",
+    "line": 262,
+    "call": "threading.Thread(target=worker, name='AspiradoraReturnMapV130', daemon=True).start()"
+  },
+  {
+    "file": "src/app_v130.py",
+    "line": 1184,
+    "call": "threading.Thread(target=worker, name='AspiradoraPolygonRoomV130', daemon=True).start()"
+  },
+  {
+    "file": "src/app_v130.py",
+    "line": 1121,
+    "call": "sync_virtual_walls(vacuum, plan)"
+  },
+  {
+    "file": "src/app_v147.py",
+    "line": 516,
+    "call": "threading.Thread(target=worker, name=f'AspiradoraV147Escape{total}', daemon=True).start()"
+  },
+  {
+    "file": "src/app_v147.py",
+    "line": 477,
+    "call": "vacuum.manual(4)"
+  },
+  {
+    "file": "src/app_v147.py",
+    "line": 479,
+    "call": "vacuum.manual(5)"
+  },
+  {
+    "file": "src/app_v147.py",
+    "line": 482,
+    "call": "vacuum.manual(turn)"
+  },
+  {
+    "file": "src/app_v147.py",
+    "line": 484,
+    "call": "vacuum.manual(5)"
+  },
+  {
+    "file": "src/app_v147.py",
+    "line": 472,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/app_v147.py",
+    "line": 506,
+    "call": "vacuum.manual(5)"
+  },
+  {
+    "file": "src/app_v36.py",
+    "line": 103,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v116.py",
+    "line": 431,
+    "call": "threading.Thread(target=worker, name='AspiradoraGlobalCleanV116', daemon=True).start()"
+  },
+  {
+    "file": "src/app_v116.py",
+    "line": 329,
+    "call": "vacuum.start_global_verified(mode, confirm_timeout=3.0)"
+  },
+  {
+    "file": "src/app_v120.py",
+    "line": 118,
+    "call": "threading.Thread(target=worker, name='AspiradoraMapExploreV120', daemon=True).start()"
+  },
+  {
+    "file": "src/app_v120.py",
+    "line": 78,
+    "call": "vacuum.arm_new_map(1)"
+  },
+  {
+    "file": "src/app_v120.py",
+    "line": 83,
+    "call": "vacuum.start_mapping_exploration(confirm_timeout=5.0)"
+  },
+  {
+    "file": "src/app_v12.py",
+    "line": 182,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v12.py",
+    "line": 111,
+    "call": "self._update_progress.stop()"
+  },
+  {
+    "file": "src/app_v12.py",
+    "line": 113,
+    "call": "self._update_progress.start(12)"
+  },
+  {
+    "file": "src/app_v12.py",
+    "line": 117,
+    "call": "self._update_progress.stop()"
+  },
+  {
+    "file": "src/scheduler_agent.py",
+    "line": 77,
+    "call": "sync_virtual_walls(vacuum, plan, force=bool(force_wall_sync))"
+  },
+  {
+    "file": "src/app_v75.py",
+    "line": 263,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v75.py",
+    "line": 285,
+    "call": "super().dock()"
+  },
+  {
+    "file": "src/app_v75.py",
+    "line": 180,
+    "call": "threading.Thread(target=abort_worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v75.py",
+    "line": 195,
+    "call": "vacuum.manual(4)"
+  },
+  {
+    "file": "src/app_v75.py",
+    "line": 204,
+    "call": "vacuum.manual(5)"
+  },
+  {
+    "file": "src/app_v75.py",
+    "line": 210,
+    "call": "vacuum.manual(turn)"
+  },
+  {
+    "file": "src/app_v75.py",
+    "line": 219,
+    "call": "vacuum.manual(5)"
+  },
+  {
+    "file": "src/app_v75.py",
+    "line": 226,
+    "call": "vacuum.start_mapping_interior()"
+  },
+  {
+    "file": "src/app_v75.py",
+    "line": 165,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/app_v75.py",
+    "line": 172,
+    "call": "vacuum.dock()"
+  },
+  {
+    "file": "src/app_v75.py",
+    "line": 188,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/app_v75.py",
+    "line": 345,
+    "call": "vacuum.dock()"
+  },
+  {
+    "file": "src/app_v75.py",
+    "line": 200,
+    "call": "vacuum.manual(5)"
+  },
+  {
+    "file": "src/app_v75.py",
+    "line": 215,
+    "call": "vacuum.manual(5)"
+  },
+  {
+    "file": "src/app_v75.py",
+    "line": 230,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/app_v75.py",
+    "line": 244,
+    "call": "vacuum.manual(5)"
+  },
+  {
+    "file": "src/app_v75.py",
+    "line": 248,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/app_v75.py",
+    "line": 253,
+    "call": "vacuum.dock()"
+  },
+  {
+    "file": "src/xiaomi_e10_live.py",
+    "line": 237,
+    "call": "self.device.call_action_by(10, 12, [int(start), int(end)])"
+  },
+  {
+    "file": "src/app_v26.py",
+    "line": 171,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/app_v26.py",
+    "line": 149,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/app_v26.py",
+    "line": 79,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/app_v26.py",
+    "line": 119,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/app_v149.py",
+    "line": 204,
+    "call": "threading.Thread(target=worker, name='AspiradoraV149GlobalFailureDock', daemon=True).start()"
+  },
+  {
+    "file": "src/app_v149.py",
+    "line": 195,
+    "call": "vacuum.dock()"
+  },
+  {
+    "file": "src/windows_audio_identity.py",
+    "line": 238,
+    "call": "threading.Thread(target=_worker, name='AspiradoraAudioIdentity', daemon=True).start()"
+  },
+  {
+    "file": "src/app_v151.py",
+    "line": 320,
+    "call": "threading.Thread(target=worker, name='AspiradoraV151DirectWholeHome', daemon=True).start()"
+  },
+  {
+    "file": "src/app_v151.py",
+    "line": 400,
+    "call": "super().dock()"
+  },
+  {
+    "file": "src/app_v151.py",
+    "line": 241,
+    "call": "vacuum.arm_new_map(1)"
+  },
+  {
+    "file": "src/app_v151.py",
+    "line": 258,
+    "call": "vacuum.start_mapping_whole_home(confirm_timeout=self.DIRECT_GLOBAL_CONFIRM_TIMEOUT)"
+  },
+  {
+    "file": "src/app_v38.py",
+    "line": 206,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v98.py",
+    "line": 583,
+    "call": "threading.Thread(target=worker, name='AspiradoraUpdateDownload', daemon=True).start()"
+  },
+  {
+    "file": "src/app_v98.py",
+    "line": 537,
+    "call": "self._v98_update_progress.start(12)"
+  },
+  {
+    "file": "src/app_v98.py",
+    "line": 540,
+    "call": "self._v98_update_progress.stop()"
+  },
+  {
+    "file": "src/xiaomi_e10_map_v56.py",
+    "line": 107,
+    "call": "self.vacuum.device.call_action_by(10, aiid, list(params))"
+  },
+  {
+    "file": "src/xiaomi_e10_map_v45.py",
+    "line": 78,
+    "call": "self.vacuum.device.call_action_by(10, aiid, [int(map_id)])"
+  },
+  {
+    "file": "src/app_v107.py",
+    "line": 323,
+    "call": "threading.Thread(target=worker, name='AspiradoraFinalMapV107', daemon=True).start()"
+  },
+  {
+    "file": "src/app_v52.py",
+    "line": 27,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v142.py",
+    "line": 236,
+    "call": "threading.Thread(target=self._v142_room_monitor, args=(token, context), name='AspiradoraAIRoomMonitorV142', daemon=True).start()"
+  },
+  {
+    "file": "src/app_v142.py",
+    "line": 433,
+    "call": "threading.Thread(target=self._v142_mapping_monitor, args=(token, serial), name='AspiradoraAIMappingMonitorV142', daemon=True).start()"
+  },
+  {
+    "file": "src/app_v113.py",
+    "line": 41,
+    "call": "super().dock()"
+  },
+  {
+    "file": "src/update_helper.py",
+    "line": 208,
+    "call": "self.progress.start(12)"
+  },
+  {
+    "file": "src/update_helper.py",
+    "line": 304,
+    "call": "self.progress.stop()"
+  },
+  {
+    "file": "src/update_helper.py",
+    "line": 218,
+    "call": "threading.Thread(target=self._run_update, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v122.py",
+    "line": 119,
+    "call": "threading.Thread(target=worker, name='AspiradoraMapWholeHomeV122', daemon=True).start()"
+  },
+  {
+    "file": "src/app_v122.py",
+    "line": 85,
+    "call": "vacuum.start_mapping_whole_home(confirm_timeout=self.PHASE2_CONFIRM_TIMEOUT)"
+  },
+  {
+    "file": "src/app_v15.py",
+    "line": 49,
+    "call": "threading.Thread(target=self._force_mapping_eco_worker, args=(vacuum,), daemon=True).start()"
+  },
+  {
+    "file": "src/app_v3.py",
+    "line": 68,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v20.py",
+    "line": 179,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v20.py",
+    "line": 171,
+    "call": "sync_virtual_walls(vacuum, plan, force=any_managed)"
+  },
+  {
+    "file": "src/app.py",
+    "line": 245,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app.py",
+    "line": 279,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app.py",
+    "line": 316,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app.py",
+    "line": 381,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app.py",
+    "line": 450,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app.py",
+    "line": 350,
+    "call": "threading.Thread(target=lambda: self._safe_manual(direction), daemon=True).start()"
+  },
+  {
+    "file": "src/app.py",
+    "line": 354,
+    "call": "self.vacuum.manual(direction)"
+  },
+  {
+    "file": "src/app.py",
+    "line": 208,
+    "call": "self.manual(direction)"
+  },
+  {
+    "file": "src/app.py",
+    "line": 209,
+    "call": "self.manual(5)"
+  },
+  {
+    "file": "src/app.py",
+    "line": 323,
+    "call": "self.vacuum.start(mode)"
+  },
+  {
+    "file": "src/xiaomi_e10.py",
+    "line": 267,
+    "call": "self.device.send('get_properties', payload)"
+  },
+  {
+    "file": "src/xiaomi_e10.py",
+    "line": 366,
+    "call": "self.device.set_property_by(2, 4, mode)"
+  },
+  {
+    "file": "src/xiaomi_e10.py",
+    "line": 372,
+    "call": "self.device.set_property_by(2, 8, int(sweep_type))"
+  },
+  {
+    "file": "src/xiaomi_e10.py",
+    "line": 394,
+    "call": "self.set_sweep_type(int(sweep_type))"
+  },
+  {
+    "file": "src/xiaomi_e10.py",
+    "line": 396,
+    "call": "self._send_motor_start(f'start sweep_type={int(sweep_type)}', 2, action)"
+  },
+  {
+    "file": "src/xiaomi_e10.py",
+    "line": 418,
+    "call": "self.set_sweep_type(0)"
+  },
+  {
+    "file": "src/xiaomi_e10.py",
+    "line": 544,
+    "call": "self.device.call_action_by(2, 2)"
+  },
+  {
+    "file": "src/xiaomi_e10.py",
+    "line": 547,
+    "call": "self.device.call_action_by(3, 1)"
+  },
+  {
+    "file": "src/xiaomi_e10.py",
+    "line": 552,
+    "call": "self.device.set_property_by(7, 5, level)"
+  },
+  {
+    "file": "src/xiaomi_e10.py",
+    "line": 557,
+    "call": "self.device.set_property_by(7, 6, level)"
+  },
+  {
+    "file": "src/xiaomi_e10.py",
+    "line": 562,
+    "call": "self.device.set_property_by(4, 1, 1)"
+  },
+  {
+    "file": "src/xiaomi_e10.py",
+    "line": 567,
+    "call": "self.device.set_property_by(7, 16, direction)"
+  },
+  {
+    "file": "src/xiaomi_e10.py",
+    "line": 1052,
+    "call": "self.set_sweep_type(sweep_type)"
+  },
+  {
+    "file": "src/xiaomi_e10.py",
+    "line": 1071,
+    "call": "self.arm_new_map(1)"
+  },
+  {
+    "file": "src/xiaomi_e10.py",
+    "line": 1073,
+    "call": "self.device.call_action_by(7, 3, ['', 2, 1])"
+  },
+  {
+    "file": "src/xiaomi_e10.py",
+    "line": 1341,
+    "call": "self.start_mapping_interior()"
+  },
+  {
+    "file": "src/xiaomi_e10.py",
+    "line": 1371,
+    "call": "self.device.call_action_by(10, 13, [map_id])"
+  },
+  {
+    "file": "src/xiaomi_e10.py",
+    "line": 1384,
+    "call": "self.device.set_property_by(9, 5, target)"
+  },
+  {
+    "file": "src/xiaomi_e10.py",
+    "line": 1385,
+    "call": "self.device.set_property_by(2, 8, 4)"
+  },
+  {
+    "file": "src/xiaomi_e10.py",
+    "line": 1386,
+    "call": "self._send_motor_start('clean_point', 9, 1)"
+  },
+  {
+    "file": "src/xiaomi_e10.py",
+    "line": 1397,
+    "call": "self._send_motor_start('clean_zone', 9, 3)"
+  },
+  {
+    "file": "src/xiaomi_e10.py",
+    "line": 1403,
+    "call": "self._send_motor_start('clean_rooms', 7, 3, [value, 0, 1])"
+  },
+  {
+    "file": "src/xiaomi_e10.py",
+    "line": 388,
+    "call": "self._send_motor_start(f'start sweep_type={int(sweep_type)}', 2, {0: 3, 1: 5, 2: 6}[mode])"
+  },
+  {
+    "file": "src/xiaomi_e10.py",
+    "line": 1054,
+    "call": "self.device.call_action_by(2, 1)"
+  },
+  {
+    "file": "src/xiaomi_e10.py",
+    "line": 1109,
+    "call": "self.device.set_property_by(7, 1, 0)"
+  },
+  {
+    "file": "src/xiaomi_e10.py",
+    "line": 1116,
+    "call": "self.set_sweep_type(2)"
+  },
+  {
+    "file": "src/xiaomi_e10.py",
+    "line": 1123,
+    "call": "self.device.call_action_by(7, 3, ['', 2, 1])"
+  },
+  {
+    "file": "src/xiaomi_e10.py",
+    "line": 1208,
+    "call": "self.device.set_property_by(7, 1, 0)"
+  },
+  {
+    "file": "src/xiaomi_e10.py",
+    "line": 1215,
+    "call": "self.set_sweep_type(0)"
+  },
+  {
+    "file": "src/xiaomi_e10.py",
+    "line": 1222,
+    "call": "self._send_motor_start('start_mapping_whole_home/prearm', 7, 3, ['', 0, 1], allow_when_guarded=True)"
+  },
+  {
+    "file": "src/xiaomi_e10.py",
+    "line": 1291,
+    "call": "self._send_motor_start('start_mapping_whole_home/trigger', 2, 3, allow_when_guarded=True)"
+  },
+  {
+    "file": "src/xiaomi_e10.py",
+    "line": 1383,
+    "call": "self._send_motor_start('clean_point', 9, 1, [target])"
+  },
+  {
+    "file": "src/xiaomi_e10.py",
+    "line": 1394,
+    "call": "self.device.call_action_by(9, 8, [zone])"
+  },
+  {
+    "file": "src/xiaomi_e10.py",
+    "line": 187,
+    "call": "self.device.call_action_by(int(siid), int(aiid))"
+  },
+  {
+    "file": "src/xiaomi_e10.py",
+    "line": 189,
+    "call": "self.device.call_action_by(int(siid), int(aiid), params)"
+  },
+  {
+    "file": "src/xiaomi_e10.py",
+    "line": 860,
+    "call": "self.device.call_action_by(10, aiid, [mode])"
+  },
+  {
+    "file": "src/xiaomi_e10.py",
+    "line": 1056,
+    "call": "self.device.call_action_by(2, 3)"
+  },
+  {
+    "file": "src/xiaomi_e10.py",
+    "line": 1396,
+    "call": "self.device.set_property_by(9, 2, zone)"
+  },
+  {
+    "file": "src/xiaomi_e10.py",
+    "line": 447,
+    "call": "self._send_motor_start('start_global_verified/mode_action', 2, mode_action, allow_when_guarded=True)"
+  },
+  {
+    "file": "src/xiaomi_e10.py",
+    "line": 456,
+    "call": "self._send_motor_start('start_global_verified/generic_start', 2, 1, allow_when_guarded=True)"
+  },
+  {
+    "file": "src/xiaomi_e10.py",
+    "line": 465,
+    "call": "self._send_motor_start('start_global_verified/whole_home', 7, 3, ['', 0, 1], allow_when_guarded=True)"
+  },
+  {
+    "file": "src/xiaomi_e10.py",
+    "line": 967,
+    "call": "self.device.set_property_by(10, 1, desired, name='remember-state')"
+  },
+  {
+    "file": "src/xiaomi_e10.py",
+    "line": 970,
+    "call": "self.device.send('set_properties', [{'did': 'remember-state', 'siid': 10, 'piid': 1, 'value': desired}])"
+  },
+  {
+    "file": "src/app_v7.py",
+    "line": 55,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v7.py",
+    "line": 91,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/robot_plans.py",
+    "line": 564,
+    "call": "vacuum.device.call_action_by(9, 6, [payload])"
+  },
+  {
+    "file": "src/robot_plans.py",
+    "line": 569,
+    "call": "vacuum.start(mode_id)"
+  },
+  {
+    "file": "src/robot_plans.py",
+    "line": 588,
+    "call": "vacuum.device.call_action_by(9, 3)"
+  },
+  {
+    "file": "src/robot_plans.py",
+    "line": 604,
+    "call": "vacuum.set_sweep_type(4)"
+  },
+  {
+    "file": "src/robot_plans.py",
+    "line": 585,
+    "call": "vacuum.device.call_action_by(9, 8, [zone_value])"
+  },
+  {
+    "file": "src/robot_plans.py",
+    "line": 608,
+    "call": "vacuum.device.call_action_by(9, 9, [target])"
+  },
+  {
+    "file": "src/robot_plans.py",
+    "line": 587,
+    "call": "vacuum.device.set_property_by(9, 2, zone_value)"
+  },
+  {
+    "file": "src/robot_plans.py",
+    "line": 610,
+    "call": "vacuum.device.set_property_by(9, 5, target)"
+  },
+  {
+    "file": "src/robot_plans.py",
+    "line": 611,
+    "call": "vacuum.device.call_action_by(9, 1)"
+  },
+  {
+    "file": "src/app_v49.py",
+    "line": 60,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/xiaomi_e10_edge.py",
+    "line": 52,
+    "call": "self.arm_new_map(1)"
+  },
+  {
+    "file": "src/xiaomi_e10_edge.py",
+    "line": 73,
+    "call": "self.device.call_action_by(7, 3, ['', 2, 1])"
+  },
+  {
+    "file": "src/xiaomi_e10_edge.py",
+    "line": 60,
+    "call": "self.device.set_property_by(7, 1, 0)"
+  },
+  {
+    "file": "src/xiaomi_e10_edge.py",
+    "line": 67,
+    "call": "self.set_sweep_type(2)"
+  },
+  {
+    "file": "src/app_v144.py",
+    "line": 181,
+    "call": "app_v141.App.dock(self)"
+  },
+  {
+    "file": "src/app_v40.py",
+    "line": 102,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v90.py",
+    "line": 185,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v90.py",
+    "line": 177,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/app_v90.py",
+    "line": 182,
+    "call": "vacuum.dock()"
+  },
+  {
+    "file": "src/app_v47.py",
+    "line": 93,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v135.py",
+    "line": 223,
+    "call": "threading.Thread(target=worker, name='AspiradoraEdgeNativeV135', daemon=True).start()"
+  },
+  {
+    "file": "src/app_v135.py",
+    "line": 156,
+    "call": "vacuum.set_sweep_type(2)"
+  },
+  {
+    "file": "src/app_v135.py",
+    "line": 160,
+    "call": "vacuum._send_motor_start('mapping_edge_v135/native-v87', 2, 3, allow_when_guarded=True)"
+  },
+  {
+    "file": "src/app_v9.py",
+    "line": 166,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v9.py",
+    "line": 196,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v9.py",
+    "line": 229,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v9.py",
+    "line": 347,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v9.py",
+    "line": 443,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v9.py",
+    "line": 464,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v9.py",
+    "line": 415,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/app_v9.py",
+    "line": 342,
+    "call": "vacuum.start_mapping_perimeter()"
+  },
+  {
+    "file": "src/app_v9.py",
+    "line": 423,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/app_v9.py",
+    "line": 392,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/app_v9.py",
+    "line": 95,
+    "call": "threading.Thread(target=self._watch_perimeter_only, args=(serial,), daemon=True).start()"
+  },
+  {
+    "file": "src/app_v41.py",
+    "line": 59,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v19.py",
+    "line": 133,
+    "call": "self._tray_thread.start()"
+  },
+  {
+    "file": "src/app_v19.py",
+    "line": 384,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v19.py",
+    "line": 192,
+    "call": "icon.stop()"
+  },
+  {
+    "file": "src/app_v19.py",
+    "line": 348,
+    "call": "sync_virtual_walls(vacuum, plan)"
+  },
+  {
+    "file": "src/app_v19.py",
+    "line": 377,
+    "call": "sync_virtual_walls(vacuum, plan)"
+  },
+  {
+    "file": "src/app_v100.py",
+    "line": 123,
+    "call": "threading.Thread(target=worker, name='AspiradoraXiaomiLiveGrid', daemon=True).start()"
+  },
+  {
+    "file": "src/xiaomi_e10_map_v61.py",
+    "line": 130,
+    "call": "self.vacuum.device.send('get_properties', payload)"
+  },
+  {
+    "file": "src/app_v14.py",
+    "line": 329,
+    "call": "threading.Thread(target=self._anti_stall_recovery_worker, args=(vacuum, attempt, phase), daemon=True).start()"
+  },
+  {
+    "file": "src/app_v14.py",
+    "line": 316,
+    "call": "threading.Thread(target=self._anti_stall_abort_worker, args=(vacuum,), daemon=True).start()"
+  },
+  {
+    "file": "src/app_v14.py",
+    "line": 359,
+    "call": "vacuum.manual(4)"
+  },
+  {
+    "file": "src/app_v14.py",
+    "line": 361,
+    "call": "vacuum.manual(5)"
+  },
+  {
+    "file": "src/app_v14.py",
+    "line": 363,
+    "call": "vacuum.manual(turn)"
+  },
+  {
+    "file": "src/app_v14.py",
+    "line": 365,
+    "call": "vacuum.manual(5)"
+  },
+  {
+    "file": "src/app_v14.py",
+    "line": 367,
+    "call": "vacuum.manual(1)"
+  },
+  {
+    "file": "src/app_v14.py",
+    "line": 369,
+    "call": "vacuum.manual(5)"
+  },
+  {
+    "file": "src/app_v14.py",
+    "line": 371,
+    "call": "vacuum.manual(10)"
+  },
+  {
+    "file": "src/app_v14.py",
+    "line": 350,
+    "call": "vacuum.set_sweep_type(5)"
+  },
+  {
+    "file": "src/app_v14.py",
+    "line": 403,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/app_v14.py",
+    "line": 376,
+    "call": "vacuum.set_sweep_type(target_sweep)"
+  },
+  {
+    "file": "src/app_v14.py",
+    "line": 385,
+    "call": "vacuum.start_mapping_perimeter()"
+  },
+  {
+    "file": "src/app_v14.py",
+    "line": 394,
+    "call": "vacuum.manual(5)"
+  },
+  {
+    "file": "src/app_v14.py",
+    "line": 395,
+    "call": "vacuum.manual(10)"
+  },
+  {
+    "file": "src/app_v14.py",
+    "line": 387,
+    "call": "vacuum.start_mapping_interior()"
+  },
+  {
+    "file": "src/app_v14.py",
+    "line": 389,
+    "call": "vacuum.start(max(0, min(2, mode)))"
+  },
+  {
+    "file": "src/app_v141.py",
+    "line": 462,
+    "call": "threading.Thread(target=worker, name='AspiradoraNativeEdgeV141', daemon=True).start()"
+  },
+  {
+    "file": "src/app_v141.py",
+    "line": 491,
+    "call": "super().dock()"
+  },
+  {
+    "file": "src/app_v141.py",
+    "line": 203,
+    "call": "vacuum.set_sweep_type(2)"
+  },
+  {
+    "file": "src/app_v141.py",
+    "line": 223,
+    "call": "vacuum._send_motor_start('mapping_edge_v141/vacuum-start-sweep', 2, 1, allow_when_guarded=True)"
+  },
+  {
+    "file": "src/app_v141.py",
+    "line": 200,
+    "call": "vacuum.device.set_property_by(7, 1, 0)"
+  },
+  {
+    "file": "src/app_v141.py",
+    "line": 416,
+    "call": "vacuum.arm_new_map(1)"
+  },
+  {
+    "file": "src/app_v141.py",
+    "line": 445,
+    "call": "threading.Thread(target=self._v141_watch_edge_state, args=(vacuum, serial), name='AspiradoraEdgeTelemetryV141', daemon=True).start()"
+  },
+  {
+    "file": "src/xiaomi_e10_probe_v52.py",
+    "line": 78,
+    "call": "self.device.call_action_by(10, 12, [int(start), int(end)])"
+  },
+  {
+    "file": "src/app_v71.py",
+    "line": 503,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v71.py",
+    "line": 516,
+    "call": "threading.Thread(target=self._v71_phase2_watch_worker, args=(vacuum, serial), daemon=True).start()"
+  },
+  {
+    "file": "src/app_v71.py",
+    "line": 642,
+    "call": "threading.Thread(target=self._restore_cleaning_preferences, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v71.py",
+    "line": 318,
+    "call": "vacuum.dock()"
+  },
+  {
+    "file": "src/app_v71.py",
+    "line": 555,
+    "call": "vacuum.dock()"
+  },
+  {
+    "file": "src/app_v71.py",
+    "line": 573,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/app_v71.py",
+    "line": 578,
+    "call": "vacuum.dock()"
+  },
+  {
+    "file": "src/app_v71.py",
+    "line": 596,
+    "call": "vacuum.dock()"
+  },
+  {
+    "file": "src/app_v93.py",
+    "line": 203,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v93.py",
+    "line": 120,
+    "call": "threading.Thread(target=self._restore_cleaning_preferences, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v84.py",
+    "line": 312,
+    "call": "super().dock()"
+  },
+  {
+    "file": "src/app_v84.py",
+    "line": 224,
+    "call": "threading.Thread(target=self._restore_cleaning_preferences, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v84.py",
+    "line": 400,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/app_v84.py",
+    "line": 408,
+    "call": "vacuum.manual(5)"
+  },
+  {
+    "file": "src/app_v127.py",
+    "line": 87,
+    "call": "super().dock()"
+  },
+  {
+    "file": "src/app_v127.py",
+    "line": 277,
+    "call": "threading.Thread(target=worker, name='AspiradoraPhase2RecoveryV127', daemon=True).start()"
+  },
+  {
+    "file": "src/app_v127.py",
+    "line": 440,
+    "call": "threading.Thread(target=worker, name='AspiradoraFinalMapV127', daemon=True).start()"
+  },
+  {
+    "file": "src/app_v127.py",
+    "line": 233,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/app_v127.py",
+    "line": 236,
+    "call": "vacuum.manual(4)"
+  },
+  {
+    "file": "src/app_v127.py",
+    "line": 238,
+    "call": "vacuum.manual(5)"
+  },
+  {
+    "file": "src/app_v127.py",
+    "line": 242,
+    "call": "vacuum.manual(turn)"
+  },
+  {
+    "file": "src/app_v127.py",
+    "line": 244,
+    "call": "vacuum.manual(5)"
+  },
+  {
+    "file": "src/app_v127.py",
+    "line": 247,
+    "call": "vacuum.start_mapping_whole_home(confirm_timeout=6.0)"
+  },
+  {
+    "file": "src/app_v127.py",
+    "line": 257,
+    "call": "vacuum.manual(5)"
+  },
+  {
+    "file": "src/app_v127.py",
+    "line": 261,
+    "call": "vacuum.start_mapping_whole_home(confirm_timeout=6.0)"
+  },
+  {
+    "file": "src/app_v46.py",
+    "line": 118,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/xiaomi_e10_ijai_map.py",
+    "line": 235,
+    "call": "self.vacuum.device.call_action_by(10, 1, [])"
+  },
+  {
+    "file": "src/xiaomi_e10_ijai_map.py",
+    "line": 258,
+    "call": "self.vacuum.device.call_action_by(10, aiid, [int(map_id)])"
+  },
+  {
+    "file": "src/app_v18.py",
+    "line": 53,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v131.py",
+    "line": 146,
+    "call": "vacuum.set_sweep_type(2)"
+  },
+  {
+    "file": "src/app_v131.py",
+    "line": 140,
+    "call": "vacuum.device.set_property_by(7, 1, 0)"
+  },
+  {
+    "file": "src/app_v131.py",
+    "line": 177,
+    "call": "vacuum.set_sweep_type(2)"
+  },
+  {
+    "file": "src/app_v131.py",
+    "line": 151,
+    "call": "vacuum._send_motor_start('mapping_edge_v131/start-only-sweep', 2, 3, allow_when_guarded=True)"
+  },
+  {
+    "file": "src/app_v131.py",
+    "line": 94,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/app_v131.py",
+    "line": 180,
+    "call": "vacuum._send_motor_start('mapping_edge_v131/start-sweep-fallback', 2, 1, allow_when_guarded=True)"
+  },
+  {
+    "file": "src/xiaomi_e10_map_v47.py",
+    "line": 30,
+    "call": "self.vacuum.device.set_property_by(10, 23, 0)"
+  },
+  {
+    "file": "src/app_v138.py",
+    "line": 357,
+    "call": "threading.Thread(target=self._v138_progress_worker, args=(vacuum, serial, int(phase)), name=f'AspiradoraV138ProgressP{int(phase)}', daemon=True).start()"
+  },
+  {
+    "file": "src/app_v138.py",
+    "line": 536,
+    "call": "threading.Thread(target=worker, name='AspiradoraFactoryEdgeV138', daemon=True).start()"
+  },
+  {
+    "file": "src/app_v138.py",
+    "line": 584,
+    "call": "threading.Thread(target=worker, name='AspiradoraFactoryEdgeRetryV138', daemon=True).start()"
+  },
+  {
+    "file": "src/app_v138.py",
+    "line": 706,
+    "call": "threading.Thread(target=worker, name='AspiradoraWholeHomeResetV138', daemon=True).start()"
+  },
+  {
+    "file": "src/app_v138.py",
+    "line": 243,
+    "call": "vacuum.set_sweep_type(2)"
+  },
+  {
+    "file": "src/app_v138.py",
+    "line": 254,
+    "call": "vacuum._send_motor_start('mapping_edge_v138/factory', 2, 3, allow_when_guarded=True)"
+  },
+  {
+    "file": "src/app_v138.py",
+    "line": 504,
+    "call": "vacuum.arm_new_map(1)"
+  },
+  {
+    "file": "src/app_v138.py",
+    "line": 668,
+    "call": "vacuum.start_mapping_whole_home(confirm_timeout=self.PHASE2_CONFIRM_TIMEOUT)"
+  },
+  {
+    "file": "src/app_v138.py",
+    "line": 95,
+    "call": "vacuum.dock()"
+  },
+  {
+    "file": "src/app_v138.py",
+    "line": 140,
+    "call": "vacuum.device.call_action_by(7, 3, ['', 2, 2])"
+  },
+  {
+    "file": "src/app_v138.py",
+    "line": 144,
+    "call": "vacuum.device.call_action_by(7, 3, ['', 0, 2])"
+  },
+  {
+    "file": "src/app_v138.py",
+    "line": 148,
+    "call": "vacuum.device.call_action_by(7, 3, ['', 4, 2])"
+  },
+  {
+    "file": "src/app_v138.py",
+    "line": 154,
+    "call": "vacuum.manual(10)"
+  },
+  {
+    "file": "src/app_v138.py",
+    "line": 163,
+    "call": "vacuum.device.set_property_by(9, 5, '')"
+  },
+  {
+    "file": "src/app_v138.py",
+    "line": 167,
+    "call": "vacuum.device.set_property_by(9, 2, '')"
+  },
+  {
+    "file": "src/app_v138.py",
+    "line": 172,
+    "call": "vacuum.device.set_property_by(7, 1, 0)"
+  },
+  {
+    "file": "src/app_v138.py",
+    "line": 176,
+    "call": "vacuum.device.set_property_by(8, 10, 0)"
+  },
+  {
+    "file": "src/app_v138.py",
+    "line": 181,
+    "call": "vacuum.set_sweep_type(0)"
+  },
+  {
+    "file": "src/xiaomi_e10_map_v48.py",
+    "line": 48,
+    "call": "self.vacuum.device.set_property_by(10, 23, 1)"
+  },
+  {
+    "file": "src/xiaomi_cloud_history_v49.py",
+    "line": 59,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v69.py",
+    "line": 408,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v69.py",
+    "line": 224,
+    "call": "vacuum.dock()"
+  },
+  {
+    "file": "src/app_v69.py",
+    "line": 242,
+    "call": "vacuum.dock()"
+  },
+  {
+    "file": "src/app_v16.py",
+    "line": 377,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/app_v16.py",
+    "line": 365,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/app_v16.py",
+    "line": 312,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/app_v16.py",
+    "line": 350,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/app_v4.py",
+    "line": 76,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v4.py",
+    "line": 302,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v4.py",
+    "line": 463,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v4.py",
+    "line": 197,
+    "call": "self.vacuum.start(mode)"
+  },
+  {
+    "file": "src/app_v134.py",
+    "line": 56,
+    "call": "vacuum.device.set_property_by(7, 1, 0)"
+  },
+  {
+    "file": "src/app_v134.py",
+    "line": 61,
+    "call": "vacuum.set_sweep_type(2)"
+  },
+  {
+    "file": "src/app_v134.py",
+    "line": 68,
+    "call": "vacuum.device.call_action_by(7, 3, ['', 2, 1])"
+  },
+  {
+    "file": "src/app_v139.py",
+    "line": 60,
+    "call": "vacuum.set_sweep_type(2)"
+  },
+  {
+    "file": "src/app_v139.py",
+    "line": 73,
+    "call": "vacuum._send_motor_start('mapping_edge_v139/direct-edge', 7, 3, ['', 2, 1], allow_when_guarded=True)"
+  },
+  {
+    "file": "src/app_v55.py",
+    "line": 33,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v126.py",
+    "line": 338,
+    "call": "threading.Thread(target=worker, name='AspiradoraReturnAssistV126', daemon=True).start()"
+  },
+  {
+    "file": "src/app_v126.py",
+    "line": 311,
+    "call": "vacuum.manual(1)"
+  },
+  {
+    "file": "src/app_v126.py",
+    "line": 319,
+    "call": "vacuum.dock()"
+  },
+  {
+    "file": "src/app_v126.py",
+    "line": 298,
+    "call": "vacuum.dock()"
+  },
+  {
+    "file": "src/app_v126.py",
+    "line": 307,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/app_v126.py",
+    "line": 314,
+    "call": "vacuum.manual(5)"
+  },
+  {
+    "file": "src/app_v126.py",
+    "line": 323,
+    "call": "vacuum.manual(5)"
+  },
+  {
+    "file": "src/app_v126.py",
+    "line": 327,
+    "call": "vacuum.dock()"
+  },
+  {
+    "file": "src/app_v132.py",
+    "line": 53,
+    "call": "vacuum.set_sweep_type(2)"
+  },
+  {
+    "file": "src/app_v132.py",
+    "line": 47,
+    "call": "vacuum.device.set_property_by(7, 1, 0)"
+  },
+  {
+    "file": "src/app_v132.py",
+    "line": 59,
+    "call": "vacuum._send_motor_start('mapping_edge_v132/start-sweep', 2, 1, allow_when_guarded=True)"
+  },
+  {
+    "file": "src/app_v115.py",
+    "line": 267,
+    "call": "threading.Thread(target=worker, name='AspiradoraGlobalCleanV115', daemon=True).start()"
+  },
+  {
+    "file": "src/app_v115.py",
+    "line": 163,
+    "call": "vacuum.start_global_verified(mode, confirm_timeout=3.0)"
+  },
+  {
+    "file": "src/app_v17.py",
+    "line": 315,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v17.py",
+    "line": 505,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v17.py",
+    "line": 649,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v17.py",
+    "line": 332,
+    "call": "sync_virtual_walls(vacuum, plan)"
+  },
+  {
+    "file": "src/app_v17.py",
+    "line": 310,
+    "call": "sync_virtual_walls(vacuum, self.plan_store.snapshot())"
+  },
+  {
+    "file": "src/app_v17.py",
+    "line": 493,
+    "call": "sync_virtual_walls(vacuum, plan)"
+  },
+  {
+    "file": "src/app_v17.py",
+    "line": 630,
+    "call": "sync_virtual_walls(vacuum, plan)"
+  },
+  {
+    "file": "src/app_v2.py",
+    "line": 228,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v2.py",
+    "line": 262,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v2.py",
+    "line": 297,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v2.py",
+    "line": 354,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v2.py",
+    "line": 428,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v2.py",
+    "line": 446,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v2.py",
+    "line": 486,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v2.py",
+    "line": 320,
+    "call": "threading.Thread(target=lambda: self._safe_manual(direction), daemon=True).start()"
+  },
+  {
+    "file": "src/app_v2.py",
+    "line": 324,
+    "call": "self.vacuum.manual(direction)"
+  },
+  {
+    "file": "src/app_v2.py",
+    "line": 190,
+    "call": "self.manual(direction)"
+  },
+  {
+    "file": "src/app_v2.py",
+    "line": 191,
+    "call": "self.manual(5)"
+  },
+  {
+    "file": "src/app_v2.py",
+    "line": 301,
+    "call": "self.vacuum.start(mode)"
+  },
+  {
+    "file": "src/app_v68.py",
+    "line": 320,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/app_v68.py",
+    "line": 172,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/app_v68.py",
+    "line": 208,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/xiaomi_e10_map_v60.py",
+    "line": 211,
+    "call": "self.vacuum.device.send('get_properties', payload)"
+  },
+  {
+    "file": "src/xiaomi_e10_map_v60.py",
+    "line": 311,
+    "call": "self.vacuum.device.call_action_by(10, int(aiid), list(params))"
+  },
+  {
+    "file": "src/xiaomi_e10_map_v60.py",
+    "line": 385,
+    "call": "self.vacuum.device.call_action_by(10, 1, [])"
+  },
+  {
+    "file": "src/app_v28.py",
+    "line": 154,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v28.py",
+    "line": 60,
+    "call": "self.dock()"
+  },
+  {
+    "file": "src/app_v28.py",
+    "line": 146,
+    "call": "vacuum.start_mapping_interior()"
+  },
+  {
+    "file": "src/app_v81.py",
+    "line": 258,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v81.py",
+    "line": 286,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v81.py",
+    "line": 412,
+    "call": "threading.Thread(target=self._v81_dock_monitor_worker, args=(vacuum, serial, str(reason)), daemon=True).start()"
+  },
+  {
+    "file": "src/app_v81.py",
+    "line": 234,
+    "call": "vacuum.dock()"
+  },
+  {
+    "file": "src/app_v81.py",
+    "line": 466,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/app_v81.py",
+    "line": 470,
+    "call": "vacuum.manual(5)"
+  },
+  {
+    "file": "src/app_v81.py",
+    "line": 251,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/app_v81.py",
+    "line": 272,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/app_v81.py",
+    "line": 528,
+    "call": "threading.Thread(target=self._restore_cleaning_preferences, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v57.py",
+    "line": 84,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v45.py",
+    "line": 45,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/xiaomi_e10_probe.py",
+    "line": 45,
+    "call": "self.device.send('get_properties', payload)"
+  },
+  {
+    "file": "src/app_v77.py",
+    "line": 316,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v77.py",
+    "line": 543,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v77.py",
+    "line": 302,
+    "call": "vacuum.arm_new_map(1)"
+  },
+  {
+    "file": "src/app_v77.py",
+    "line": 307,
+    "call": "vacuum.start_mapping_interior()"
+  },
+  {
+    "file": "src/app_v77.py",
+    "line": 533,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/app_v77.py",
+    "line": 538,
+    "call": "vacuum.dock()"
+  },
+  {
+    "file": "src/app_v77.py",
+    "line": 676,
+    "call": "vacuum.dock()"
+  },
+  {
+    "file": "src/app_v74.py",
+    "line": 209,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v74.py",
+    "line": 399,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v74.py",
+    "line": 221,
+    "call": "threading.Thread(target=self._v74_watch_mapping_worker, args=(self.vacuum, serial), daemon=True).start()"
+  },
+  {
+    "file": "src/app_v74.py",
+    "line": 461,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v74.py",
+    "line": 199,
+    "call": "vacuum.arm_new_map(1)"
+  },
+  {
+    "file": "src/app_v74.py",
+    "line": 204,
+    "call": "vacuum.start_mapping_interior()"
+  },
+  {
+    "file": "src/app_v74.py",
+    "line": 257,
+    "call": "threading.Thread(target=self._restore_cleaning_preferences, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v74.py",
+    "line": 385,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/app_v74.py",
+    "line": 390,
+    "call": "vacuum.dock()"
+  },
+  {
+    "file": "src/app_v74.py",
+    "line": 458,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/app_v37.py",
+    "line": 60,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v6.py",
+    "line": 81,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v6.py",
+    "line": 118,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v6.py",
+    "line": 144,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v6.py",
+    "line": 110,
+    "call": "self.vacuum.start_mapping_perimeter()"
+  },
+  {
+    "file": "src/app_v6.py",
+    "line": 135,
+    "call": "self.vacuum.start_mapping_interior()"
+  },
+  {
+    "file": "src/app_v6.py",
+    "line": 218,
+    "call": "threading.Thread(target=self._restore_cleaning_preferences, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v10.py",
+    "line": 231,
+    "call": "threading.Thread(target=self._dock_assist_retry_worker, args=(vacuum, attempt), daemon=True).start()"
+  },
+  {
+    "file": "src/app_v10.py",
+    "line": 246,
+    "call": "vacuum.device.call_action_by(7, 7, [2])"
+  },
+  {
+    "file": "src/app_v10.py",
+    "line": 256,
+    "call": "vacuum.device.call_action_by(7, 7, [1])"
+  },
+  {
+    "file": "src/app_v10.py",
+    "line": 258,
+    "call": "vacuum.dock()"
+  },
+  {
+    "file": "src/app_v10.py",
+    "line": 249,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/xiaomi_e10_probe_v45.py",
+    "line": 98,
+    "call": "self.device.call_action_by(10, 12, [int(start), int(end)])"
+  },
+  {
+    "file": "src/app_v112.py",
+    "line": 92,
+    "call": "super().dock()"
+  },
+  {
+    "file": "src/app_v143.py",
+    "line": 201,
+    "call": "threading.Thread(target=self._v142_mapping_monitor, args=(token, serial), name='AspiradoraAIMappingMonitorV143', daemon=True).start()"
+  },
+  {
+    "file": "src/app_v143.py",
+    "line": 256,
+    "call": "super().dock()"
+  },
+  {
+    "file": "src/app_v114.py",
+    "line": 409,
+    "call": "threading.Thread(target=worker, name='AspiradoraTargetCleanV114', daemon=True).start()"
+  },
+  {
+    "file": "src/app_v114.py",
+    "line": 469,
+    "call": "threading.Thread(target=multi_worker, name='AspiradoraMultiZoneV114', daemon=True).start()"
+  },
+  {
+    "file": "src/app_v114.py",
+    "line": 578,
+    "call": "threading.Thread(target=worker, name='AspiradoraPointCleanV114', daemon=True).start()"
+  },
+  {
+    "file": "src/app_v114.py",
+    "line": 338,
+    "call": "sync_virtual_walls(vacuum, plan)"
+  },
+  {
+    "file": "src/app_v114.py",
+    "line": 549,
+    "call": "sync_virtual_walls(self.vacuum, plan)"
+  },
+  {
+    "file": "src/app_v5.py",
+    "line": 560,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "src/app_v5.py",
+    "line": 520,
+    "call": "self.vacuum.start(mode)"
+  },
+  {
+    "file": "src/app_v5.py",
+    "line": 424,
+    "call": "self.manual(direction)"
+  },
+  {
+    "file": "src/app_v5.py",
+    "line": 425,
+    "call": "self.manual(5)"
+  },
+  {
+    "file": "src/app_v150.py",
+    "line": 267,
+    "call": "threading.Thread(target=self._v150_strategy_monitor, args=(token, serial), name='AspiradoraStrategyMonitorV150', daemon=True).start()"
+  },
+  {
+    "file": "src/app_v150.py",
+    "line": 518,
+    "call": "threading.Thread(target=worker, name='AspiradoraV150EdgeToWholeHome', daemon=True).start()"
+  },
+  {
+    "file": "src/app_v150.py",
+    "line": 598,
+    "call": "super().dock()"
+  },
+  {
+    "file": "src/app_v150.py",
+    "line": 451,
+    "call": "vacuum.start_mapping_whole_home(confirm_timeout=self.PHASE2_CONFIRM_TIMEOUT)"
+  },
+  {
+    "file": "src/app_v150.py",
+    "line": 389,
+    "call": "vacuum.stop()"
+  },
+  {
+    "file": "src/app_v121.py",
+    "line": 140,
+    "call": "threading.Thread(target=worker, name='AspiradoraMapPhase1V121', daemon=True).start()"
+  },
+  {
+    "file": "src/app_v121.py",
+    "line": 321,
+    "call": "threading.Thread(target=worker, name='AspiradoraMapPhase2V121', daemon=True).start()"
+  },
+  {
+    "file": "src/app_v121.py",
+    "line": 100,
+    "call": "vacuum.arm_new_map(1)"
+  },
+  {
+    "file": "src/app_v121.py",
+    "line": 105,
+    "call": "vacuum.start_mapping_exploration(confirm_timeout=5.0)"
+  },
+  {
+    "file": "src/app_v121.py",
+    "line": 275,
+    "call": "vacuum.start_mapping_interior()"
+  },
+  {
+    "file": "src/app_v39.py",
+    "line": 99,
+    "call": "threading.Thread(target=worker, daemon=True).start()"
+  },
+  {
+    "file": "scripts/smoke_test_v28.py",
+    "line": 90,
+    "call": "app.dock()"
+  },
+  {
+    "file": "scripts/smoke_test_v64.py",
+    "line": 75,
+    "call": "vac.start_mapping_perimeter()"
+  },
+  {
+    "file": "scripts/smoke_test_v64.py",
+    "line": 92,
+    "call": "vac.start_mapping_perimeter()"
+  },
+  {
+    "file": "scripts/smoke_test_v64.py",
+    "line": 105,
+    "call": "vac.start_mapping_perimeter()"
+  },
+  {
+    "file": "scripts/smoke_test_v64.py",
+    "line": 166,
+    "call": "super().send(method, payload)"
+  },
+  {
+    "file": "scripts/smoke_test_v118.py",
+    "line": 52,
+    "call": "vacuum._send_motor_start('initial', 2, 3)"
+  },
+  {
+    "file": "scripts/smoke_test_v118.py",
+    "line": 59,
+    "call": "vacuum._send_motor_start('duplicate', 2, 3)"
+  },
+  {
+    "file": "scripts/smoke_test_v114.py",
+    "line": 102,
+    "call": "vacuum.arm_new_map(1)"
+  },
+  {
+    "file": "scripts/smoke_test_v26.py",
+    "line": 81,
+    "call": "edge.start_mapping_perimeter()"
+  },
+  {
+    "file": "scripts/smoke_test_v26.py",
+    "line": 76,
+    "call": "edge.device.set_property_by(7, 6, value)"
+  },
+  {
+    "file": "scripts/smoke_test_v26.py",
+    "line": 77,
+    "call": "edge.device.set_property_by(7, 5, value)"
+  },
+  {
+    "file": "scripts/smoke_test_v26.py",
+    "line": 78,
+    "call": "edge.device.set_property_by(2, 4, value)"
+  },
+  {
+    "file": "scripts/smoke_test_v26.py",
+    "line": 79,
+    "call": "edge.device.set_property_by(2, 8, value)"
+  },
+  {
+    "file": "scripts/smoke_test_v60.py",
+    "line": 183,
+    "call": "t.start()"
+  },
+  {
+    "file": "scripts/smoke_test_v122.py",
+    "line": 50,
+    "call": "vacuum.start_mapping_whole_home(confirm_timeout=0.5)"
+  },
+  {
+    "file": "scripts/smoke_test_v122.py",
+    "line": 47,
+    "call": "vacuum.device.set_property_by(2, 8, value)"
+  },
+  {
+    "file": "scripts/smoke_test_v123.py",
+    "line": 59,
+    "call": "vacuum.start_mapping_whole_home(confirm_timeout=1.0)"
+  },
+  {
+    "file": "scripts/smoke_test_v123.py",
+    "line": 86,
+    "call": "vacuum2.start_mapping_whole_home(confirm_timeout=0.8)"
+  },
+  {
+    "file": "scripts/smoke_test_v123.py",
+    "line": 47,
+    "call": "vacuum.device.set_property_by(2, 8, value)"
+  },
+  {
+    "file": "scripts/smoke_test_v123.py",
+    "line": 84,
+    "call": "vacuum2.device.set_property_by(2, 8, value)"
+  },
+  {
+    "file": "scripts/smoke_test_v63.py",
+    "line": 34,
+    "call": "vac.start_mapping_perimeter()"
+  },
+  {
+    "file": "scripts/smoke_test_v120.py",
+    "line": 46,
+    "call": "vacuum.start_mapping_exploration(confirm_timeout=0.5)"
+  },
+  {
+    "file": "scripts/smoke_test_v120.py",
+    "line": 43,
+    "call": "vacuum.device.set_property_by(2, 8, value)"
+  },
+  {
+    "file": "scripts/smoke_test_v66.py",
+    "line": 77,
+    "call": "vac.start_mapping_perimeter()"
+  },
+  {
+    "file": "scripts/smoke_test_v66.py",
+    "line": 100,
+    "call": "vac.start_mapping_perimeter()"
+  },
+  {
+    "file": "scripts/smoke_test_v66.py",
+    "line": 115,
+    "call": "vac.start_mapping_perimeter()"
+  },
+  {
+    "file": "scripts/smoke_test_v65.py",
+    "line": 68,
+    "call": "vac.start_mapping_perimeter()"
+  },
+  {
+    "file": "scripts/smoke_test_v65.py",
+    "line": 86,
+    "call": "vac.start_mapping_perimeter()"
+  },
+  {
+    "file": "scripts/smoke_test_v65.py",
+    "line": 98,
+    "call": "vac.start_mapping_perimeter()"
+  },
+  {
+    "file": "scripts/smoke_test_v65.py",
+    "line": 108,
+    "call": "vac.start_mapping_perimeter()"
+  },
+  {
+    "file": "scripts/smoke_test_v115.py",
+    "line": 55,
+    "call": "vacuum.start_global_verified(0, confirm_timeout=0.15)"
+  }
+]

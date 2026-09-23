@@ -1,0 +1,3087 @@
+{
+  "chain": [
+    "app_v151",
+    "app_v150",
+    "app_v149",
+    "app_v148",
+    "app_v147",
+    "app_v146",
+    "app_v145",
+    "app_v144",
+    "app_v143",
+    "app_v142",
+    "app_v141",
+    "app_v140",
+    "app_v139",
+    "app_v138",
+    "app_v137",
+    "app_v136",
+    "app_v135",
+    "app_v134",
+    "app_v133",
+    "app_v132",
+    "app_v131",
+    "app_v130",
+    "app_v129",
+    "app_v128",
+    "app_v127",
+    "app_v126",
+    "app_v123",
+    "app_v122",
+    "app_v121",
+    "app_v120",
+    "app_v119",
+    "app_v118",
+    "app_v117",
+    "app_v116",
+    "app_v115",
+    "app_v114",
+    "app_v113",
+    "app_v111",
+    "app_v110",
+    "app_v109",
+    "app_v108",
+    "app_v107",
+    "app_v106",
+    "app_v105",
+    "app_v104",
+    "app_v103",
+    "app_v102",
+    "app_v101",
+    "app_v100",
+    "app_v99",
+    "app_v98",
+    "app_v97",
+    "app_v96",
+    "app_v95",
+    "app_v94",
+    "app_v93",
+    "app_v92",
+    "app_v91",
+    "app_v90",
+    "app_v89",
+    "app_v88",
+    "app_v87",
+    "app_v86",
+    "app_v85",
+    "app_v84",
+    "app_v83",
+    "app_v82",
+    "app_v81",
+    "app_v80",
+    "app_v79",
+    "app_v78",
+    "app_v77",
+    "app_v76",
+    "app_v75",
+    "app_v74",
+    "app_v73",
+    "app_v72",
+    "app_v71",
+    "app_v70",
+    "app_v69",
+    "app_v68",
+    "app_v67",
+    "app_v66",
+    "app_v65",
+    "app_v64",
+    "app_v63",
+    "app_v62",
+    "app_v61",
+    "app_v60",
+    "app_v59",
+    "app_v58",
+    "app_v57",
+    "app_v56",
+    "app_v55",
+    "app_v54",
+    "app_v53",
+    "app_v52",
+    "app_v51",
+    "app_v50",
+    "app_v49",
+    "app_v48",
+    "app_v47",
+    "app_v46",
+    "app_v45",
+    "app_v44",
+    "app_v43",
+    "app_v42",
+    "app_v41",
+    "app_v40",
+    "app_v39",
+    "app_v38",
+    "app_v37",
+    "app_v36",
+    "app_v35",
+    "app_v34",
+    "app_v33",
+    "app_v32",
+    "app_v31",
+    "app_v30",
+    "app_v29",
+    "app_v28",
+    "app_v27",
+    "app_v26",
+    "app_v25",
+    "app_v24",
+    "app_v23",
+    "app_v22",
+    "app_v21",
+    "app_v20",
+    "app_v19",
+    "app_v18",
+    "app_v17",
+    "app_v16",
+    "app_v15",
+    "app_v14",
+    "app_v13",
+    "app_v12",
+    "app_v11",
+    "app_v10",
+    "app_v9",
+    "app_v8",
+    "app_v7",
+    "app_v6",
+    "app_v5",
+    "app_v2"
+  ],
+  "resolved": {
+    "__init__": {
+      "file": "src/app_v151.py",
+      "line": 14
+    },
+    "_v151_reset_direct_state": {
+      "file": "src/app_v151.py",
+      "line": 23
+    },
+    "_v151_owner_active": {
+      "file": "src/app_v151.py",
+      "line": 31
+    },
+    "_v151_prepare_map_layers": {
+      "file": "src/app_v151.py",
+      "line": 43
+    },
+    "start_new_mapping": {
+      "file": "src/app_v151.py",
+      "line": 96
+    },
+    "_v138_start_factory_edge": {
+      "file": "src/app_v151.py",
+      "line": 327
+    },
+    "_v147_schedule_escape": {
+      "file": "src/app_v151.py",
+      "line": 343
+    },
+    "_v147_request_abort": {
+      "file": "src/app_v151.py",
+      "line": 353
+    },
+    "_v144_execute_auto_abort": {
+      "file": "src/app_v151.py",
+      "line": 364
+    },
+    "_v149_request_global_transition": {
+      "file": "src/app_v151.py",
+      "line": 375
+    },
+    "_v150_session_allows_strategy_switch": {
+      "file": "src/app_v151.py",
+      "line": 385
+    },
+    "dock": {
+      "file": "src/app_v151.py",
+      "line": 392
+    },
+    "_handle_ui_event": {
+      "file": "src/app_v151.py",
+      "line": 403
+    },
+    "_v93_sync_map_status_label": {
+      "file": "src/app_v151.py",
+      "line": 482
+    },
+    "_diagnostic_text": {
+      "file": "src/app_v151.py",
+      "line": 499
+    },
+    "_v147_reset_state": {
+      "file": "src/app_v150.py",
+      "line": 47
+    },
+    "_v150_path_length": {
+      "file": "src/app_v150.py",
+      "line": 62
+    },
+    "_v150_strategy_metrics": {
+      "file": "src/app_v150.py",
+      "line": 74
+    },
+    "_v150_physical_active": {
+      "file": "src/app_v150.py",
+      "line": 179
+    },
+    "_v150_strategy_monitor": {
+      "file": "src/app_v150.py",
+      "line": 186
+    },
+    "_v142_start_mapping_ai": {
+      "file": "src/app_v150.py",
+      "line": 260
+    },
+    "_v149_can_switch_global": {
+      "file": "src/app_v150.py",
+      "line": 277
+    },
+    "_v150_transition_session_valid": {
+      "file": "src/app_v150.py",
+      "line": 306
+    },
+    "_v150_request_phase2": {
+      "file": "src/app_v150.py",
+      "line": 318
+    },
+    "_v149_start_global_now": {
+      "file": "src/app_v150.py",
+      "line": 525
+    },
+    "_v149_safe_return_after_global_failure": {
+      "file": "src/app_v149.py",
+      "line": 174
+    },
+    "_v148_ratio": {
+      "file": "src/app_v148.py",
+      "line": 49
+    },
+    "_v148_axis_growth": {
+      "file": "src/app_v148.py",
+      "line": 55
+    },
+    "_v142_classify_path": {
+      "file": "src/app_v148.py",
+      "line": 68
+    },
+    "_v146_apply_progress_evidence": {
+      "file": "src/app_v148.py",
+      "line": 114
+    },
+    "_v148_escape_geometry": {
+      "file": "src/app_v148.py",
+      "line": 194
+    },
+    "_v147_escape_success": {
+      "file": "src/app_v148.py",
+      "line": 246
+    },
+    "_v147_bbox": {
+      "file": "src/app_v147.py",
+      "line": 83
+    },
+    "_v147_bbox_growth": {
+      "file": "src/app_v147.py",
+      "line": 91
+    },
+    "_v147_bbox_union": {
+      "file": "src/app_v147.py",
+      "line": 102
+    },
+    "_v147_corridor_geometry": {
+      "file": "src/app_v147.py",
+      "line": 115
+    },
+    "_v146_bad_evidence": {
+      "file": "src/app_v147.py",
+      "line": 343
+    },
+    "_v142_mapping_monitor": {
+      "file": "src/app_v147.py",
+      "line": 534
+    },
+    "_v146_path_length": {
+      "file": "src/app_v146.py",
+      "line": 38
+    },
+    "_v146_span": {
+      "file": "src/app_v146.py",
+      "line": 45
+    },
+    "_v146_cells": {
+      "file": "src/app_v146.py",
+      "line": 54
+    },
+    "_v146_reset_progress_state": {
+      "file": "src/app_v146.py",
+      "line": 181
+    },
+    "_v143_phase1_is_valid": {
+      "file": "src/app_v146.py",
+      "line": 398
+    },
+    "_v145_latch_session": {
+      "file": "src/app_v145.py",
+      "line": 27
+    },
+    "_v121_request_phase2": {
+      "file": "src/app_v145.py",
+      "line": 117
+    },
+    "_v138_wait_for_dock": {
+      "file": "src/app_v145.py",
+      "line": 162
+    },
+    "_v140_confirm_reset": {
+      "file": "src/app_v145.py",
+      "line": 235
+    },
+    "_v140_reset_worker": {
+      "file": "src/app_v145.py",
+      "line": 251
+    },
+    "_v145_counter_return": {
+      "file": "src/app_v145.py",
+      "line": 263
+    },
+    "_v143_phase1_metrics": {
+      "file": "src/app_v143.py",
+      "line": 105
+    },
+    "_v143_commit_mapping_session": {
+      "file": "src/app_v143.py",
+      "line": 259
+    },
+    "_v142_install_ai_card": {
+      "file": "src/app_v142.py",
+      "line": 37
+    },
+    "_v142_refresh_ai_summary": {
+      "file": "src/app_v142.py",
+      "line": 102
+    },
+    "_v142_confirm_reset_learning": {
+      "file": "src/app_v142.py",
+      "line": 123
+    },
+    "_v142_strategy_passes": {
+      "file": "src/app_v142.py",
+      "line": 141
+    },
+    "_v142_room_monitor": {
+      "file": "src/app_v142.py",
+      "line": 148
+    },
+    "_v142_score_room": {
+      "file": "src/app_v142.py",
+      "line": 188
+    },
+    "_v142_launch_room_pass": {
+      "file": "src/app_v142.py",
+      "line": 222
+    },
+    "clean_local_room": {
+      "file": "src/app_v142.py",
+      "line": 250
+    },
+    "_v142_finish_room_pass": {
+      "file": "src/app_v142.py",
+      "line": 275
+    },
+    "_v142_xy_points": {
+      "file": "src/app_v142.py",
+      "line": 333
+    },
+    "_v140_parse_order_ids": {
+      "file": "src/app_v141.py",
+      "line": 29
+    },
+    "_v141_log": {
+      "file": "src/app_v141.py",
+      "line": 67
+    },
+    "_v141_diag_text": {
+      "file": "src/app_v141.py",
+      "line": 81
+    },
+    "_v139_confirm_clear_diagnostics": {
+      "file": "src/app_v141.py",
+      "line": 133
+    },
+    "_v141_watch_edge_state": {
+      "file": "src/app_v141.py",
+      "line": 270
+    },
+    "_v140_install_maintenance_card": {
+      "file": "src/app_v140.py",
+      "line": 24
+    },
+    "_v140_action_accepted": {
+      "file": "src/app_v140.py",
+      "line": 160
+    },
+    "_v140_delete_robot_orders": {
+      "file": "src/app_v140.py",
+      "line": 211
+    },
+    "_v140_reset_robot_maps": {
+      "file": "src/app_v140.py",
+      "line": 257
+    },
+    "_v140_reset_local_app_state": {
+      "file": "src/app_v140.py",
+      "line": 288
+    },
+    "_v139_remove_top_clean_button": {
+      "file": "src/app_v139.py",
+      "line": 117
+    },
+    "_v139_diag_sections": {
+      "file": "src/app_v139.py",
+      "line": 130
+    },
+    "_v139_full_diagnostic_text": {
+      "file": "src/app_v139.py",
+      "line": 147
+    },
+    "_v139_install_diag_clear_button": {
+      "file": "src/app_v139.py",
+      "line": 205
+    },
+    "_open_map_diagnostics": {
+      "file": "src/app_v139.py",
+      "line": 258
+    },
+    "_v138_new_progress": {
+      "file": "src/app_v138.py",
+      "line": 35
+    },
+    "_v138_int": {
+      "file": "src/app_v138.py",
+      "line": 52
+    },
+    "_v138_read_clean_state": {
+      "file": "src/app_v138.py",
+      "line": 58
+    },
+    "_v138_reset_cleaning_state": {
+      "file": "src/app_v138.py",
+      "line": 102
+    },
+    "_v138_progress_worker": {
+      "file": "src/app_v138.py",
+      "line": 288
+    },
+    "_v138_start_progress_watch": {
+      "file": "src/app_v138.py",
+      "line": 354
+    },
+    "_v138_run_with_remote_exit": {
+      "file": "src/app_v138.py",
+      "line": 364
+    },
+    "_v73_dock_guard_worker": {
+      "file": "src/app_v138.py",
+      "line": 384
+    },
+    "_v67_watch_base_worker": {
+      "file": "src/app_v138.py",
+      "line": 393
+    },
+    "_v138_retry_factory_edge": {
+      "file": "src/app_v138.py",
+      "line": 542
+    },
+    "_v127_try_phase2_recovery": {
+      "file": "src/app_v138.py",
+      "line": 713
+    },
+    "_v136_new_v68_diag": {
+      "file": "src/app_v136.py",
+      "line": 22
+    },
+    "_v67_commit_step2_start": {
+      "file": "src/app_v136.py",
+      "line": 212
+    },
+    "_v136_activate_phase2_ui": {
+      "file": "src/app_v136.py",
+      "line": 238
+    },
+    "_v131_start_edge_exploration": {
+      "file": "src/app_v134.py",
+      "line": 18
+    },
+    "_v133_dock_profile": {
+      "file": "src/app_v133.py",
+      "line": 25
+    },
+    "_v131_pose_key": {
+      "file": "src/app_v131.py",
+      "line": 34
+    },
+    "_v131_install_edge_route": {
+      "file": "src/app_v131.py",
+      "line": 51
+    },
+    "_v131_read_edge_state": {
+      "file": "src/app_v131.py",
+      "line": 70
+    },
+    "_v131_wait_edge_start": {
+      "file": "src/app_v131.py",
+      "line": 80
+    },
+    "_v131_capture_prestart_pose": {
+      "file": "src/app_v131.py",
+      "line": 214
+    },
+    "_v117_update_live_pose": {
+      "file": "src/app_v131.py",
+      "line": 238
+    },
+    "_v40_map_client": {
+      "file": "src/app_v130.py",
+      "line": 57
+    },
+    "_v130_read_base_1022": {
+      "file": "src/app_v130.py",
+      "line": 86
+    },
+    "_v71_set_origin": {
+      "file": "src/app_v130.py",
+      "line": 100
+    },
+    "_v109_prepare_plan_origin": {
+      "file": "src/app_v130.py",
+      "line": 118
+    },
+    "_v130_capture_return_candidate_async": {
+      "file": "src/app_v130.py",
+      "line": 173
+    },
+    "_render_status": {
+      "file": "src/app_v130.py",
+      "line": 269
+    },
+    "_v107_choose_final_grid": {
+      "file": "src/app_v130.py",
+      "line": 281
+    },
+    "clean_selected_point": {
+      "file": "src/app_v130.py",
+      "line": 345
+    },
+    "_map_double_click": {
+      "file": "src/app_v130.py",
+      "line": 353
+    },
+    "_v130_map_has_geometry": {
+      "file": "src/app_v130.py",
+      "line": 368
+    },
+    "enable_room_editor": {
+      "file": "src/app_v130.py",
+      "line": 380
+    },
+    "_v130_clear_polygon_toolbar": {
+      "file": "src/app_v130.py",
+      "line": 442
+    },
+    "_v130_install_polygon_toolbar": {
+      "file": "src/app_v130.py",
+      "line": 450
+    },
+    "_v130_start_polygon_room": {
+      "file": "src/app_v130.py",
+      "line": 478
+    },
+    "_v130_edit_polygon_room": {
+      "file": "src/app_v130.py",
+      "line": 497
+    },
+    "_v130_cancel_polygon_room": {
+      "file": "src/app_v130.py",
+      "line": 518
+    },
+    "_v130_orientation": {
+      "file": "src/app_v130.py",
+      "line": 535
+    },
+    "_v130_segments_intersect": {
+      "file": "src/app_v130.py",
+      "line": 545
+    },
+    "_v130_polygon_simple": {
+      "file": "src/app_v130.py",
+      "line": 554
+    },
+    "_v130_point_in_polygon": {
+      "file": "src/app_v130.py",
+      "line": 572
+    },
+    "_v130_snap_room_point": {
+      "file": "src/app_v130.py",
+      "line": 609
+    },
+    "_v130_point_near_floor": {
+      "file": "src/app_v130.py",
+      "line": 623
+    },
+    "_v130_screen_points": {
+      "file": "src/app_v130.py",
+      "line": 655
+    },
+    "_v130_draw_polygon_preview": {
+      "file": "src/app_v130.py",
+      "line": 675
+    },
+    "_drawing_on_map": {
+      "file": "src/app_v130.py",
+      "line": 720
+    },
+    "_map_press": {
+      "file": "src/app_v130.py",
+      "line": 725
+    },
+    "_map_drag": {
+      "file": "src/app_v130.py",
+      "line": 781
+    },
+    "_map_release": {
+      "file": "src/app_v130.py",
+      "line": 802
+    },
+    "_v130_finish_polygon_room": {
+      "file": "src/app_v130.py",
+      "line": 808
+    },
+    "_v87_draw_rooms_and_plan": {
+      "file": "src/app_v130.py",
+      "line": 874
+    },
+    "_render_map_canvas": {
+      "file": "src/app_v130.py",
+      "line": 977
+    },
+    "_v110_render_rooms": {
+      "file": "src/app_v130.py",
+      "line": 986
+    },
+    "_v110_zone_inside_room": {
+      "file": "src/app_v130.py",
+      "line": 998
+    },
+    "_v109_toggle_selected_room_block": {
+      "file": "src/app_v130.py",
+      "line": 1026
+    },
+    "_v130_run_polygon_room": {
+      "file": "src/app_v130.py",
+      "line": 1039
+    },
+    "_v130_phase_gap_metrics": {
+      "file": "src/app_v130.py",
+      "line": 1201
+    },
+    "_v130_persist_late_return_candidate": {
+      "file": "src/app_v130.py",
+      "line": 1242
+    },
+    "_v128_status_code": {
+      "file": "src/app_v128.py",
+      "line": 53
+    },
+    "_v126_return_pattern": {
+      "file": "src/app_v127.py",
+      "line": 105
+    },
+    "_v127_phase2_recovery_allowed": {
+      "file": "src/app_v127.py",
+      "line": 154
+    },
+    "_v73_schedule_recovery": {
+      "file": "src/app_v127.py",
+      "line": 284
+    },
+    "_v74_request_finish_for_coverage": {
+      "file": "src/app_v127.py",
+      "line": 295
+    },
+    "_v127_publish_preview_grid": {
+      "file": "src/app_v127.py",
+      "line": 308
+    },
+    "_v93_schedule_final_reads": {
+      "file": "src/app_v127.py",
+      "line": 362
+    },
+    "_v126_remove_legacy_bridge_residue": {
+      "file": "src/app_v126.py",
+      "line": 46
+    },
+    "_v74_reset_session": {
+      "file": "src/app_v126.py",
+      "line": 155
+    },
+    "_v126_angle_delta": {
+      "file": "src/app_v126.py",
+      "line": 166
+    },
+    "_v126_note_return_pose": {
+      "file": "src/app_v126.py",
+      "line": 174
+    },
+    "_v126_maybe_recover_return": {
+      "file": "src/app_v126.py",
+      "line": 260
+    },
+    "_apply_map_state": {
+      "file": "src/app_v126.py",
+      "line": 345
+    },
+    "_v74_watch_mapping_worker": {
+      "file": "src/app_v121.py",
+      "line": 147
+    },
+    "_v84_close_mapping_on_dock": {
+      "file": "src/app_v121.py",
+      "line": 329
+    },
+    "_v77_corridor_finish": {
+      "file": "src/app_v119.py",
+      "line": 40
+    },
+    "_v118_note_status": {
+      "file": "src/app_v119.py",
+      "line": 88
+    },
+    "_v118_device_guard_active": {
+      "file": "src/app_v118.py",
+      "line": 63
+    },
+    "_v118_force_clean_button_state": {
+      "file": "src/app_v118.py",
+      "line": 72
+    },
+    "_v95_sync_global_controls": {
+      "file": "src/app_v118.py",
+      "line": 85
+    },
+    "_v75_recovery_valid": {
+      "file": "src/app_v118.py",
+      "line": 103
+    },
+    "start_clean": {
+      "file": "src/app_v118.py",
+      "line": 119
+    },
+    "_v118_age": {
+      "file": "src/app_v118.py",
+      "line": 145
+    },
+    "_v117_pose_from_state": {
+      "file": "src/app_v117.py",
+      "line": 30
+    },
+    "_v117_pose_overlay_enabled": {
+      "file": "src/app_v117.py",
+      "line": 89
+    },
+    "_v117_capture_raw_diag": {
+      "file": "src/app_v117.py",
+      "line": 98
+    },
+    "_v117_snapshot_with_live_pose": {
+      "file": "src/app_v117.py",
+      "line": 154
+    },
+    "_v70_render_thumbnail": {
+      "file": "src/app_v117.py",
+      "line": 177
+    },
+    "_v117_age": {
+      "file": "src/app_v117.py",
+      "line": 202
+    },
+    "_v116_mapping_flag_is_stale": {
+      "file": "src/app_v116.py",
+      "line": 40
+    },
+    "_v116_walk_widgets": {
+      "file": "src/app_v116.py",
+      "line": 49
+    },
+    "_v116_is_clean_button": {
+      "file": "src/app_v116.py",
+      "line": 58
+    },
+    "_v116_known_clean_buttons": {
+      "file": "src/app_v116.py",
+      "line": 74
+    },
+    "_v116_rebind_clean_buttons": {
+      "file": "src/app_v116.py",
+      "line": 90
+    },
+    "_v116_set_all_clean_buttons": {
+      "file": "src/app_v116.py",
+      "line": 105
+    },
+    "_v116_clear_stale_mapping_state": {
+      "file": "src/app_v116.py",
+      "line": 162
+    },
+    "_v116_optional_saved_grid": {
+      "file": "src/app_v116.py",
+      "line": 187
+    },
+    "_v116_restore_optional_grid": {
+      "file": "src/app_v116.py",
+      "line": 212
+    },
+    "_v115_saved_map_context": {
+      "file": "src/app_v115.py",
+      "line": 26
+    },
+    "_v115_set_clean_button_busy": {
+      "file": "src/app_v115.py",
+      "line": 41
+    },
+    "_v114_cleaning_busy": {
+      "file": "src/app_v115.py",
+      "line": 63
+    },
+    "_v88_prepare_live_grid": {
+      "file": "src/app_v115.py",
+      "line": 76
+    },
+    "_v114_grid_fingerprint": {
+      "file": "src/app_v114.py",
+      "line": 53
+    },
+    "_v114_active_map_context": {
+      "file": "src/app_v114.py",
+      "line": 79
+    },
+    "_v114_restore_grid_if_needed": {
+      "file": "src/app_v114.py",
+      "line": 125
+    },
+    "_switch_map": {
+      "file": "src/app_v114.py",
+      "line": 194
+    },
+    "_create_map": {
+      "file": "src/app_v114.py",
+      "line": 199
+    },
+    "_delete_map": {
+      "file": "src/app_v114.py",
+      "line": 204
+    },
+    "_v114_constrain_target": {
+      "file": "src/app_v114.py",
+      "line": 210
+    },
+    "_v114_run_safe_rectangles": {
+      "file": "src/app_v114.py",
+      "line": 253
+    },
+    "_run_zones_now": {
+      "file": "src/app_v114.py",
+      "line": 430
+    },
+    "_run_schedule_now": {
+      "file": "src/app_v114.py",
+      "line": 475
+    },
+    "_v81_dock_monitor_worker": {
+      "file": "src/app_v113.py",
+      "line": 43
+    },
+    "_v87_floor_cells": {
+      "file": "src/app_v111.py",
+      "line": 24
+    },
+    "_v111_capture_area": {
+      "file": "src/app_v111.py",
+      "line": 69
+    },
+    "_v72_fit_scale_about_center": {
+      "file": "src/app_v110.py",
+      "line": 64
+    },
+    "_build_map_page_v22": {
+      "file": "src/app_v110.py",
+      "line": 131
+    },
+    "_v110_update_segmented_buttons": {
+      "file": "src/app_v110.py",
+      "line": 235
+    },
+    "_v110_show_section": {
+      "file": "src/app_v110.py",
+      "line": 253
+    },
+    "_v110_room_id": {
+      "file": "src/app_v110.py",
+      "line": 267
+    },
+    "_v110_rooms": {
+      "file": "src/app_v110.py",
+      "line": 271
+    },
+    "_v110_selected_room": {
+      "file": "src/app_v110.py",
+      "line": 277
+    },
+    "_v110_select_room": {
+      "file": "src/app_v110.py",
+      "line": 293
+    },
+    "_v110_room_items": {
+      "file": "src/app_v110.py",
+      "line": 303
+    },
+    "_v110_render_side": {
+      "file": "src/app_v110.py",
+      "line": 311
+    },
+    "_v110_card": {
+      "file": "src/app_v110.py",
+      "line": 353
+    },
+    "_v110_bind_tree": {
+      "file": "src/app_v110.py",
+      "line": 364
+    },
+    "_v110_render_zones": {
+      "file": "src/app_v110.py",
+      "line": 518
+    },
+    "_v110_rect": {
+      "file": "src/app_v110.py",
+      "line": 788
+    },
+    "_v110_intersection_area": {
+      "file": "src/app_v110.py",
+      "line": 797
+    },
+    "_v110_reconcile_room_zones": {
+      "file": "src/app_v110.py",
+      "line": 821
+    },
+    "_v110_begin_zone_draw": {
+      "file": "src/app_v110.py",
+      "line": 868
+    },
+    "_enable_plan_draw": {
+      "file": "src/app_v110.py",
+      "line": 886
+    },
+    "_v110_delete_selected_room": {
+      "file": "src/app_v110.py",
+      "line": 985
+    },
+    "_v109_delete_selected_room": {
+      "file": "src/app_v110.py",
+      "line": 1028
+    },
+    "_v109_selected_zone": {
+      "file": "src/app_v110.py",
+      "line": 1066
+    },
+    "_v109_refresh_side_panel": {
+      "file": "src/app_v110.py",
+      "line": 1075
+    },
+    "_set_connection": {
+      "file": "src/app_v109.py",
+      "line": 59
+    },
+    "_v109_redact_ips": {
+      "file": "src/app_v109.py",
+      "line": 66
+    },
+    "_install_map_plan_controls": {
+      "file": "src/app_v109.py",
+      "line": 295
+    },
+    "_install_map_library_control": {
+      "file": "src/app_v109.py",
+      "line": 303
+    },
+    "_v109_rect_signature": {
+      "file": "src/app_v109.py",
+      "line": 318
+    },
+    "_v109_room_block": {
+      "file": "src/app_v109.py",
+      "line": 329
+    },
+    "_refresh_room_list": {
+      "file": "src/app_v109.py",
+      "line": 339
+    },
+    "_v109_refresh_zone_panel": {
+      "file": "src/app_v109.py",
+      "line": 424
+    },
+    "_v109_selected_room": {
+      "file": "src/app_v109.py",
+      "line": 540
+    },
+    "_v109_clean_selected_room": {
+      "file": "src/app_v109.py",
+      "line": 563
+    },
+    "_v109_clean_selected_zone": {
+      "file": "src/app_v109.py",
+      "line": 619
+    },
+    "_v109_matching_block_for_zone": {
+      "file": "src/app_v109.py",
+      "line": 639
+    },
+    "_v109_toggle_selected_zone_block": {
+      "file": "src/app_v109.py",
+      "line": 648
+    },
+    "_v109_delete_selected_zone": {
+      "file": "src/app_v109.py",
+      "line": 678
+    },
+    "_v109_emergency_diagnostic": {
+      "file": "src/app_v109.py",
+      "line": 764
+    },
+    "_refresh_map_diag_window": {
+      "file": "src/app_v109.py",
+      "line": 897
+    },
+    "_copy_map_diagnostics": {
+      "file": "src/app_v109.py",
+      "line": 941
+    },
+    "_v87_draw_route": {
+      "file": "src/app_v108.py",
+      "line": 23
+    },
+    "_v108_valid_transform": {
+      "file": "src/app_v108.py",
+      "line": 31
+    },
+    "_v108_transform": {
+      "file": "src/app_v108.py",
+      "line": 42
+    },
+    "_v108_xy_from_transform": {
+      "file": "src/app_v108.py",
+      "line": 81
+    },
+    "_v108_estimated_cells": {
+      "file": "src/app_v108.py",
+      "line": 97
+    },
+    "_v108_draw_estimated_floor": {
+      "file": "src/app_v108.py",
+      "line": 105
+    },
+    "_v108_clear_canvas": {
+      "file": "src/app_v108.py",
+      "line": 163
+    },
+    "_v108_waiting_for_final": {
+      "file": "src/app_v108.py",
+      "line": 182
+    },
+    "_v108_draw_modern_scene": {
+      "file": "src/app_v108.py",
+      "line": 188
+    },
+    "_v108_thumbnail_bounds": {
+      "file": "src/app_v108.py",
+      "line": 325
+    },
+    "_v88_update_legend": {
+      "file": "src/app_v108.py",
+      "line": 394
+    },
+    "_v38_maybe_poll_map_file": {
+      "file": "src/app_v107.py",
+      "line": 70
+    },
+    "_v88_native_grid": {
+      "file": "src/app_v107.py",
+      "line": 82
+    },
+    "_v99_schedule_refresh": {
+      "file": "src/app_v107.py",
+      "line": 115
+    },
+    "_v100_force_canvas_bg": {
+      "file": "src/app_v107.py",
+      "line": 132
+    },
+    "_v107_grid_from_snapshot": {
+      "file": "src/app_v107.py",
+      "line": 161
+    },
+    "_v107_grid_signature": {
+      "file": "src/app_v107.py",
+      "line": 214
+    },
+    "_v106_history": {
+      "file": "src/app_v106.py",
+      "line": 32
+    },
+    "_v106_block_counts": {
+      "file": "src/app_v106.py",
+      "line": 47
+    },
+    "_v106_median_low_counts": {
+      "file": "src/app_v106.py",
+      "line": 73
+    },
+    "_v106_expand_density": {
+      "file": "src/app_v106.py",
+      "line": 89
+    },
+    "_v106_metrics": {
+      "file": "src/app_v106.py",
+      "line": 130
+    },
+    "_v100_live_grid_from_snapshot": {
+      "file": "src/app_v106.py",
+      "line": 140
+    },
+    "_v105_map_id": {
+      "file": "src/app_v105.py",
+      "line": 33
+    },
+    "_v105_copy_grid": {
+      "file": "src/app_v105.py",
+      "line": 37
+    },
+    "_v105_current_frame_grid": {
+      "file": "src/app_v105.py",
+      "line": 63
+    },
+    "_v105_required_votes": {
+      "file": "src/app_v105.py",
+      "line": 88
+    },
+    "_v105_consensus": {
+      "file": "src/app_v105.py",
+      "line": 95
+    },
+    "_v105_history": {
+      "file": "src/app_v105.py",
+      "line": 109
+    },
+    "_v100_store_live_grid": {
+      "file": "src/app_v105.py",
+      "line": 225
+    },
+    "_v104_map_state": {
+      "file": "src/app_v104.py",
+      "line": 32
+    },
+    "_v104_metrics": {
+      "file": "src/app_v104.py",
+      "line": 60
+    },
+    "_v104_to_layout_invariant_coarse": {
+      "file": "src/app_v104.py",
+      "line": 115
+    },
+    "_v104_union": {
+      "file": "src/app_v104.py",
+      "line": 162
+    },
+    "_v103_canonical_candidate": {
+      "file": "src/app_v103.py",
+      "line": 36
+    },
+    "_v103_map_id": {
+      "file": "src/app_v103.py",
+      "line": 42
+    },
+    "_v103_state": {
+      "file": "src/app_v103.py",
+      "line": 45
+    },
+    "_v102_tag_count": {
+      "file": "src/app_v102.py",
+      "line": 33
+    },
+    "_v102_snapshot_has_pose": {
+      "file": "src/app_v102.py",
+      "line": 39
+    },
+    "_v102_redraw_main_pose": {
+      "file": "src/app_v102.py",
+      "line": 47
+    },
+    "_v102_redraw_thumb_pose": {
+      "file": "src/app_v102.py",
+      "line": 74
+    },
+    "_v102_live_status_text": {
+      "file": "src/app_v102.py",
+      "line": 147
+    },
+    "_v87_xy": {
+      "file": "src/app_v101.py",
+      "line": 23
+    },
+    "_v101_tag_count": {
+      "file": "src/app_v101.py",
+      "line": 51
+    },
+    "_v101_force_native_main": {
+      "file": "src/app_v101.py",
+      "line": 57
+    },
+    "_v101_force_native_thumbnail": {
+      "file": "src/app_v101.py",
+      "line": 140
+    },
+    "_v100_is_map_canvas": {
+      "file": "src/app_v100.py",
+      "line": 131
+    },
+    "_v98_theme_walk": {
+      "file": "src/app_v100.py",
+      "line": 153
+    },
+    "_v100_grid_signature": {
+      "file": "src/app_v100.py",
+      "line": 277
+    },
+    "_v99_union_bounds": {
+      "file": "src/app_v99.py",
+      "line": 204
+    },
+    "_v72_bounds": {
+      "file": "src/app_v99.py",
+      "line": 249
+    },
+    "_v70_collect_bounds": {
+      "file": "src/app_v99.py",
+      "line": 270
+    },
+    "_v99_palette": {
+      "file": "src/app_v99.py",
+      "line": 318
+    },
+    "_v98_palette": {
+      "file": "src/app_v99.py",
+      "line": 322
+    },
+    "_button": {
+      "file": "src/app_v99.py",
+      "line": 325
+    },
+    "_v99_bg_role": {
+      "file": "src/app_v99.py",
+      "line": 332
+    },
+    "_v99_fg_role": {
+      "file": "src/app_v99.py",
+      "line": 347
+    },
+    "_v99_theme_button": {
+      "file": "src/app_v99.py",
+      "line": 355
+    },
+    "_v98_apply_theme": {
+      "file": "src/app_v99.py",
+      "line": 466
+    },
+    "_v99_canonical_text": {
+      "file": "src/app_v99.py",
+      "line": 502
+    },
+    "_v98_translate": {
+      "file": "src/app_v99.py",
+      "line": 520
+    },
+    "_v98_language_walk": {
+      "file": "src/app_v99.py",
+      "line": 558
+    },
+    "_v99_refresh_all": {
+      "file": "src/app_v99.py",
+      "line": 589
+    },
+    "_render_maps": {
+      "file": "src/app_v99.py",
+      "line": 612
+    },
+    "show_page": {
+      "file": "src/app_v99.py",
+      "line": 622
+    },
+    "_dialog": {
+      "file": "src/app_v99.py",
+      "line": 627
+    },
+    "_section_title": {
+      "file": "src/app_v99.py",
+      "line": 632
+    },
+    "_rename_map": {
+      "file": "src/app_v99.py",
+      "line": 663
+    },
+    "_v99_confirm_delete_map": {
+      "file": "src/app_v99.py",
+      "line": 681
+    },
+    "open_map_library": {
+      "file": "src/app_v99.py",
+      "line": 730
+    },
+    "_build_ui": {
+      "file": "src/app_v98.py",
+      "line": 128
+    },
+    "_v39_restore_saved_window": {
+      "file": "src/app_v98.py",
+      "line": 137
+    },
+    "_center_initial_window": {
+      "file": "src/app_v98.py",
+      "line": 142
+    },
+    "_v98_show_once": {
+      "file": "src/app_v98.py",
+      "line": 156
+    },
+    "_v98_install_preferences_card": {
+      "file": "src/app_v98.py",
+      "line": 192
+    },
+    "_v98_theme_changed": {
+      "file": "src/app_v98.py",
+      "line": 239
+    },
+    "_v98_language_changed": {
+      "file": "src/app_v98.py",
+      "line": 243
+    },
+    "_v98_color_role": {
+      "file": "src/app_v98.py",
+      "line": 253
+    },
+    "_v98_apply_language": {
+      "file": "src/app_v98.py",
+      "line": 385
+    },
+    "_set_banner": {
+      "file": "src/app_v98.py",
+      "line": 449
+    },
+    "_v98_open_update_window": {
+      "file": "src/app_v98.py",
+      "line": 473
+    },
+    "_v98_update_stage_text": {
+      "file": "src/app_v98.py",
+      "line": 527
+    },
+    "_v98_update_progress_value": {
+      "file": "src/app_v98.py",
+      "line": 532
+    },
+    "_manual_update_found_safe": {
+      "file": "src/app_v98.py",
+      "line": 553
+    },
+    "_v97_geometry_metrics": {
+      "file": "src/app_v97.py",
+      "line": 24
+    },
+    "_v97_trace_cells": {
+      "file": "src/app_v97.py",
+      "line": 61
+    },
+    "_v97_early_viewport_bounds": {
+      "file": "src/app_v97.py",
+      "line": 109
+    },
+    "_v82_correct_absolute": {
+      "file": "src/app_v96.py",
+      "line": 75
+    },
+    "_v96_buffer_span": {
+      "file": "src/app_v96.py",
+      "line": 148
+    },
+    "_v80_buffer_initial_point": {
+      "file": "src/app_v96.py",
+      "line": 163
+    },
+    "_v96_schedule_local_poll": {
+      "file": "src/app_v96.py",
+      "line": 249
+    },
+    "_start_local_map_polling": {
+      "file": "src/app_v96.py",
+      "line": 277
+    },
+    "_schedule_next_map_poll": {
+      "file": "src/app_v96.py",
+      "line": 283
+    },
+    "_poll_local_map": {
+      "file": "src/app_v96.py",
+      "line": 294
+    },
+    "_v96_cloud_due": {
+      "file": "src/app_v96.py",
+      "line": 328
+    },
+    "_v95_rearm_map_streams": {
+      "file": "src/app_v96.py",
+      "line": 384
+    },
+    "_drain_ui_events": {
+      "file": "src/app_v96.py",
+      "line": 409
+    },
+    "_v96_render_now": {
+      "file": "src/app_v96.py",
+      "line": 438
+    },
+    "destroy": {
+      "file": "src/app_v96.py",
+      "line": 470
+    },
+    "_v95_install_global_controls": {
+      "file": "src/app_v95.py",
+      "line": 41
+    },
+    "_v95_recovery_due": {
+      "file": "src/app_v95.py",
+      "line": 145
+    },
+    "_v95_reset_watchdog_for_mapping": {
+      "file": "src/app_v95.py",
+      "line": 165
+    },
+    "_v95_maybe_recover_stalled_map": {
+      "file": "src/app_v95.py",
+      "line": 275
+    },
+    "_sync_mapping_step_buttons": {
+      "file": "src/app_v95.py",
+      "line": 351
+    },
+    "_v95_age": {
+      "file": "src/app_v95.py",
+      "line": 358
+    },
+    "_v94_install_global_state_badge": {
+      "file": "src/app_v94.py",
+      "line": 31
+    },
+    "_v94_display_state": {
+      "file": "src/app_v94.py",
+      "line": 57
+    },
+    "_v94_apply_badge": {
+      "file": "src/app_v94.py",
+      "line": 92
+    },
+    "_v94_sync_global_state": {
+      "file": "src/app_v94.py",
+      "line": 111
+    },
+    "_v93_native_grid_state": {
+      "file": "src/app_v93.py",
+      "line": 42
+    },
+    "_v81_completion_state": {
+      "file": "src/app_v93.py",
+      "line": 68
+    },
+    "_v91_seed_floor_cells": {
+      "file": "src/app_v91.py",
+      "line": 27
+    },
+    "_v91_close_small_gaps": {
+      "file": "src/app_v91.py",
+      "line": 74
+    },
+    "_v91_fill_enclosed_holes": {
+      "file": "src/app_v91.py",
+      "line": 105
+    },
+    "_v91_floor_bounds": {
+      "file": "src/app_v91.py",
+      "line": 143
+    },
+    "_v90_reset_gate": {
+      "file": "src/app_v90.py",
+      "line": 44
+    },
+    "_v90_snapshot_point_count": {
+      "file": "src/app_v90.py",
+      "line": 72
+    },
+    "_v90_saved_count": {
+      "file": "src/app_v90.py",
+      "line": 79
+    },
+    "_v90_confirm_start": {
+      "file": "src/app_v90.py",
+      "line": 85
+    },
+    "_v90_mark_departure": {
+      "file": "src/app_v90.py",
+      "line": 106
+    },
+    "_v90_note_physical_status": {
+      "file": "src/app_v90.py",
+      "line": 124
+    },
+    "_v90_check_start_timeout": {
+      "file": "src/app_v90.py",
+      "line": 139
+    },
+    "_v84_has_mapping_motion": {
+      "file": "src/app_v90.py",
+      "line": 211
+    },
+    "_v84_should_finalize_dock": {
+      "file": "src/app_v90.py",
+      "line": 221
+    },
+    "_v84_note_returning": {
+      "file": "src/app_v90.py",
+      "line": 248
+    },
+    "_v88_install_legend": {
+      "file": "src/app_v89.py",
+      "line": 29
+    },
+    "_v89_route_length": {
+      "file": "src/app_v89.py",
+      "line": 84
+    },
+    "_v88_correct_base_cell": {
+      "file": "src/app_v88.py",
+      "line": 42
+    },
+    "_v88_grid_signature": {
+      "file": "src/app_v88.py",
+      "line": 155
+    },
+    "_v88_grid_bounds": {
+      "file": "src/app_v88.py",
+      "line": 197
+    },
+    "_v88_union_bounds": {
+      "file": "src/app_v88.py",
+      "line": 231
+    },
+    "_v88_draw_native_floor": {
+      "file": "src/app_v88.py",
+      "line": 251
+    },
+    "_v87_cell_bounds": {
+      "file": "src/app_v87.py",
+      "line": 49
+    },
+    "_v87_path_segments": {
+      "file": "src/app_v87.py",
+      "line": 55
+    },
+    "_v87_draw_floor": {
+      "file": "src/app_v87.py",
+      "line": 98
+    },
+    "_v87_draw_base_and_robot": {
+      "file": "src/app_v87.py",
+      "line": 215
+    },
+    "_v86_dock_ready_for_completion_notice": {
+      "file": "src/app_v86.py",
+      "line": 41
+    },
+    "_v70_notify_mapping_complete": {
+      "file": "src/app_v86.py",
+      "line": 48
+    },
+    "_v86_clamp_battery": {
+      "file": "src/app_v86.py",
+      "line": 69
+    },
+    "_v86_reset_mode_points": {
+      "file": "src/app_v86.py",
+      "line": 75
+    },
+    "_v86_note_battery": {
+      "file": "src/app_v86.py",
+      "line": 84
+    },
+    "_v86_estimate_rate": {
+      "file": "src/app_v86.py",
+      "line": 145
+    },
+    "_v86_eta_minutes": {
+      "file": "src/app_v86.py",
+      "line": 174
+    },
+    "_v86_format_eta": {
+      "file": "src/app_v86.py",
+      "line": 184
+    },
+    "_v86_refresh_battery_header": {
+      "file": "src/app_v86.py",
+      "line": 195
+    },
+    "_v74_refresh_mapping_controls": {
+      "file": "src/app_v86.py",
+      "line": 245
+    },
+    "_v86_points_span": {
+      "file": "src/app_v86.py",
+      "line": 262
+    },
+    "_v85_transform_absolute": {
+      "file": "src/app_v85.py",
+      "line": 40
+    },
+    "_v84_cancel_recovery": {
+      "file": "src/app_v84.py",
+      "line": 59
+    },
+    "_v84_mark_dock_authoritative": {
+      "file": "src/app_v84.py",
+      "line": 78
+    },
+    "_v84_snap_robot_to_dock": {
+      "file": "src/app_v84.py",
+      "line": 116
+    },
+    "_v84_authoritative_dock_ui": {
+      "file": "src/app_v84.py",
+      "line": 243
+    },
+    "_v83_recovery_gate": {
+      "file": "src/app_v84.py",
+      "line": 287
+    },
+    "_v73_start_dock_guard": {
+      "file": "src/app_v84.py",
+      "line": 315
+    },
+    "_v83_record_decision": {
+      "file": "src/app_v83.py",
+      "line": 87
+    },
+    "_v83_start_lane_candidate": {
+      "file": "src/app_v83.py",
+      "line": 118
+    },
+    "_v83_update_lane_candidate": {
+      "file": "src/app_v83.py",
+      "line": 136
+    },
+    "_v82_apply_lane_lock": {
+      "file": "src/app_v83.py",
+      "line": 215
+    },
+    "_v83_recovery_kind": {
+      "file": "src/app_v83.py",
+      "line": 377
+    },
+    "_v82_axis": {
+      "file": "src/app_v82.py",
+      "line": 85
+    },
+    "_v82_unoriented_angle_error": {
+      "file": "src/app_v82.py",
+      "line": 89
+    },
+    "_v82_project_to_axis": {
+      "file": "src/app_v82.py",
+      "line": 94
+    },
+    "_v77_filter_metric_point": {
+      "file": "src/app_v82.py",
+      "line": 261
+    },
+    "_v82_persistable_point": {
+      "file": "src/app_v82.py",
+      "line": 283
+    },
+    "_v82_note_corrected_sample": {
+      "file": "src/app_v82.py",
+      "line": 295
+    },
+    "_v82_exploration_geometry": {
+      "file": "src/app_v82.py",
+      "line": 445
+    },
+    "_v77_note_coverage_metric": {
+      "file": "src/app_v82.py",
+      "line": 492
+    },
+    "_v81_note_extent": {
+      "file": "src/app_v81.py",
+      "line": 83
+    },
+    "_v81_send_single_dock": {
+      "file": "src/app_v81.py",
+      "line": 232
+    },
+    "_v81_finish_complete": {
+      "file": "src/app_v81.py",
+      "line": 240
+    },
+    "_v81_stop_incomplete": {
+      "file": "src/app_v81.py",
+      "line": 260
+    },
+    "_v80_point_distance": {
+      "file": "src/app_v80.py",
+      "line": 61
+    },
+    "_v80_step": {
+      "file": "src/app_v80.py",
+      "line": 68
+    },
+    "_v80_snapshot_signature": {
+      "file": "src/app_v80.py",
+      "line": 291
+    },
+    "_v70_card_models": {
+      "file": "src/app_v80.py",
+      "line": 309
+    },
+    "_v80_pair": {
+      "file": "src/app_v80.py",
+      "line": 412
+    },
+    "_v80_update_ijai_comparison": {
+      "file": "src/app_v80.py",
+      "line": 424
+    },
+    "_v79_absolute_metric_point": {
+      "file": "src/app_v79.py",
+      "line": 37
+    },
+    "_v79_recovery_kind": {
+      "file": "src/app_v79.py",
+      "line": 136
+    },
+    "_v77_capture_base_reference": {
+      "file": "src/app_v78.py",
+      "line": 34
+    },
+    "_v77_valid_base_xy": {
+      "file": "src/app_v77.py",
+      "line": 69
+    },
+    "_v71_normalize_xy": {
+      "file": "src/app_v77.py",
+      "line": 125
+    },
+    "_v71_normalize_point": {
+      "file": "src/app_v77.py",
+      "line": 137
+    },
+    "_v71_raw_distance_to_origin": {
+      "file": "src/app_v77.py",
+      "line": 147
+    },
+    "_v71_return_limit": {
+      "file": "src/app_v77.py",
+      "line": 158
+    },
+    "_v77_reset_metric_filter": {
+      "file": "src/app_v77.py",
+      "line": 163
+    },
+    "_v77_ensure_origin_from_state": {
+      "file": "src/app_v77.py",
+      "line": 319
+    },
+    "_v77_merge_base_point": {
+      "file": "src/app_v77.py",
+      "line": 329
+    },
+    "_v77_corridor_geometry": {
+      "file": "src/app_v77.py",
+      "line": 483
+    },
+    "_v73_track_motion": {
+      "file": "src/app_v77.py",
+      "line": 545
+    },
+    "_v76_reset_legacy_motion_state": {
+      "file": "src/app_v76.py",
+      "line": 37
+    },
+    "_record_relative_motion": {
+      "file": "src/app_v76.py",
+      "line": 68
+    },
+    "_v76_turn_reversals": {
+      "file": "src/app_v76.py",
+      "line": 116
+    },
+    "_v76_in_stall_grace": {
+      "file": "src/app_v76.py",
+      "line": 127
+    },
+    "_v75_distinct_path_xy": {
+      "file": "src/app_v75.py",
+      "line": 34
+    },
+    "_v75_invalidate_recovery": {
+      "file": "src/app_v75.py",
+      "line": 119
+    },
+    "finish_mapping": {
+      "file": "src/app_v75.py",
+      "line": 276
+    },
+    "_build_map_page": {
+      "file": "src/app_v74.py",
+      "line": 34
+    },
+    "_v72_install_map_controls": {
+      "file": "src/app_v74.py",
+      "line": 78
+    },
+    "_v74_note_coverage": {
+      "file": "src/app_v74.py",
+      "line": 339
+    },
+    "_v73_reset_session": {
+      "file": "src/app_v73.py",
+      "line": 50
+    },
+    "start_interior_mapping": {
+      "file": "src/app_v73.py",
+      "line": 83
+    },
+    "_v73_point_key": {
+      "file": "src/app_v73.py",
+      "line": 247
+    },
+    "_v73_parse_pose": {
+      "file": "src/app_v73.py",
+      "line": 258
+    },
+    "_v73_angle_delta": {
+      "file": "src/app_v73.py",
+      "line": 394
+    },
+    "_v73_span": {
+      "file": "src/app_v73.py",
+      "line": 403
+    },
+    "_v67_recheck_base_before_step2": {
+      "file": "src/app_v73.py",
+      "line": 954
+    },
+    "_v72_active_map_id": {
+      "file": "src/app_v72.py",
+      "line": 30
+    },
+    "_v72_view": {
+      "file": "src/app_v72.py",
+      "line": 39
+    },
+    "_v72_xy": {
+      "file": "src/app_v72.py",
+      "line": 52
+    },
+    "_v72_default_base_center": {
+      "file": "src/app_v72.py",
+      "line": 119
+    },
+    "_v72_sync_active_view": {
+      "file": "src/app_v72.py",
+      "line": 147
+    },
+    "_v72_render_main_canvas": {
+      "file": "src/app_v72.py",
+      "line": 205
+    },
+    "_v72_mouse_wheel": {
+      "file": "src/app_v72.py",
+      "line": 372
+    },
+    "_v72_zoom_extents_event": {
+      "file": "src/app_v72.py",
+      "line": 412
+    },
+    "_v70_select_map": {
+      "file": "src/app_v72.py",
+      "line": 430
+    },
+    "_reset_coordinate_session": {
+      "file": "src/app_v72.py",
+      "line": 436
+    },
+    "_v71_xy": {
+      "file": "src/app_v71.py",
+      "line": 45
+    },
+    "_v71_debug_raw_pose": {
+      "file": "src/app_v71.py",
+      "line": 57
+    },
+    "_v69_fallback_reason": {
+      "file": "src/app_v71.py",
+      "line": 214
+    },
+    "_v71_start_phase2_watch": {
+      "file": "src/app_v71.py",
+      "line": 506
+    },
+    "_v71_phase2_watch_worker": {
+      "file": "src/app_v71.py",
+      "line": 522
+    },
+    "_v71_ensure_cards": {
+      "file": "src/app_v71.py",
+      "line": 654
+    },
+    "_v70_refresh_map_overview": {
+      "file": "src/app_v71.py",
+      "line": 730
+    },
+    "_v70_install_global_map_badge": {
+      "file": "src/app_v70.py",
+      "line": 75
+    },
+    "_v70_active_map_name": {
+      "file": "src/app_v70.py",
+      "line": 423
+    },
+    "_v70_update_active_map_labels": {
+      "file": "src/app_v70.py",
+      "line": 433
+    },
+    "_v70_create_map_from_overview": {
+      "file": "src/app_v70.py",
+      "line": 454
+    },
+    "_refresh_map_library_button": {
+      "file": "src/app_v70.py",
+      "line": 460
+    },
+    "_v70_completion_message": {
+      "file": "src/app_v70.py",
+      "line": 475
+    },
+    "_v67_base_evidence": {
+      "file": "src/app_v69.py",
+      "line": 44
+    },
+    "_v68_read_edge_state": {
+      "file": "src/app_v69.py",
+      "line": 52
+    },
+    "_v69_read_base_state": {
+      "file": "src/app_v69.py",
+      "line": 65
+    },
+    "_v69_pose_key": {
+      "file": "src/app_v69.py",
+      "line": 82
+    },
+    "_v68_completion_reason": {
+      "file": "src/app_v68.py",
+      "line": 33
+    },
+    "_v68_timeout_completion_reason": {
+      "file": "src/app_v68.py",
+      "line": 61
+    },
+    "_v68_store_diag": {
+      "file": "src/app_v68.py",
+      "line": 99
+    },
+    "_watch_edge_only": {
+      "file": "src/app_v68.py",
+      "line": 123
+    },
+    "_v67_int": {
+      "file": "src/app_v67.py",
+      "line": 78
+    },
+    "_v67_should_send_dock": {
+      "file": "src/app_v67.py",
+      "line": 96
+    },
+    "_v67_read_base_state": {
+      "file": "src/app_v67.py",
+      "line": 105
+    },
+    "_v67_arm_transition": {
+      "file": "src/app_v67.py",
+      "line": 117
+    },
+    "_v67_schedule_step2": {
+      "file": "src/app_v67.py",
+      "line": 235
+    },
+    "_v67_launch_interior_worker": {
+      "file": "src/app_v67.py",
+      "line": 324
+    },
+    "_method_line_v60": {
+      "file": "src/app_v60.py",
+      "line": 20
+    },
+    "_method_line": {
+      "file": "src/app_v59.py",
+      "line": 19
+    },
+    "_fmt_queries": {
+      "file": "src/app_v58.py",
+      "line": 28
+    },
+    "_query_summary": {
+      "file": "src/app_v57.py",
+      "line": 135
+    },
+    "_v56_capture_snapshot": {
+      "file": "src/app_v56.py",
+      "line": 33
+    },
+    "_v56_apply_static_pose": {
+      "file": "src/app_v56.py",
+      "line": 63
+    },
+    "_upload_line": {
+      "file": "src/app_v56.py",
+      "line": 207
+    },
+    "connect_device": {
+      "file": "src/app_v55.py",
+      "line": 10
+    },
+    "_v54_capture_diag": {
+      "file": "src/app_v54.py",
+      "line": 18
+    },
+    "_list_text": {
+      "file": "src/app_v54.py",
+      "line": 30
+    },
+    "_compression_text": {
+      "file": "src/app_v54.py",
+      "line": 34
+    },
+    "_candidate_summary": {
+      "file": "src/app_v54.py",
+      "line": 51
+    },
+    "_v53_capture_diag": {
+      "file": "src/app_v53.py",
+      "line": 18
+    },
+    "_source_text": {
+      "file": "src/app_v53.py",
+      "line": 30
+    },
+    "_mode_text": {
+      "file": "src/app_v53.py",
+      "line": 34
+    },
+    "_v51_capture_diag": {
+      "file": "src/app_v51.py",
+      "line": 18
+    },
+    "_schema_text": {
+      "file": "src/app_v51.py",
+      "line": 30
+    },
+    "_meta_text": {
+      "file": "src/app_v51.py",
+      "line": 35
+    },
+    "_download_text": {
+      "file": "src/app_v51.py",
+      "line": 48
+    },
+    "_trial_text": {
+      "file": "src/app_v51.py",
+      "line": 64
+    },
+    "_v50_capture_diag": {
+      "file": "src/app_v50.py",
+      "line": 18
+    },
+    "_v50_candidate_text": {
+      "file": "src/app_v50.py",
+      "line": 30
+    },
+    "_v50_trials_text": {
+      "file": "src/app_v50.py",
+      "line": 43
+    },
+    "_v48_reset_probe": {
+      "file": "src/app_v49.py",
+      "line": 21
+    },
+    "_v48_start_probe": {
+      "file": "src/app_v49.py",
+      "line": 31
+    },
+    "_fmt_seconds": {
+      "file": "src/app_v49.py",
+      "line": 103
+    },
+    "_maybe_poll_cloud_position": {
+      "file": "src/app_v48.py",
+      "line": 89
+    },
+    "_v48_query_line": {
+      "file": "src/app_v48.py",
+      "line": 157
+    },
+    "_v47_reset_privacy_phase": {
+      "file": "src/app_v47.py",
+      "line": 42
+    },
+    "_v47_prepare_map_privacy_async": {
+      "file": "src/app_v47.py",
+      "line": 50
+    },
+    "_v47_begin_phase": {
+      "file": "src/app_v47.py",
+      "line": 95
+    },
+    "_v46_reset_history_phase": {
+      "file": "src/app_v46.py",
+      "line": 52
+    },
+    "_distinct_xy_count": {
+      "file": "src/app_v46.py",
+      "line": 122
+    },
+    "_detect_history_scale": {
+      "file": "src/app_v46.py",
+      "line": 134
+    },
+    "_normalize_history_points": {
+      "file": "src/app_v46.py",
+      "line": 159
+    },
+    "_apply_history_result": {
+      "file": "src/app_v46.py",
+      "line": 202
+    },
+    "_query_diag_text": {
+      "file": "src/app_v46.py",
+      "line": 312
+    },
+    "_base_xy_valid": {
+      "file": "src/app_v45.py",
+      "line": 56
+    },
+    "_dict_xy": {
+      "file": "src/app_v45.py",
+      "line": 72
+    },
+    "_relative_robot_from_state": {
+      "file": "src/app_v45.py",
+      "line": 80
+    },
+    "_consume_cloud_position": {
+      "file": "src/app_v45.py",
+      "line": 101
+    },
+    "_safe_short": {
+      "file": "src/app_v45.py",
+      "line": 153
+    },
+    "_v44_capture_diag": {
+      "file": "src/app_v44.py",
+      "line": 18
+    },
+    "_v43_capture_diag": {
+      "file": "src/app_v43.py",
+      "line": 18
+    },
+    "_v40_detect_scale": {
+      "file": "src/app_v43.py",
+      "line": 30
+    },
+    "_v42_capture_native_diag": {
+      "file": "src/app_v42.py",
+      "line": 18
+    },
+    "_v42_source_text": {
+      "file": "src/app_v42.py",
+      "line": 30
+    },
+    "_v41_capture_client_diag": {
+      "file": "src/app_v41.py",
+      "line": 36
+    },
+    "_v41_restore_privacy_async": {
+      "file": "src/app_v41.py",
+      "line": 46
+    },
+    "_v41_mapping_state_watch": {
+      "file": "src/app_v41.py",
+      "line": 61
+    },
+    "_v41_actions_text": {
+      "file": "src/app_v41.py",
+      "line": 109
+    },
+    "_v41_sources": {
+      "file": "src/app_v41.py",
+      "line": 125
+    },
+    "_v40_scale_point": {
+      "file": "src/app_v40.py",
+      "line": 130
+    },
+    "_v39_relative_mm": {
+      "file": "src/app_v40.py",
+      "line": 139
+    },
+    "_v40_prepare_snapshot": {
+      "file": "src/app_v40.py",
+      "line": 152
+    },
+    "_v39_consume_snapshot": {
+      "file": "src/app_v40.py",
+      "line": 183
+    },
+    "_v40_upload_diag": {
+      "file": "src/app_v40.py",
+      "line": 227
+    },
+    "_v39_local_path": {
+      "file": "src/app_v39.py",
+      "line": 115
+    },
+    "_v39_path_has_motion": {
+      "file": "src/app_v39.py",
+      "line": 135
+    },
+    "_parse_geometry": {
+      "file": "src/app_v38.py",
+      "line": 50
+    },
+    "_work_area_for_rect": {
+      "file": "src/app_v38.py",
+      "line": 61
+    },
+    "_validated_saved_geometry": {
+      "file": "src/app_v38.py",
+      "line": 92
+    },
+    "_v38_enable_geometry_tracking": {
+      "file": "src/app_v38.py",
+      "line": 124
+    },
+    "_v38_on_configure": {
+      "file": "src/app_v38.py",
+      "line": 128
+    },
+    "_v38_capture_geometry": {
+      "file": "src/app_v38.py",
+      "line": 138
+    },
+    "_v38_consume_map_file_position": {
+      "file": "src/app_v38.py",
+      "line": 225
+    },
+    "_xy_from_miot": {
+      "file": "src/app_v37.py",
+      "line": 33
+    },
+    "_consume_cloud_miot_state": {
+      "file": "src/app_v37.py",
+      "line": 75
+    },
+    "_meta_time": {
+      "file": "src/app_v37.py",
+      "line": 99
+    },
+    "_cloud_xy": {
+      "file": "src/app_v36.py",
+      "line": 36
+    },
+    "_cloud_scale": {
+      "file": "src/app_v36.py",
+      "line": 48
+    },
+    "_cloud_relative": {
+      "file": "src/app_v36.py",
+      "line": 58
+    },
+    "_cloud_session_ready": {
+      "file": "src/app_v36.py",
+      "line": 66
+    },
+    "_usable_work_area": {
+      "file": "src/app_v35.py",
+      "line": 18
+    },
+    "_xy_distance": {
+      "file": "src/app_v34.py",
+      "line": 36
+    },
+    "_path_has_real_motion": {
+      "file": "src/app_v34.py",
+      "line": 45
+    },
+    "_distinct_wall_points": {
+      "file": "src/app_v34.py",
+      "line": 118
+    },
+    "_rebuild_mapped_walls": {
+      "file": "src/app_v34.py",
+      "line": 129
+    },
+    "_install_global_diagnostics_access": {
+      "file": "src/app_v32.py",
+      "line": 7
+    },
+    "_coordinate_candidates": {
+      "file": "src/app_v32.py",
+      "line": 30
+    },
+    "_diag_inline": {
+      "file": "src/app_v31.py",
+      "line": 40
+    },
+    "_short_raw": {
+      "file": "src/app_v30.py",
+      "line": 30
+    },
+    "_reset_robot_live_path": {
+      "file": "src/app_v29.py",
+      "line": 17
+    },
+    "_format_coord": {
+      "file": "src/app_v29.py",
+      "line": 55
+    },
+    "_format_phi": {
+      "file": "src/app_v29.py",
+      "line": 62
+    },
+    "_stable_map_status": {
+      "file": "src/app_v29.py",
+      "line": 68
+    },
+    "_cancel_auto_starts_for_manual_dock": {
+      "file": "src/app_v28.py",
+      "line": 16
+    },
+    "_clear_manual_dock_guard": {
+      "file": "src/app_v28.py",
+      "line": 47
+    },
+    "_execute_quick_action": {
+      "file": "src/app_v28.py",
+      "line": 57
+    },
+    "_start_auto_step2_if_ready": {
+      "file": "src/app_v28.py",
+      "line": 106
+    },
+    "_choose_suction": {
+      "file": "src/app_v27.py",
+      "line": 7
+    },
+    "_valid_edge_status": {
+      "file": "src/app_v26.py",
+      "line": 16
+    },
+    "_valid_sweep_type": {
+      "file": "src/app_v26.py",
+      "line": 27
+    },
+    "_draw_e10_visual": {
+      "file": "src/app_v25.py",
+      "line": 64
+    },
+    "_build_robot_page_v22": {
+      "file": "src/app_v25.py",
+      "line": 101
+    },
+    "_fault_code": {
+      "file": "src/app_v25.py",
+      "line": 115
+    },
+    "_is_real_fault": {
+      "file": "src/app_v25.py",
+      "line": 121
+    },
+    "_show_fault_row": {
+      "file": "src/app_v25.py",
+      "line": 129
+    },
+    "_hide_fault_row": {
+      "file": "src/app_v25.py",
+      "line": 144
+    },
+    "_build_devices_home": {
+      "file": "src/app_v24.py",
+      "line": 57
+    },
+    "_install_back_to_devices_button": {
+      "file": "src/app_v24.py",
+      "line": 198
+    },
+    "_show_devices_home": {
+      "file": "src/app_v24.py",
+      "line": 220
+    },
+    "_open_device": {
+      "file": "src/app_v24.py",
+      "line": 230
+    },
+    "_device_display_name": {
+      "file": "src/app_v24.py",
+      "line": 240
+    },
+    "_rename_device_dialog": {
+      "file": "src/app_v24.py",
+      "line": 248
+    },
+    "_refresh_device_card": {
+      "file": "src/app_v24.py",
+      "line": 278
+    },
+    "_restore_from_tray": {
+      "file": "src/app_v24.py",
+      "line": 312
+    },
+    "_nav_button_v22": {
+      "file": "src/app_v23.py",
+      "line": 47
+    },
+    "_build_home_page_v22": {
+      "file": "src/app_v23.py",
+      "line": 120
+    },
+    "_home_map_press": {
+      "file": "src/app_v23.py",
+      "line": 129
+    },
+    "_home_map_drag": {
+      "file": "src/app_v23.py",
+      "line": 134
+    },
+    "_home_map_release": {
+      "file": "src/app_v23.py",
+      "line": 148
+    },
+    "_build_scheduler_page": {
+      "file": "src/app_v23.py",
+      "line": 161
+    },
+    "_modern_combo_field": {
+      "file": "src/app_v23.py",
+      "line": 358
+    },
+    "_toggle_schedule_day": {
+      "file": "src/app_v23.py",
+      "line": 376
+    },
+    "_refresh_schedule_day_chips": {
+      "file": "src/app_v23.py",
+      "line": 381
+    },
+    "_set_schedule_mode": {
+      "file": "src/app_v23.py",
+      "line": 393
+    },
+    "_refresh_schedule_mode_buttons": {
+      "file": "src/app_v23.py",
+      "line": 397
+    },
+    "_set_schedule_target": {
+      "file": "src/app_v23.py",
+      "line": 410
+    },
+    "_refresh_schedule_target_buttons": {
+      "file": "src/app_v23.py",
+      "line": 414
+    },
+    "_refresh_scheduler_page": {
+      "file": "src/app_v23.py",
+      "line": 436
+    },
+    "_toggle_schedule_v23": {
+      "file": "src/app_v23.py",
+      "line": 619
+    },
+    "_modernize_widget_tree": {
+      "file": "src/app_v22.py",
+      "line": 60
+    },
+    "_install_sidebar_logo": {
+      "file": "src/app_v22.py",
+      "line": 63
+    },
+    "_configure_styles": {
+      "file": "src/app_v22.py",
+      "line": 67
+    },
+    "_surface": {
+      "file": "src/app_v22.py",
+      "line": 127
+    },
+    "_metric_card": {
+      "file": "src/app_v22.py",
+      "line": 146
+    },
+    "_build_sidebar": {
+      "file": "src/app_v22.py",
+      "line": 211
+    },
+    "_nav_button": {
+      "file": "src/app_v22.py",
+      "line": 276
+    },
+    "_build_topbar": {
+      "file": "src/app_v22.py",
+      "line": 282
+    },
+    "_page": {
+      "file": "src/app_v22.py",
+      "line": 307
+    },
+    "_build_clean_page_v22": {
+      "file": "src/app_v22.py",
+      "line": 392
+    },
+    "_info_row_v22": {
+      "file": "src/app_v22.py",
+      "line": 557
+    },
+    "_progress_row_v22": {
+      "file": "src/app_v22.py",
+      "line": 565
+    },
+    "_manual_pad_button_v22": {
+      "file": "src/app_v22.py",
+      "line": 577
+    },
+    "_build_settings_page_v22": {
+      "file": "src/app_v22.py",
+      "line": 589
+    },
+    "_settings_parent": {
+      "file": "src/app_v22.py",
+      "line": 611
+    },
+    "_install_windows_settings_card": {
+      "file": "src/app_v22.py",
+      "line": 615
+    },
+    "_install_xiaomi_account_card": {
+      "file": "src/app_v22.py",
+      "line": 634
+    },
+    "_field_v22": {
+      "file": "src/app_v22.py",
+      "line": 713
+    },
+    "_mini_field": {
+      "file": "src/app_v22.py",
+      "line": 717
+    },
+    "_combo_field": {
+      "file": "src/app_v22.py",
+      "line": 723
+    },
+    "open_zone_manager": {
+      "file": "src/app_v22.py",
+      "line": 753
+    },
+    "open_zone_clean_dialog": {
+      "file": "src/app_v22.py",
+      "line": 795
+    },
+    "open_quick_actions_config": {
+      "file": "src/app_v22.py",
+      "line": 892
+    },
+    "_show_quick_panel": {
+      "file": "src/app_v22.py",
+      "line": 930
+    },
+    "_card": {
+      "file": "src/app_v21.py",
+      "line": 103
+    },
+    "_settings_page": {
+      "file": "src/app_v21.py",
+      "line": 256
+    },
+    "_sync_no_go_async": {
+      "file": "src/app_v20.py",
+      "line": 153
+    },
+    "_xiaomi_linked": {
+      "file": "src/app_v20.py",
+      "line": 182
+    },
+    "_xiaomi_account_display": {
+      "file": "src/app_v20.py",
+      "line": 185
+    },
+    "_refresh_xiaomi_account_card": {
+      "file": "src/app_v20.py",
+      "line": 212
+    },
+    "open_setup": {
+      "file": "src/app_v20.py",
+      "line": 228
+    },
+    "logout_xiaomi_account": {
+      "file": "src/app_v20.py",
+      "line": 234
+    },
+    "_on_connected": {
+      "file": "src/app_v20.py",
+      "line": 246
+    },
+    "_quick_panel_pointer_inside": {
+      "file": "src/app_v20.py",
+      "line": 252
+    },
+    "_cancel_quick_panel_close": {
+      "file": "src/app_v20.py",
+      "line": 266
+    },
+    "_schedule_quick_panel_close": {
+      "file": "src/app_v20.py",
+      "line": 275
+    },
+    "_canvas_to_world": {
+      "file": "src/app_v20.py",
+      "line": 366
+    },
+    "_tray_image": {
+      "file": "src/app_v19.py",
+      "line": 68
+    },
+    "_tray_battery_text": {
+      "file": "src/app_v19.py",
+      "line": 85
+    },
+    "_build_tray_menu": {
+      "file": "src/app_v19.py",
+      "line": 90
+    },
+    "_start_tray_icon": {
+      "file": "src/app_v19.py",
+      "line": 109
+    },
+    "_tray_setup": {
+      "file": "src/app_v19.py",
+      "line": 135
+    },
+    "_update_tray_metadata": {
+      "file": "src/app_v19.py",
+      "line": 143
+    },
+    "_startup_minimize_if_ready": {
+      "file": "src/app_v19.py",
+      "line": 153
+    },
+    "_hide_to_tray": {
+      "file": "src/app_v19.py",
+      "line": 157
+    },
+    "_window_close_requested": {
+      "file": "src/app_v19.py",
+      "line": 175
+    },
+    "_exit_application": {
+      "file": "src/app_v19.py",
+      "line": 181
+    },
+    "_quick_action_options": {
+      "file": "src/app_v19.py",
+      "line": 201
+    },
+    "_quick_action_label": {
+      "file": "src/app_v19.py",
+      "line": 215
+    },
+    "_quick_panel_action": {
+      "file": "src/app_v19.py",
+      "line": 307
+    },
+    "_need_robot": {
+      "file": "src/app_v19.py",
+      "line": 314
+    },
+    "_toggle_start_with_windows": {
+      "file": "src/app_v19.py",
+      "line": 487
+    },
+    "_toggle_close_to_tray": {
+      "file": "src/app_v19.py",
+      "line": 501
+    },
+    "_sync_startup_registration": {
+      "file": "src/app_v19.py",
+      "line": 505
+    },
+    "_adopt_legacy_plan_to_active_map": {
+      "file": "src/app_v18.py",
+      "line": 115
+    },
+    "_activate_plan_for_current_map": {
+      "file": "src/app_v18.py",
+      "line": 156
+    },
+    "_mapping_busy": {
+      "file": "src/app_v18.py",
+      "line": 249
+    },
+    "_safe_auto_backup": {
+      "file": "src/app_v18.py",
+      "line": 320
+    },
+    "_export_backup": {
+      "file": "src/app_v18.py",
+      "line": 334
+    },
+    "_import_backup": {
+      "file": "src/app_v18.py",
+      "line": 358
+    },
+    "_field_label": {
+      "file": "src/app_v17.py",
+      "line": 161
+    },
+    "save_selected_point": {
+      "file": "src/app_v17.py",
+      "line": 358
+    },
+    "_delete_zone_and_refresh": {
+      "file": "src/app_v17.py",
+      "line": 416
+    },
+    "_delete_no_go_and_refresh": {
+      "file": "src/app_v17.py",
+      "line": 422
+    },
+    "_delete_point_and_refresh": {
+      "file": "src/app_v17.py",
+      "line": 428
+    },
+    "_clean_saved_point": {
+      "file": "src/app_v17.py",
+      "line": 433
+    },
+    "_add_schedule_from_form": {
+      "file": "src/app_v17.py",
+      "line": 577
+    },
+    "_toggle_schedule": {
+      "file": "src/app_v17.py",
+      "line": 611
+    },
+    "_delete_schedule": {
+      "file": "src/app_v17.py",
+      "line": 614
+    },
+    "_pose_from_dict": {
+      "file": "src/app_v16.py",
+      "line": 35
+    },
+    "_localize_candidate": {
+      "file": "src/app_v16.py",
+      "line": 72
+    },
+    "_select_live_pose": {
+      "file": "src/app_v16.py",
+      "line": 88
+    },
+    "_stable_base_pose": {
+      "file": "src/app_v16.py",
+      "line": 173
+    },
+    "_append_live_mapping_sample": {
+      "file": "src/app_v16.py",
+      "line": 191
+    },
+    "_anti_stall_observe": {
+      "file": "src/app_v16.py",
+      "line": 383
+    },
+    "_force_mapping_eco_worker": {
+      "file": "src/app_v15.py",
+      "line": 71
+    },
+    "_base_pose_from_state": {
+      "file": "src/app_v15.py",
+      "line": 82
+    },
+    "_split_wall_segments": {
+      "file": "src/app_v14.py",
+      "line": 124
+    },
+    "_pose_from_state": {
+      "file": "src/app_v14.py",
+      "line": 212
+    },
+    "_motion_epsilon": {
+      "file": "src/app_v14.py",
+      "line": 237
+    },
+    "_angle_moved": {
+      "file": "src/app_v14.py",
+      "line": 255
+    },
+    "_reset_anti_stall_monitor": {
+      "file": "src/app_v14.py",
+      "line": 265
+    },
+    "_anti_stall_recovery_worker": {
+      "file": "src/app_v14.py",
+      "line": 335
+    },
+    "_anti_stall_abort_worker": {
+      "file": "src/app_v14.py",
+      "line": 400
+    },
+    "_ensure_return_to_base_after_edge": {
+      "file": "src/app_v13.py",
+      "line": 153
+    },
+    "_maybe_schedule_auto_step2": {
+      "file": "src/app_v13.py",
+      "line": 167
+    },
+    "_open_update_window": {
+      "file": "src/app_v12.py",
+      "line": 42
+    },
+    "_set_update_stage": {
+      "file": "src/app_v12.py",
+      "line": 98
+    },
+    "_set_update_progress": {
+      "file": "src/app_v12.py",
+      "line": 105
+    },
+    "_close_update_window": {
+      "file": "src/app_v12.py",
+      "line": 131
+    },
+    "_manual_update_error": {
+      "file": "src/app_v12.py",
+      "line": 184
+    },
+    "_edge_log": {
+      "file": "src/app_v11.py",
+      "line": 20
+    },
+    "_dock_assist_reset_cycle": {
+      "file": "src/app_v10.py",
+      "line": 60
+    },
+    "_dock_assist_on_status": {
+      "file": "src/app_v10.py",
+      "line": 70
+    },
+    "_dock_point": {
+      "file": "src/app_v10.py",
+      "line": 132
+    },
+    "_near_base_limit": {
+      "file": "src/app_v10.py",
+      "line": 145
+    },
+    "_dock_assist_process_position": {
+      "file": "src/app_v10.py",
+      "line": 157
+    },
+    "_dock_assist_retry_worker": {
+      "file": "src/app_v10.py",
+      "line": 237
+    },
+    "_post_ui": {
+      "file": "src/app_v9.py",
+      "line": 35
+    },
+    "_schedule_update_check": {
+      "file": "src/app_v9.py",
+      "line": 126
+    },
+    "_connect_from_saved": {
+      "file": "src/app_v9.py",
+      "line": 131
+    },
+    "_connect_saved_now": {
+      "file": "src/app_v9.py",
+      "line": 139
+    },
+    "_start_polling": {
+      "file": "src/app_v9.py",
+      "line": 175
+    },
+    "_poll_status": {
+      "file": "src/app_v9.py",
+      "line": 181
+    },
+    "_schedule_next_status_poll": {
+      "file": "src/app_v9.py",
+      "line": 198
+    },
+    "_watch_perimeter_only": {
+      "file": "src/app_v9.py",
+      "line": 350
+    },
+    "_force_stop_after_perimeter": {
+      "file": "src/app_v9.py",
+      "line": 410
+    },
+    "manual_check_for_updates": {
+      "file": "src/app_v9.py",
+      "line": 429
+    },
+    "_has_perimeter_data": {
+      "file": "src/app_v8.py",
+      "line": 89
+    },
+    "_add_manual_update_button": {
+      "file": "src/app_v7.py",
+      "line": 16
+    },
+    "_set_manual_update_idle": {
+      "file": "src/app_v7.py",
+      "line": 26
+    },
+    "_manual_no_update": {
+      "file": "src/app_v7.py",
+      "line": 57
+    },
+    "_manual_update_found": {
+      "file": "src/app_v7.py",
+      "line": 66
+    },
+    "_start_interior_phase": {
+      "file": "src/app_v6.py",
+      "line": 120
+    },
+    "_restore_cleaning_preferences": {
+      "file": "src/app_v6.py",
+      "line": 158
+    },
+    "_build_home_page": {
+      "file": "src/app_v5.py",
+      "line": 218
+    },
+    "_build_robot_page": {
+      "file": "src/app_v5.py",
+      "line": 354
+    },
+    "_build_settings_page": {
+      "file": "src/app_v5.py",
+      "line": 389
+    },
+    "_info_row": {
+      "file": "src/app_v5.py",
+      "line": 402
+    },
+    "_progress_row": {
+      "file": "src/app_v5.py",
+      "line": 410
+    },
+    "_manual_pad_button": {
+      "file": "src/app_v5.py",
+      "line": 422
+    },
+    "_select_mode": {
+      "file": "src/app_v5.py",
+      "line": 429
+    },
+    "_toggle_mop": {
+      "file": "src/app_v5.py",
+      "line": 441
+    },
+    "_choose_water": {
+      "file": "src/app_v5.py",
+      "line": 466
+    },
+    "_save_clean_preferences": {
+      "file": "src/app_v5.py",
+      "line": 482
+    },
+    "_refresh_choice_buttons": {
+      "file": "src/app_v5.py",
+      "line": 488
+    },
+    "clear_local_map": {
+      "file": "src/app_v5.py",
+      "line": 592
+    },
+    "delete_local_room": {
+      "file": "src/app_v5.py",
+      "line": 822
+    },
+    "_separator": {
+      "file": "src/app_v2.py",
+      "line": 146
+    },
+    "_scale_row": {
+      "file": "src/app_v2.py",
+      "line": 169
+    },
+    "_manual_button": {
+      "file": "src/app_v2.py",
+      "line": 187
+    },
+    "_on_connect_error": {
+      "file": "src/app_v2.py",
+      "line": 235
+    },
+    "_run_command": {
+      "file": "src/app_v2.py",
+      "line": 284
+    },
+    "stop_clean": {
+      "file": "src/app_v2.py",
+      "line": 303
+    },
+    "locate": {
+      "file": "src/app_v2.py",
+      "line": 309
+    },
+    "set_suction": {
+      "file": "src/app_v2.py",
+      "line": 312
+    },
+    "set_water": {
+      "file": "src/app_v2.py",
+      "line": 315
+    },
+    "manual": {
+      "file": "src/app_v2.py",
+      "line": 318
+    },
+    "_safe_manual": {
+      "file": "src/app_v2.py",
+      "line": 322
+    }
+  }
+}

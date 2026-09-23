@@ -1,0 +1,782 @@
+[
+  {
+    "test": "smoke_test.py",
+    "code": 0,
+    "seconds": 1.19,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_release_contract.py",
+    "code": 0,
+    "seconds": 0.03,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v100.py",
+    "code": 0,
+    "seconds": 0.82,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v101.py",
+    "code": 0,
+    "seconds": 0.9,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v102.py",
+    "code": 0,
+    "seconds": 0.86,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v103.py",
+    "code": 0,
+    "seconds": 0.67,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v104.py",
+    "code": 0,
+    "seconds": 0.84,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v105.py",
+    "code": 0,
+    "seconds": 0.67,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v106.py",
+    "code": 0,
+    "seconds": 0.71,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v107.py",
+    "code": 0,
+    "seconds": 0.77,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v108.py",
+    "code": 0,
+    "seconds": 0.68,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v109.py",
+    "code": 0,
+    "seconds": 0.68,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v110.py",
+    "code": 0,
+    "seconds": 0.65,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v111.py",
+    "code": 0,
+    "seconds": 0.71,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v112.py",
+    "code": 0,
+    "seconds": 0.77,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v113.py",
+    "code": 0,
+    "seconds": 0.77,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v114.py",
+    "code": 0,
+    "seconds": 0.72,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v115.py",
+    "code": 0,
+    "seconds": 1.24,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v116.py",
+    "code": 0,
+    "seconds": 0.68,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v117.py",
+    "code": 0,
+    "seconds": 0.77,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v118.py",
+    "code": 0,
+    "seconds": 0.74,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v119.py",
+    "code": 0,
+    "seconds": 0.7,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v120.py",
+    "code": 0,
+    "seconds": 0.88,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v121.py",
+    "code": 0,
+    "seconds": 0.81,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v122.py",
+    "code": 0,
+    "seconds": 0.66,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v123.py",
+    "code": 0,
+    "seconds": 1.57,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v126.py",
+    "code": 0,
+    "seconds": 0.03,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v127.py",
+    "code": 0,
+    "seconds": 0.02,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v128.py",
+    "code": 0,
+    "seconds": 0.02,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v129.py",
+    "code": 0,
+    "seconds": 0.02,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v130.py",
+    "code": 0,
+    "seconds": 0.03,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v131.py",
+    "code": 0,
+    "seconds": 0.02,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v132.py",
+    "code": 0,
+    "seconds": 0.02,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v133.py",
+    "code": 0,
+    "seconds": 0.03,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v134.py",
+    "code": 0,
+    "seconds": 0.03,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v135.py",
+    "code": 0,
+    "seconds": 0.03,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v136.py",
+    "code": 0,
+    "seconds": 0.02,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v137.py",
+    "code": 0,
+    "seconds": 0.02,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v138.py",
+    "code": 0,
+    "seconds": 0.02,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v139.py",
+    "code": 0,
+    "seconds": 0.02,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v140.py",
+    "code": 0,
+    "seconds": 0.02,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v141.py",
+    "code": 0,
+    "seconds": 0.02,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v142.py",
+    "code": 0,
+    "seconds": 0.02,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v143.py",
+    "code": 0,
+    "seconds": 0.02,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v144.py",
+    "code": 0,
+    "seconds": 0.02,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v145.py",
+    "code": 0,
+    "seconds": 0.02,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v146.py",
+    "code": 0,
+    "seconds": 0.63,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v147.py",
+    "code": 0,
+    "seconds": 0.66,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v148.py",
+    "code": 0,
+    "seconds": 0.65,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v149.py",
+    "code": 0,
+    "seconds": 0.7,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v150.py",
+    "code": 0,
+    "seconds": 0.68,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v151.py",
+    "code": 0,
+    "seconds": 0.77,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v24.py",
+    "code": 0,
+    "seconds": 0.59,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v25.py",
+    "code": 1,
+    "seconds": 0.66,
+    "tail": "Traceback (most recent call last):\n  File \"/workspace/scratch/d6a1ce91251a/repo/scripts/smoke_test_v25.py\", line 42, in <module>\n    main()\n  File \"/workspace/scratch/d6a1ce91251a/repo/scripts/smoke_test_v25.py\", line 34, in main\n    check(image_path.exists(), \"La foto oficial del Xiaomi Robot Vacuum E10 no est\u00e1 en assets\")\n  File \"/workspace/scratch/d6a1ce91251a/repo/scripts/smoke_test_v25.py\", line 15, in check\n    raise AssertionError(message)\nAssertionError: La foto oficial del Xiaomi Robot Vacuum E10 no est\u00e1 en assets\n"
+  },
+  {
+    "test": "smoke_test_v26.py",
+    "code": 0,
+    "seconds": 0.9,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v27.py",
+    "code": 0,
+    "seconds": 0.69,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v28.py",
+    "code": 0,
+    "seconds": 0.7,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v29.py",
+    "code": 0,
+    "seconds": 0.58,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v30.py",
+    "code": 0,
+    "seconds": 0.7,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v31.py",
+    "code": 0,
+    "seconds": 0.65,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v32.py",
+    "code": 0,
+    "seconds": 0.7,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v33.py",
+    "code": 0,
+    "seconds": 0.64,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v34.py",
+    "code": 0,
+    "seconds": 0.65,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v35.py",
+    "code": 0,
+    "seconds": 0.7,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v36.py",
+    "code": 0,
+    "seconds": 0.65,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v37.py",
+    "code": 0,
+    "seconds": 0.72,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v38.py",
+    "code": 0,
+    "seconds": 0.65,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v39.py",
+    "code": 0,
+    "seconds": 0.6,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v40.py",
+    "code": 0,
+    "seconds": 0.7,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v41.py",
+    "code": 0,
+    "seconds": 0.74,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v41_all.py",
+    "code": 0,
+    "seconds": 0.6,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v41_local.py",
+    "code": 0,
+    "seconds": 0.55,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v42.py",
+    "code": 0,
+    "seconds": 0.7,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v43.py",
+    "code": 0,
+    "seconds": 0.72,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v44.py",
+    "code": 0,
+    "seconds": 0.75,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v45.py",
+    "code": 0,
+    "seconds": 0.74,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v46.py",
+    "code": 0,
+    "seconds": 0.69,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v47.py",
+    "code": 0,
+    "seconds": 0.66,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v48.py",
+    "code": 0,
+    "seconds": 0.7,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v49.py",
+    "code": 0,
+    "seconds": 0.78,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v50.py",
+    "code": 0,
+    "seconds": 0.68,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v51.py",
+    "code": 0,
+    "seconds": 0.66,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v52.py",
+    "code": 0,
+    "seconds": 0.73,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v53.py",
+    "code": 0,
+    "seconds": 0.71,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v54.py",
+    "code": 0,
+    "seconds": 0.75,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v55.py",
+    "code": 0,
+    "seconds": 0.68,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v56.py",
+    "code": 0,
+    "seconds": 0.75,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v57.py",
+    "code": 0,
+    "seconds": 0.95,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v58.py",
+    "code": 0,
+    "seconds": 0.68,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v59.py",
+    "code": 0,
+    "seconds": 0.78,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v60.py",
+    "code": 0,
+    "seconds": 1.25,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v61.py",
+    "code": 0,
+    "seconds": 0.65,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v62.py",
+    "code": 0,
+    "seconds": 0.58,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v63.py",
+    "code": 0,
+    "seconds": 0.75,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v64.py",
+    "code": 0,
+    "seconds": 1.91,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v65.py",
+    "code": 0,
+    "seconds": 2.32,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v66.py",
+    "code": 0,
+    "seconds": 1.93,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v67.py",
+    "code": 0,
+    "seconds": 0.79,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v68.py",
+    "code": 0,
+    "seconds": 0.69,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v69.py",
+    "code": 0,
+    "seconds": 0.83,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v70.py",
+    "code": 0,
+    "seconds": 0.89,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v71.py",
+    "code": 0,
+    "seconds": 0.85,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v72.py",
+    "code": 0,
+    "seconds": 0.84,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v73.py",
+    "code": 0,
+    "seconds": 0.74,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v74.py",
+    "code": 0,
+    "seconds": 0.77,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v75.py",
+    "code": 0,
+    "seconds": 0.71,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v76.py",
+    "code": 0,
+    "seconds": 0.69,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v77.py",
+    "code": 0,
+    "seconds": 0.71,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v78.py",
+    "code": 0,
+    "seconds": 0.69,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v79.py",
+    "code": 0,
+    "seconds": 0.66,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v80.py",
+    "code": 0,
+    "seconds": 0.68,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v81.py",
+    "code": 0,
+    "seconds": 0.7,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v82.py",
+    "code": 0,
+    "seconds": 0.73,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v83.py",
+    "code": 0,
+    "seconds": 0.7,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v84.py",
+    "code": 0,
+    "seconds": 0.74,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v85.py",
+    "code": 0,
+    "seconds": 0.68,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v86.py",
+    "code": 0,
+    "seconds": 0.79,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v87.py",
+    "code": 0,
+    "seconds": 0.77,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v88.py",
+    "code": 0,
+    "seconds": 0.73,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v89.py",
+    "code": 0,
+    "seconds": 0.77,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v90.py",
+    "code": 0,
+    "seconds": 0.72,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v91.py",
+    "code": 0,
+    "seconds": 0.67,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v92.py",
+    "code": 0,
+    "seconds": 2.66,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v93.py",
+    "code": 0,
+    "seconds": 0.67,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v94.py",
+    "code": 0,
+    "seconds": 0.67,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v95.py",
+    "code": 0,
+    "seconds": 0.69,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v96.py",
+    "code": 0,
+    "seconds": 0.71,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v97.py",
+    "code": 0,
+    "seconds": 0.76,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v98.py",
+    "code": 0,
+    "seconds": 0.74,
+    "tail": ""
+  },
+  {
+    "test": "smoke_test_v99.py",
+    "code": 0,
+    "seconds": 0.74,
+    "tail": ""
+  }
+]

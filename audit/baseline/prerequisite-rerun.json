@@ -1,0 +1,8 @@
+{
+  "test": "smoke_test_v25.py",
+  "code": 0,
+  "reason": "Build prerequisite scripts/fetch_e10_product_image.py now executed",
+  "baseline_pass": 129,
+  "total": 130,
+  "after_prerequisite": 130
+}

@@ -1,0 +1,154 @@
+{
+  "meaning": "Offline reproductions of defects, not fixed regressions or physical navigation evidence",
+  "reassert_bypasses_v151_owner": {
+    "owner_active": true,
+    "recovery_dispatched": true,
+    "calls": [
+      [
+        "set",
+        2,
+        8,
+        0
+      ],
+      [
+        "action",
+        7,
+        3,
+        [
+          "",
+          0,
+          1
+        ]
+      ]
+    ]
+  },
+  "rejected_prearm_and_wrong_mode_report_success": {
+    "diag": {
+      "command": "7/3 set-room-clean -> opcional 2/3 start-only-sweep",
+      "params": [
+        "",
+        0,
+        1
+      ],
+      "sweep_type_requested": 0,
+      "status_before": 4,
+      "prearm_response": "{'code': -1, 'out': []}",
+      "prearm_status_after": 4,
+      "prearm_sweep_type_after": 2,
+      "trigger_sent": true,
+      "trigger_command": "2/3 start-only-sweep",
+      "trigger_response": "{'code': 0, 'out': []}",
+      "status_after": 5,
+      "sweep_type_after": 2,
+      "success": true,
+      "started_by": "7/3 whole-home + 2/3 trigger",
+      "error": null
+    },
+    "calls": [
+      [
+        "set",
+        7,
+        6,
+        0
+      ],
+      [
+        "set",
+        7,
+        5,
+        1
+      ],
+      [
+        "set",
+        2,
+        4,
+        0
+      ],
+      [
+        "set",
+        7,
+        1,
+        0
+      ],
+      [
+        "set",
+        2,
+        8,
+        0
+      ],
+      [
+        "action",
+        7,
+        3,
+        [
+          "",
+          0,
+          1
+        ]
+      ],
+      [
+        "action",
+        2,
+        3,
+        null
+      ]
+    ]
+  },
+  "trigger_after_cancel": {
+    "cancelled": true,
+    "calls": [
+      [
+        "set",
+        7,
+        6,
+        0
+      ],
+      [
+        "set",
+        7,
+        5,
+        1
+      ],
+      [
+        "set",
+        2,
+        4,
+        0
+      ],
+      [
+        "set",
+        7,
+        1,
+        0
+      ],
+      [
+        "set",
+        2,
+        8,
+        0
+      ],
+      [
+        "action",
+        7,
+        3,
+        [
+          "",
+          0,
+          1
+        ]
+      ],
+      [
+        "action",
+        3,
+        1,
+        null
+      ],
+      [
+        "action",
+        2,
+        3,
+        null
+      ]
+    ],
+    "late_start": true
+  }
+}
