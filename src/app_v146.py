@@ -440,7 +440,8 @@ class App(app_v145.App):
             "regla V146: stuck exige confinamiento + casi cero desplazamiento + tiempo sin progreso",
             "regla V146: loop exige recorrido cerrado + casi cero celdas nuevas + mayoría temporal",
             "regla V146: cualquier expansión real reinicia inmediatamente la racha mala",
-            "regla V146: auto-abort requiere consenso 6/8 + racha >=6 + >=90 s + >=7 m",\n            "regla V146: hereda cerrojo V145; sesión cerrada no puede revivir EDGE/Paso2",
+            "regla V146: auto-abort requiere consenso 6/8 + racha >=6 + >=90 s + >=7 m",
+            "regla V146: hereda cerrojo V145; sesión cerrada no puede revivir EDGE/Paso2",
             "",
             "",
         ]
