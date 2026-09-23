@@ -91,10 +91,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V145-IA para Windows 10/11 x64. Añade un cerrojo de sesión por debajo de la IA: una sesión cerrada ya no puede volver a mandar EDGE ni iniciar Paso 2, y cualquier evento de arranque tardío se descarta y provoca retorno a base. Sólo un clic explícito en Mapear vivienda abre una sesión nueva. El restablecimiento profundo cierra y bloquea workers antes de actuar y confirma dock usando tanto MIoT 2/1 como vacuum.status(); si encuentra una tarea activa la detiene y solicita dock antes de declarar error. Conserva auto-abort de V144 y memoria IA schema 2."
+          $notes = "V146-IA para Windows 10/11 x64. Refuerza la IA de mapeo con consenso multiseñal, progreso espacial e histéresis. Revisitar celdas ya no basta para declarar un loop: la app mide celdas nuevas, expansión en X/Y, desplazamiento neto, span reciente y tiempo real sin progreso. Un pasillo o recorrido estrecho que sigue avanzando se considera progreso válido. El auto-abort exige mayoría temporal 6/8, racha >=6, al menos 90 s y 7 m, además de ausencia sostenida de expansión. Conserva el cerrojo de sesión y reset robusto de V145, el gate físico de V143 y EDGE nativo 2/1."
 
           gh release create $tag `
-            --title "Aspiradora-IA $env:APP_DISPLAY_VERSION · V145-IA" `
+            --title "Aspiradora-IA $env:APP_DISPLAY_VERSION · V146-IA" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
