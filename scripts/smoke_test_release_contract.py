@@ -17,6 +17,8 @@ entry_lines = [
 ]
 assert entry_lines == ["src\\main_current.py"], entry_lines
 assert 'Invoke-PythonChecked "scripts\\smoke_test_release_contract.py"' in build
+assert "$futureSmokeTests = Get-ChildItem" in build
+assert "-gt 147" in build
 
 # El wrapper actual puede cambiar qué app importa, pero su nombre permanece fijo.
 assert "def main():" in main_current
@@ -28,6 +30,8 @@ assert "release_meta.json" in workflow
 assert "$generation" in workflow
 assert "$meta.notes" in workflow
 assert "--title" in workflow
+hardcoded_generation_titles = re.findall(r'--title[^\n]*V\d+-IA', workflow)
+assert not hardcoded_generation_titles, hardcoded_generation_titles
 assert re.fullmatch(r"V\d+-IA", str(meta["generation"])), meta
 assert isinstance(meta.get("notes"), str) and len(meta["notes"]) >= 40
 
