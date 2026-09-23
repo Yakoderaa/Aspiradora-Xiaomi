@@ -171,10 +171,11 @@ class FreshRobotCore:
             "stop latent point",
             lambda: self._action(7, 3, ["", 4, 2], "stop latent point"),
         )
-        best_effort(
-            "vacuum stop",
-            lambda: self._action(2, 2, label="neutral stop"),
-        )
+        if status == 2:
+            best_effort(
+                "vacuum stop",
+                lambda: self._action(2, 2, label="neutral stop"),
+            )
         best_effort(
             "remote exit",
             lambda: self._set(7, 16, 10, "remote exit"),
