@@ -652,6 +652,21 @@ class App(app_v151.App):
                 str(exc).strip() or type(exc).__name__,
             )
 
+    def _v74_watch_mapping_worker(self, vacuum, serial):
+        # Fresh Core ya vigila status/retorno con la misma sesión física.
+        # V74 no debe cerrar el mapa ni iniciar recuperaciones en paralelo.
+        if self._fresh_mapping_active:
+            return None
+        return super()._v74_watch_mapping_worker(vacuum, serial)
+
+    def _v84_close_mapping_on_dock(self):
+        # El polling heredado puede ver status=4 unas décimas antes que el
+        # worker Fresh. Esperamos a que Fresh libere su sesión y recién entonces
+        # dejamos que V84/V93 hagan la captura/finalización visual existente.
+        if self._fresh_mapping_active:
+            return True
+        return super()._v84_close_mapping_on_dock()
+
     # =============================================== bloquear viejos writers
     def _sync_no_go_async(self):
         core = getattr(self, "_fresh_core", None)
@@ -694,6 +709,9 @@ class App(app_v151.App):
 
     # =============================================================== eventos
     def _handle_ui_event(self, kind, payload):
+        if kind == "v74_mapping_complete" and self._fresh_mapping_active:
+            # Evento heredado de cierre: Fresh Core es el único dueño del fin.
+            return None
         if kind == "fresh_clean_started":
             diag = dict(payload[0] or {}) if payload else {}
             self._fresh_last_event = {"clean_started": diag}
