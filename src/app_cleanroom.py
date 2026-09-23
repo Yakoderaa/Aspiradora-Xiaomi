@@ -480,8 +480,6 @@ class App(app_v151.App):
             )
 
         try:
-            # Paredes/restricciones se envían dentro del mismo transporte nuevo.
-            core.sync_virtual_walls(plan)
             core.run_zone_sequence(
                 raw_rects,
                 passes,
@@ -489,6 +487,7 @@ class App(app_v151.App):
                 water,
                 on_stage=stage,
                 on_finished=finished,
+                plan=plan,
             )
         except Exception as exc:
             self._v114_target_clean_active = False
