@@ -29,14 +29,13 @@ class App(app_v150.App):
         self._v151_late_control_blocks = 0
 
     def _v151_owner_active(self):
+        # La propiedad es deliberadamente independiente de phase/stage:
+        # V121 toca esos campos brevemente al propagar v74_mapping_started.
+        # Así ningún worker heredado obtiene una ventana de control entre
+        # estados transitorios de UI.
         return bool(
             self._v151_direct_global_owner
             and bool(getattr(self, "mapping_active", False))
-            and int(getattr(self, "mapping_phase", 0) or 0) == 2
-            and str(getattr(self, "_v121_stage", "")) in (
-                "global-v151",
-                "global",
-            )
             and not bool(getattr(self, "_v145_session_latched", False))
             and not bool(getattr(self, "_v145_reset_guard", False))
         )
@@ -383,6 +382,12 @@ class App(app_v150.App):
             reason,
         )
 
+    def _v150_session_allows_strategy_switch(self, serial):
+        if self._v151_owner_active():
+            self._v151_late_control_blocks += 1
+            return False
+        return super()._v150_session_allows_strategy_switch(serial)
+
     # ============================================================ manual
     def dock(self):
         if self._v151_owner_active():
@@ -496,7 +501,7 @@ class App(app_v150.App):
         lines = [
             "DIAGNÓSTICO V151-IA ACTIVO · whole-home directo",
             "==================================================",
-            f"dueño global activo={self._v151_direct_global_owner}",
+            f"dueño global activo={self._v151_owner_active()} · flag={self._v151_direct_global_owner}",
             f"estado real stage={getattr(self, '_v121_stage', '—')} · phase={getattr(self, 'mapping_phase', '—')}",
             f"diag arranque={self._v151_direct_global_diag or '—'}",
             f"EDGE bloqueados={self._v151_edge_blocks}",
