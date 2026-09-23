@@ -216,4 +216,24 @@ assert room_ops and set(room_ops) == {2}, room_ops
 
 assert arbiter.legacy_blocks >= 3, arbiter.audit_snapshot()
 
+# Volver a base es cancelación de la secuencia, no un "fin normal" que permita
+# iniciar otra pasada después.
+raw.props[(2, 1)] = 5
+session2 = arbiter.begin("cancel-dock-smoke", "smoke")
+try:
+    session2.cancel_action = "dock"
+    reason = core._monitor_until_terminal(session2, mapping=False)
+    assert reason == "dock_requested", reason
+    assert raw.props[(2, 1)] == 4
+finally:
+    arbiter.finish(session2, "cancel smoke done")
+
+# El transporte genérico heredado es de sólo lectura incluso cuando no hay
+# una sesión activa.
+try:
+    vacuum.device.send("set_properties", [])
+    raise AssertionError("send(set_properties) heredado atravesó el proxy")
+except LegacyWriteBlocked:
+    pass
+
 print("V152 Fresh Core smoke OK")
