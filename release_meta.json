@@ -1,0 +1,5 @@
+{
+  "schema": 1,
+  "generation": "V147-IA",
+  "notes": "V147-IA para Windows 10/11 x64. Añade detección específica de oscilación ida/vuelta durante Paso 1. La IA ya no considera progreso real a pequeñas celdas nuevas si hay muchas reversiones, baja eficiencia de recorrido, corredor estrecho y poco desplazamiento neto. Ante una oscilación confirmada intenta escapar sin crear otro build-map: detiene de forma controlada, retrocede, gira de forma alternada y reanuda EDGE 2/1 dentro de la misma sesión. Cada escape debe demostrar expansión real; tras tres escapes consecutivos fallidos, cierra Paso 1 y solicita regreso a base. Conserva el consenso multiseñal V146, el cerrojo V145 y el gate físico V143."
+}
