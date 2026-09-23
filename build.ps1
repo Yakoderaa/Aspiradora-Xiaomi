@@ -197,7 +197,7 @@ pyinstaller --noconfirm --clean --windowed --onefile `
     --name "Aspiradora Xiaomi Scheduler" `
     --icon "assets\mi_home.ico" `
     --collect-all miio `
-    src\scheduler_agent.py
+    src\scheduler_baseline_disabled.py
 if ($LASTEXITCODE -ne 0) { throw "PyInstaller falló con código $LASTEXITCODE." }
 
 pyinstaller --noconfirm --clean --windowed --onedir `
@@ -270,10 +270,14 @@ Stop-Process -Id $appProcess.Id -Force -ErrorAction SilentlyContinue
 
 $schedulerExe = (Resolve-Path "dist\Aspiradora Xiaomi\Aspiradora Xiaomi Scheduler.exe").Path
 $schedulerProcess = Start-Process -FilePath $schedulerExe -PassThru
-Start-Sleep -Seconds 3
-$schedulerProcess.Refresh()
-if ($schedulerProcess.HasExited) { throw "El programador se cerró durante el smoke test de arranque. Código: $($schedulerProcess.ExitCode)" }
-Stop-Process -Id $schedulerProcess.Id -Force -ErrorAction SilentlyContinue
+$schedulerExited = $schedulerProcess.WaitForExit(5000)
+if (-not $schedulerExited) {
+    Stop-Process -Id $schedulerProcess.Id -Force -ErrorAction SilentlyContinue
+    throw "El Scheduler V153 debía estar deshabilitado y finalizar solo."
+}
+if ($schedulerProcess.ExitCode -ne 0) {
+    throw "El Scheduler deshabilitado terminó con código $($schedulerProcess.ExitCode)."
+}
 
 $pf86 = ${env:ProgramFiles(x86)}
 $inno = @("$pf86\Inno Setup 7\ISCC.exe", "$pf86\Inno Setup 6\ISCC.exe") | Where-Object { Test-Path $_ } | Select-Object -First 1
