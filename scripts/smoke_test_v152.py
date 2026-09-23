@@ -1,5 +1,6 @@
 from pathlib import Path
 from types import SimpleNamespace
+import inspect
 import json
 import sys
 
@@ -65,6 +66,11 @@ from robot_command_arbiter import (
     LegacyWriteBlocked,
     RobotCommandArbiter,
 )
+
+run_global_source = inspect.getsource(FreshRobotCore._run_global)
+assert run_global_source.rfind("self.arbiter.finish(") < run_global_source.rfind(
+    "on_finished(dict(diag))"
+), run_global_source
 
 
 class FakeDevice:
