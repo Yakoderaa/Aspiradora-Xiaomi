@@ -66,6 +66,18 @@ assert probe._v144_auto_abort_requested is False
 assert probe._v149_request_global_transition(1, {}, "already global") is True
 assert probe._v151_late_control_blocks == 1
 
+# El monitor de estrategia V150 tampoco puede abrir una transición paralela
+# durante el whole-home directo.
+assert probe._v150_session_allows_strategy_switch(1) is False
+assert probe._v151_late_control_blocks == 2
+
+# La propiedad V151 no depende de phase/stage transitorios de V121.
+probe.mapping_phase = 1
+probe._v121_stage = "edge"
+assert probe._v151_owner_active() is True
+probe.mapping_phase = 2
+probe._v121_stage = "global-v151"
+
 # Cerrar el cerrojo desactiva inmediatamente la autoridad global.
 probe._v145_session_latched = True
 assert probe._v151_owner_active() is False
