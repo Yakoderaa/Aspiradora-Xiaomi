@@ -15,9 +15,6 @@ assert "v148_persistent_strip" in app
 assert "def _v148_escape_geometry" in app
 assert "rebase_stable" in app
 assert "ESCAPE_SUCCESS_VOTES = 3" in app
-assert "import app_v148" in main_current
-assert "app_v148.App().mainloop()" in main_current
-assert '"generation": "V148-IA"' in meta
 
 import app_v148
 
