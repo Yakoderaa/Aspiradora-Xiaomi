@@ -489,6 +489,14 @@ class App(app_v149.App):
                         )
                     )
 
+                # El usuario, un reset o una sesión nueva pueden haber
+                # cancelado el proceso mientras el comando esperaba readback.
+                # Nunca publicamos un START tardío sobre una sesión cerrada.
+                if not self._v150_transition_session_valid(serial, vacuum):
+                    raise RuntimeError(
+                        "whole-home respondió después de que la sesión fue cancelada"
+                    )
+
                 self._v137_phase2_diag = dict(diag)
                 self._post_ui(
                     "v121_phase2_started",
