@@ -92,10 +92,10 @@ jobs:
           $ErrorActionPreference = "Stop"
           $tag = $env:RELEASE_TAG
           $repo = $env:GITHUB_REPOSITORY
-          $notes = "V146-IA para Windows 10/11 x64. Refuerza la IA de mapeo con consenso multiseñal, progreso espacial e histéresis. Revisitar celdas ya no basta para declarar un loop: la app mide celdas nuevas, expansión en X/Y, desplazamiento neto, span reciente y tiempo real sin progreso. Un pasillo o recorrido estrecho que sigue avanzando se considera progreso válido. El auto-abort exige mayoría temporal 6/8, racha >=6, al menos 90 s y 7 m, además de ausencia sostenida de expansión. Conserva el cerrojo de sesión y reset robusto de V145, el gate físico de V143 y EDGE nativo 2/1."
+          $notes = "V147-IA para Windows 10/11 x64. Añade detección específica de oscilación ida/vuelta durante Paso 1. La IA ya no considera progreso real a pequeñas celdas nuevas si hay muchas reversiones, baja eficiencia de recorrido, corredor estrecho y poco desplazamiento neto. Ante una oscilación confirmada intenta escapar sin crear otro build-map: detiene de forma controlada, retrocede, gira de forma alternada y reanuda EDGE 2/1 dentro de la misma sesión. Cada escape debe demostrar expansión real; tras tres escapes consecutivos fallidos, cierra Paso 1 y solicita regreso a base. Conserva el consenso multiseñal V146, el cerrojo V145 y el gate físico V143."
 
           gh release create $tag `
-            --title "Aspiradora-IA $env:APP_DISPLAY_VERSION · V146-IA" `
+            --title "Aspiradora-IA $env:APP_DISPLAY_VERSION · V147-IA" `
             --notes $notes `
             --target $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la release $tag" }
