@@ -135,6 +135,99 @@ class FreshRobotCore:
         })
         return response
 
+    def _neutralize_navigation_state(self):
+        """Borra estado de limpieza/navegación sin tocar Wi-Fi ni mapas guardados."""
+        before = self._read()
+        status = self._int(before.get("status"))
+        if status in ACTIVE or status == 3:
+            raise RobotBusyError(
+                f"No se normaliza una tarea en movimiento (status={status})."
+            )
+
+        rows = []
+        def best_effort(label, fn):
+            item = {"label": label, "ok": False, "error": None}
+            try:
+                response = fn()
+                self._assert_not_rejected(response, label)
+                item["ok"] = True
+                item["response"] = repr(response)[:220]
+            except Exception as exc:
+                item["error"] = str(exc).strip() or type(exc).__name__
+            rows.append(item)
+
+        # Sólo STOP/clear. Ninguno de estos comandos inicia navegación.
+        best_effort(
+            "stop latent edge",
+            lambda: self._action(7, 3, ["", 2, 2], "stop latent edge"),
+        )
+        best_effort(
+            "stop latent global",
+            lambda: self._action(7, 3, ["", 0, 2], "stop latent global"),
+        )
+        best_effort(
+            "stop latent point",
+            lambda: self._action(7, 3, ["", 4, 2], "stop latent point"),
+        )
+        best_effort(
+            "vacuum stop",
+            lambda: self._action(2, 2, label="neutral stop"),
+        )
+        best_effort(
+            "remote exit",
+            lambda: self._set(7, 16, 10, "remote exit"),
+        )
+        best_effort(
+            "clear point",
+            lambda: self._set(9, 5, "", "clear point"),
+        )
+        best_effort(
+            "clear zone",
+            lambda: self._set(9, 2, "", "clear zone"),
+        )
+        best_effort(
+            "repeat off",
+            lambda: self._set(7, 1, 0, "repeat off"),
+        )
+        best_effort(
+            "twice clean off",
+            lambda: self._set(8, 10, 0, "twice clean off"),
+        )
+        best_effort(
+            "water off",
+            lambda: self._set(7, 6, 0, "water off"),
+        )
+        best_effort(
+            "suction eco",
+            lambda: self._set(7, 5, 1, "suction eco"),
+        )
+        best_effort(
+            "mode vacuum",
+            lambda: self._set(2, 4, 0, "mode vacuum"),
+        )
+        best_effort(
+            "sweep global",
+            lambda: self._set(2, 8, 0, "sweep global"),
+        )
+
+        time.sleep(0.45)
+        after = self._read()
+        for key in ("mode", "sweep_type", "repeat"):
+            value = self._int(after.get(key))
+            if value not in (None, 0):
+                raise RuntimeError(
+                    f"Neutralización incompleta: {key}={value!r}."
+                )
+        self.arbiter.record(
+            "navigation_neutralized",
+            {
+                "before": repr(before)[:500],
+                "after": repr(after)[:500],
+                "steps": rows,
+            },
+        )
+        return {"before": before, "after": after, "steps": rows}
+
     def _normalize(self, mode, suction, water):
         mode = int(mode)
         if mode not in (0, 1, 2):
@@ -291,6 +384,8 @@ class FreshRobotCore:
             session = self.arbiter.begin(purpose, self.source)
             diag["session_id"] = session.session_id
 
+            neutral = self._neutralize_navigation_state()
+            diag["neutralization"] = neutral
             before, normalized, suction, water = self._normalize(
                 mode, suction, water
             )
@@ -406,12 +501,9 @@ class FreshRobotCore:
         return self._set(7, 6, level, "user water")
 
     def locate(self):
-        # locate no cambia navegación, pero queda serializado con el transporte.
+        # Find-me es 4/1=1 en este B112; no altera la estrategia de navegación.
         with self.arbiter._io_lock:
-            try:
-                return self.raw_device.call_action_by(7, 5)
-            except Exception:
-                return self.vacuum.locate()
+            return self.raw_device.set_property_by(4, 1, 1)
 
     def manual(self, direction):
         if self.arbiter.active:
