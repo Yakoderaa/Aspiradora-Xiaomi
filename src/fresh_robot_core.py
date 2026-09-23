@@ -166,10 +166,11 @@ class FreshRobotCore:
 
         rows = []
         def best_effort(label, fn):
-            self._cancel_if_requested(session, label)
             item = {"label": label, "ok": False, "error": None}
             try:
-                response = fn()
+                with self.arbiter._io_lock:
+                    self._cancel_if_requested(session, label)
+                    response = fn()
                 self._assert_not_rejected(response, label)
                 item["ok"] = True
                 item["response"] = repr(response)[:220]
@@ -276,8 +277,9 @@ class FreshRobotCore:
             (7, 5, suction, "suction"),
             (7, 6, water, "water"),
         ):
-            self._cancel_if_requested(session, label)
-            self._set(siid, piid, value, label)
+            with self.arbiter._io_lock:
+                self._cancel_if_requested(session, label)
+                self._set(siid, piid, value, label)
 
         after = self._read()
         rb_mode = self._int(after.get("mode"))
@@ -293,11 +295,12 @@ class FreshRobotCore:
         return before, after, suction, water
 
     def _request_build_once(self, session=None):
-        self._cancel_if_requested(session, "antes de build-map")
-        response = self._action(
-            10, 17, [1],
-            label="build-map-ii 10/17",
-        )
+        with self.arbiter._io_lock:
+            self._cancel_if_requested(session, "antes de build-map")
+            response = self._action(
+                10, 17, [1],
+                label="build-map-ii 10/17",
+            )
         code = self._explicit_code(response)
         if code == 0:
             ack = "explicit-code-0"
@@ -308,12 +311,13 @@ class FreshRobotCore:
         return response, ack
 
     def _start_standard(self, mode, session=None):
-        self._cancel_if_requested(session, "antes de START")
         action = self.START_ACTION_BY_MODE[int(mode)]
-        response = self._action(
-            2, action,
-            label=f"standard-start 2/{action}",
-        )
+        with self.arbiter._io_lock:
+            self._cancel_if_requested(session, "antes de START")
+            response = self._action(
+                2, action,
+                label=f"standard-start 2/{action}",
+            )
         return (2, action), response
 
     def _wait_started(self, session, timeout=12.0):
@@ -425,6 +429,7 @@ class FreshRobotCore:
                     plan,
                     force=bool(force_wall_sync),
                     _inside_session=True,
+                    session=session,
                 )
                 diag["walls_synced"] = True
             before, normalized, suction, water = self._normalize(
@@ -698,7 +703,13 @@ class FreshRobotCore:
         finally:
             self.arbiter.finish(session, "manual")
 
-    def sync_virtual_walls(self, plan, force=False, _inside_session=False):
+    def sync_virtual_walls(
+        self,
+        plan,
+        force=False,
+        _inside_session=False,
+        session=None,
+    ):
         plan = dict(plan or {})
         walls = list(plan.get("no_go") or [])
         if not force and not plan.get("virtual_walls_managed", False):
@@ -718,10 +729,15 @@ class FreshRobotCore:
             separators=(",", ":"),
         )
         if _inside_session:
-            return self._action(
-                9, 6, [payload],
-                label="virtual walls 9/6",
-            )
+            with self.arbiter._io_lock:
+                self._cancel_if_requested(
+                    session,
+                    "antes de restricciones 9/6",
+                )
+                return self._action(
+                    9, 6, [payload],
+                    label="virtual walls 9/6",
+                )
         return self._run_one_shot(
             "virtual_walls",
             lambda: self._action(
@@ -800,18 +816,32 @@ class FreshRobotCore:
                             rect["x1"], rect["y1"],
                             rect["x1"], rect["y0"],
                         ))
-                        try:
-                            self._action(
-                                9, 8, [zone_value],
-                                label="zone target 9/8",
+                        with self.arbiter._io_lock:
+                            self._cancel_if_requested(
+                                session,
+                                "antes de objetivo de zona",
                             )
-                        except Exception:
-                            self._set(9, 2, zone_value, "zone target 9/2")
-                        self._cancel_if_requested(
-                            session,
-                            "antes de START de zona",
-                        )
-                        self._action(9, 3, label="zone start 9/3")
+                            try:
+                                self._action(
+                                    9, 8, [zone_value],
+                                    label="zone target 9/8",
+                                )
+                            except Exception:
+                                self._set(
+                                    9,
+                                    2,
+                                    zone_value,
+                                    "zone target 9/2",
+                                )
+                            self._cancel_if_requested(
+                                session,
+                                "antes de START de zona",
+                            )
+                            self._action(
+                                9,
+                                3,
+                                label="zone start 9/3",
+                            )
                         self._wait_started(session, timeout=10.0)
                         self._monitor_until_terminal(session, mapping=False)
                         diag["completed"] += 1
