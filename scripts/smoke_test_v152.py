@@ -31,6 +31,9 @@ assert "def _v114_run_safe_rectangles" in app_source
 assert "def _v127_try_phase2_recovery" in app_source
 assert "def _v74_watch_mapping_worker" in app_source
 assert "def _v84_close_mapping_on_dock" in app_source
+assert "def _sync_no_go_async" in app_source
+assert "return super()._sync_no_go_async()" not in app_source
+assert "core.sync_virtual_walls(" in app_source
 assert "return False" in app_source
 
 assert "start_mapping_whole_home" not in core_source
