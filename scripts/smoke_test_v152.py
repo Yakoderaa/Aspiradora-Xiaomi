@@ -19,7 +19,7 @@ scheduler_source = text("src/scheduler_agent.py")
 main_source = text("src/main_current.py")
 installer_source = text("installer/AspiradoraXiaomi.iss")
 meta = json.loads(text("release_meta.json"))
-
+# V152 es una regresión histórica: no exige seguir siendo la release activa.\n
 assert "class App(app_v151.App)" in app_source
 assert "FreshRobotCore" in app_source
 assert "def start_new_mapping" in app_source
@@ -61,10 +61,6 @@ assert "FreshRobotCore" in scheduler_source
 assert "start_whole_clean" not in scheduler_source
 assert "start_zone_clean" not in scheduler_source
 
-assert meta["generation"] == "V152-IA", meta
-assert meta["entry_module"] == "app_cleanroom", meta
-assert "import app_cleanroom" in main_source
-assert "app_cleanroom.App().mainloop()" in main_source
 assert "function PrepareToInstall" in installer_source
 assert "taskkill.exe" in installer_source
 assert "MySchedulerExeName" in installer_source
