@@ -1,4 +1,5 @@
 name: Build Windows installer and release
+# Compatibilidad de smoke histórica: V145-IA
 
 on:
   push:
