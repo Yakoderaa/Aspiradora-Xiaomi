@@ -686,10 +686,7 @@ class FreshRobotCore:
     def locate(self):
         # Find-me es 4/1=1 en este B112; no altera la estrategia de navegación.
         def send():
-            with self.arbiter._io_lock:
-                response = self.raw_device.set_property_by(4, 1, 1)
-            self._assert_not_rejected(response, "find-me 4/1")
-            return response
+            return self._set(4, 1, 1, "find-me 4/1")
         if self.arbiter.active:
             return send()
         return self._run_one_shot("locate", send)
@@ -702,7 +699,7 @@ class FreshRobotCore:
         direction = int(direction)
         session = self.arbiter.begin("manual", self.source)
         try:
-            return self.raw_device.set_property_by(7, 16, direction)
+            return self._set(7, 16, direction, "manual control")
         finally:
             self.arbiter.finish(session, "manual")
 
