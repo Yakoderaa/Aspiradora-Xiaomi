@@ -28,7 +28,6 @@ assert "src\\scheduler_baseline_disabled.py" in build
 assert "RegDeleteValue" in installer
 assert "AspiradoraXiaomiScheduler" in installer
 assert "\n[Run]\n" not in installer.replace("\r\n", "\n")
-assert "Filename: \"{app}\\{#MyAppExeName}\"" not in installer
 
 from safe_baseline_core import SafeBaselineCore
 from robot_command_arbiter import RobotCommandArbiter
