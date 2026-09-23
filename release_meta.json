@@ -1,5 +1,6 @@
 {
   "schema": 1,
-  "generation": "V151-IA",
-  "notes": "V151-IA para Windows 10/11 x64. El mapeo automático ya no usa EDGE como fase inicial. Mapear vivienda crea un único build-map y arranca whole-home V123 directamente desde la base; 7/3 usa ids vacíos y modo global, con 2/3 sólo si el E10 permanece físicamente en dock. Durante esta sesión V151 mantiene autoridad exclusiva: bloquea EDGE tardío, escapes V147/V148, auto-abort V144/V147 y transiciones V149/V150 paralelas. La propiedad de control no depende de phase/stage transitorios, cerrando la carrera de eventos heredados. Se preservan los resets de acumuladores y previews V92-V107, el bloqueo de limpieza dirigida V114, el cerrojo V145, el gate físico V90, la captura final Xiaomi y el regreso manual. No hay segundo build-map ni fallback automático a EDGE."
+  "generation": "V152-IA",
+  "entry_module": "app_cleanroom",
+  "notes": "V152 Fresh Core para Windows 10/11 x64. Mantiene la interfaz y el sistema de mapas de la aplicación, pero reemplaza desde cero el control físico de aspirado y mapeo. Un árbitro único y un bloqueo entre procesos gobiernan GUI y Scheduler; el transporte heredado queda en solo lectura para acciones de navegación. Antes de cada tarea se neutralizan objetivos latentes Edge/Global/Point, remoto, punto/zona, repeat y twice-clean, sin borrar Wi-Fi ni mapas. Limpieza global usa Global=0 y un único START estándar 2/3, 2/5 o 2/6 según modo. Mapeo usa una sola solicitud 10/17 [1] y luego Global=0 + un único START estándar; no usa 7/3 como START, EDGE, reassert, recovery, escapes ni START secundarios. STOP y Volver a base tienen prioridad de cancelación. Habitaciones/zonas y programaciones también pasan por el mismo Fresh Core."
 }
