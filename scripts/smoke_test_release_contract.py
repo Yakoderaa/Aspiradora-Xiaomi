@@ -37,6 +37,17 @@ assert not hardcoded_generation_titles, hardcoded_generation_titles
 assert re.fullmatch(r"V\d+-IA", str(meta["generation"])), meta
 assert isinstance(meta.get("notes"), str) and len(meta["notes"]) >= 40
 
+# La única comprobación de "qué versión está activa" vive acá y es dinámica.
+# V150 sólo cambia release_meta.json + main_current.py; ningún smoke V149 se edita.
+match = re.fullmatch(r"V(\d+)-IA", str(meta["generation"]))
+assert match, meta
+active_number = match.group(1)
+active_module = f"app_v{active_number}"
+active_file = ROOT / "src" / f"{active_module}.py"
+assert active_file.exists(), active_file
+assert f"import {active_module}" in main_current, (active_module, main_current)
+assert f"{active_module}.App().mainloop()" in main_current, (active_module, main_current)
+
 # Protección contra volver al antipatrón: nada de main_vNNN como entry real.
 for line in entry_lines:
     assert not re.fullmatch(r"src\\main_v\d+\.py", line), line
