@@ -15,6 +15,13 @@ from robot_command_arbiter import (
 ACTIVE = {5, 6, 7}
 IDLE = {0, 1, 2, 4}
 
+
+class FreshSessionCancelled(RuntimeError):
+    def __init__(self, reason, stage):
+        self.reason = str(reason or "cancelled")
+        self.stage = str(stage)
+        super().__init__(f"{self.reason} durante {self.stage}")
+
 # Un único árbitro por proceso. El ProcessLease agrega exclusión entre
 # procesos (GUI/Scheduler); este singleton evita dos FreshRobotCore dentro
 # de la misma aplicación después de una reconexión.
@@ -142,7 +149,13 @@ class FreshRobotCore:
         })
         return response
 
-    def _neutralize_navigation_state(self):
+    def _cancel_if_requested(self, session, stage):
+        if session is None or not session.cancel_action:
+            return False
+        reason = self._perform_cancel(session)
+        raise FreshSessionCancelled(reason, stage)
+
+    def _neutralize_navigation_state(self, session=None):
         """Borra estado de limpieza/navegación sin tocar Wi-Fi ni mapas guardados."""
         before = self._read()
         status = self._int(before.get("status"))
@@ -153,6 +166,7 @@ class FreshRobotCore:
 
         rows = []
         def best_effort(label, fn):
+            self._cancel_if_requested(session, label)
             item = {"label": label, "ok": False, "error": None}
             try:
                 response = fn()
@@ -236,7 +250,7 @@ class FreshRobotCore:
         )
         return {"before": before, "after": after, "steps": rows}
 
-    def _normalize(self, mode, suction, water):
+    def _normalize(self, mode, suction, water, session=None):
         mode = int(mode)
         if mode not in (0, 1, 2):
             raise ValueError("Modo inválido")
@@ -255,11 +269,15 @@ class FreshRobotCore:
             )
 
         # Estado mínimo conocido. No usamos remember-state, 7/3 ni reasserts.
-        self._set(7, 1, 0, "repeat=0")
-        self._set(2, 4, mode, "mode")
-        self._set(2, 8, 0, "sweep_type=Global")
-        self._set(7, 5, suction, "suction")
-        self._set(7, 6, water, "water")
+        for siid, piid, value, label in (
+            (7, 1, 0, "repeat=0"),
+            (2, 4, mode, "mode"),
+            (2, 8, 0, "sweep_type=Global"),
+            (7, 5, suction, "suction"),
+            (7, 6, water, "water"),
+        ):
+            self._cancel_if_requested(session, label)
+            self._set(siid, piid, value, label)
 
         after = self._read()
         rb_mode = self._int(after.get("mode"))
@@ -274,7 +292,8 @@ class FreshRobotCore:
             )
         return before, after, suction, water
 
-    def _request_build_once(self):
+    def _request_build_once(self, session=None):
+        self._cancel_if_requested(session, "antes de build-map")
         response = self._action(
             10, 17, [1],
             label="build-map-ii 10/17",
@@ -288,7 +307,8 @@ class FreshRobotCore:
             ack = f"rejected-{code}"
         return response, ack
 
-    def _start_standard(self, mode):
+    def _start_standard(self, mode, session=None):
+        self._cancel_if_requested(session, "antes de START")
         action = self.START_ACTION_BY_MODE[int(mode)]
         response = self._action(
             2, action,
@@ -300,10 +320,10 @@ class FreshRobotCore:
         deadline = time.monotonic() + max(2.0, float(timeout))
         last = {}
         while time.monotonic() < deadline:
-            if session.cancel_action:
-                raise RuntimeError(
-                    "Inicio cancelado antes de confirmar movimiento."
-                )
+            self._cancel_if_requested(
+                session,
+                "esperando confirmación de START",
+            )
             last = self._read()
             status = self._int(last.get("status"))
             sweep = self._int(last.get("sweep_type"))
@@ -398,7 +418,7 @@ class FreshRobotCore:
             session = self.arbiter.begin(purpose, self.source)
             diag["session_id"] = session.session_id
 
-            neutral = self._neutralize_navigation_state()
+            neutral = self._neutralize_navigation_state(session)
             diag["neutralization"] = neutral
             if plan is not None:
                 self.sync_virtual_walls(
@@ -408,7 +428,7 @@ class FreshRobotCore:
                 )
                 diag["walls_synced"] = True
             before, normalized, suction, water = self._normalize(
-                mode, suction, water
+                mode, suction, water, session=session
             )
             diag["before"] = before
             diag["normalized"] = normalized
@@ -419,12 +439,15 @@ class FreshRobotCore:
             build_response = None
             build_ack = None
             if mapping:
-                build_response, build_ack = self._request_build_once()
+                build_response, build_ack = self._request_build_once(session)
                 diag["build_response"] = repr(build_response)[:500]
                 diag["build_ack"] = build_ack
                 diag["sequence"].append("10/17 [1] una vez")
 
-            start_action, start_response = self._start_standard(mode)
+            start_action, start_response = self._start_standard(
+                mode,
+                session=session,
+            )
             diag["start_action"] = start_action
             diag["start_response"] = repr(start_response)[:500]
             diag["sequence"].append(
@@ -446,6 +469,11 @@ class FreshRobotCore:
             )
             diag["finish_reason"] = reason
             diag["final_state"] = self._read()
+            self._last_diag = dict(diag)
+        except FreshSessionCancelled as exc:
+            diag["finish_reason"] = exc.reason
+            diag["cancel_stage"] = exc.stage
+            diag["error"] = None
             self._last_diag = dict(diag)
         except Exception as exc:
             diag["error"] = str(exc).strip() or type(exc).__name__
@@ -554,13 +582,17 @@ class FreshRobotCore:
 
                     mode = mode_map[pass_name]
                     pass_water = 0 if mode == 0 else max(1, int(water or 1))
-                    neutral = self._neutralize_navigation_state()
+                    neutral = self._neutralize_navigation_state(session)
                     before, normalized, _suction, _water = self._normalize(
                         mode,
                         suction,
                         pass_water,
+                        session=session,
                     )
-                    action, response = self._start_standard(mode)
+                    action, response = self._start_standard(
+                        mode,
+                        session=session,
+                    )
                     started = self._wait_started(session)
                     if callable(on_stage):
                         on_stage(index, total, pass_name)
@@ -742,7 +774,12 @@ class FreshRobotCore:
                         0,
                     )
                     pass_water = 0 if mode_id == 0 else max(1, water)
-                    self._normalize(mode_id, suction, pass_water)
+                    self._normalize(
+                        mode_id,
+                        suction,
+                        pass_water,
+                        session=session,
+                    )
                     for rect in rects:
                         if session.cancel_action:
                             self._perform_cancel(session)
@@ -770,6 +807,10 @@ class FreshRobotCore:
                             )
                         except Exception:
                             self._set(9, 2, zone_value, "zone target 9/2")
+                        self._cancel_if_requested(
+                            session,
+                            "antes de START de zona",
+                        )
                         self._action(9, 3, label="zone start 9/3")
                         self._wait_started(session, timeout=10.0)
                         self._monitor_until_terminal(session, mapping=False)
