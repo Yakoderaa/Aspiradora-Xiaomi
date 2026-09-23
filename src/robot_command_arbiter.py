@@ -141,12 +141,17 @@ class RobotCommandArbiter:
         action = str(action or "stop")
         if action not in ("stop", "dock"):
             raise ValueError("Cancelación inválida")
-        with self._lock:
-            if not self.active:
-                return False
-            self._session.cancel_action = action
+        # Mismo lock que usa el transporte físico. Así hay un orden total:
+        # o la orden ya salió y luego se cancela, o la cancelación gana y la
+        # siguiente orden ve cancel_action antes de tocar el E10.
+        with self._io_lock:
+            with self._lock:
+                if self._session is None or self._session.finished:
+                    return False
+                self._session.cancel_action = action
+                session_id = self._session.session_id
             self.record("cancel_requested", {
-                "session": self._session.session_id,
+                "session": session_id,
                 "action": action,
             })
             return True
