@@ -519,7 +519,7 @@ class FreshRobotCore:
         finally:
             self.arbiter.finish(session, "manual")
 
-    def sync_virtual_walls(self, plan, force=False):
+    def sync_virtual_walls(self, plan, force=False, _inside_session=False):
         plan = dict(plan or {})
         walls = list(plan.get("no_go") or [])
         if not force and not plan.get("virtual_walls_managed", False):
@@ -538,9 +538,17 @@ class FreshRobotCore:
             [len(encoded), *encoded],
             separators=(",", ":"),
         )
-        return self._action(
-            9, 6, [payload],
-            label="virtual walls 9/6",
+        if _inside_session:
+            return self._action(
+                9, 6, [payload],
+                label="virtual walls 9/6",
+            )
+        return self._run_one_shot(
+            "virtual_walls",
+            lambda: self._action(
+                9, 6, [payload],
+                label="virtual walls 9/6",
+            ),
         )
 
     def run_zone_sequence(
@@ -551,6 +559,8 @@ class FreshRobotCore:
         water,
         on_stage=None,
         on_finished=None,
+        plan=None,
+        force_wall_sync=False,
     ):
         if self._worker is not None and self._worker.is_alive():
             raise RobotBusyError("Fresh Core ya tiene una sesión activa.")
@@ -571,6 +581,12 @@ class FreshRobotCore:
             }
             try:
                 session = self.arbiter.begin("targeted_zones", self.source)
+                if plan is not None:
+                    self.sync_virtual_walls(
+                        plan,
+                        force=bool(force_wall_sync),
+                        _inside_session=True,
+                    )
                 total = max(1, len(rects) * len(passes))
                 index = 0
                 for clean_mode in passes:
