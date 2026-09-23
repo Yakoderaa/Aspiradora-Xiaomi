@@ -16,6 +16,7 @@ core_source = text("src/fresh_robot_core.py")
 arbiter_source = text("src/robot_command_arbiter.py")
 scheduler_source = text("src/scheduler_agent.py")
 main_source = text("src/main_current.py")
+installer_source = text("installer/AspiradoraXiaomi.iss")
 meta = json.loads(text("release_meta.json"))
 
 assert "class App(app_v151.App)" in app_source
@@ -51,6 +52,9 @@ assert meta["generation"] == "V152-IA", meta
 assert meta["entry_module"] == "app_cleanroom", meta
 assert "import app_cleanroom" in main_source
 assert "app_cleanroom.App().mainloop()" in main_source
+assert "function PrepareToInstall" in installer_source
+assert "taskkill.exe" in installer_source
+assert "MySchedulerExeName" in installer_source
 
 from fresh_robot_core import FreshRobotCore
 from robot_command_arbiter import (
