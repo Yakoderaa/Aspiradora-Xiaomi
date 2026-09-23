@@ -3,6 +3,8 @@ import threading
 import time
 from dataclasses import dataclass
 
+from robot_plans import local_rect_to_device
+
 from robot_command_arbiter import (
     RobotBusyError,
     RobotCommandArbiter,
@@ -516,6 +518,30 @@ class FreshRobotCore:
             return self.raw_device.set_property_by(7, 16, direction)
         finally:
             self.arbiter.finish(session, "manual")
+
+    def sync_virtual_walls(self, plan, force=False):
+        plan = dict(plan or {})
+        walls = list(plan.get("no_go") or [])
+        if not force and not plan.get("virtual_walls_managed", False):
+            return None
+        if walls and not plan.get("device_origin"):
+            raise RuntimeError(
+                "No puedo sincronizar bloqueos sin origen físico del mapa."
+            )
+        encoded = []
+        for index, wall in enumerate(walls, 1):
+            rect = local_rect_to_device(wall, plan)
+            encoded.append(
+                f"{index}_1_{rect['x0']}_{rect['y1']}_{rect['x1']}_{rect['y0']}"
+            )
+        payload = json.dumps(
+            [len(encoded), *encoded],
+            separators=(",", ":"),
+        )
+        return self._action(
+            9, 6, [payload],
+            label="virtual walls 9/6",
+        )
 
     def run_zone_sequence(
         self,
