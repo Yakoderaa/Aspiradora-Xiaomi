@@ -66,7 +66,7 @@ assert "function PrepareToInstall" in installer_source
 assert "taskkill.exe" in installer_source
 assert "MySchedulerExeName" in installer_source
 
-from fresh_robot_core import FreshRobotCore
+from fresh_robot_core import FreshRobotCore, FreshSessionCancelled
 from robot_command_arbiter import (
     LegacyWriteBlocked,
     RobotCommandArbiter,
@@ -234,6 +234,37 @@ room_ops = [
 assert room_ops and set(room_ops) == {2}, room_ops
 
 assert arbiter.legacy_blocks >= 3, arbiter.audit_snapshot()
+
+# Un rechazo explícito jamás puede contarse como aceptación.
+try:
+    core._assert_not_rejected({"code": -1}, "rechazo smoke")
+    raise AssertionError("code=-1 fue aceptado")
+except RuntimeError:
+    pass
+
+# Reproduce el defecto C de la auditoría al revés: si llega cancelar antes del
+# START, Fresh Core ejecuta la cancelación y NO manda 2/3 después.
+raw.props[(2, 1)] = 4
+session_cancel_before_start = arbiter.begin("cancel-before-start", "smoke")
+starts_before = len([
+    row for row in raw.actions
+    if row[0] in {(2, 1), (2, 3), (2, 5), (2, 6)}
+])
+try:
+    session_cancel_before_start.cancel_action = "dock"
+    try:
+        core._start_standard(0, session=session_cancel_before_start)
+        raise AssertionError("START fue enviado después de cancelar")
+    except FreshSessionCancelled as exc:
+        assert exc.reason == "dock_requested", exc.reason
+finally:
+    arbiter.finish(session_cancel_before_start, "cancel-before-start done")
+starts_after = len([
+    row for row in raw.actions
+    if row[0] in {(2, 1), (2, 3), (2, 5), (2, 6)}
+])
+assert starts_after == starts_before, (starts_before, starts_after, raw.actions)
+assert raw.props[(2, 1)] == 4
 
 # Volver a base es cancelación de la secuencia, no un "fin normal" que permita
 # iniciar otra pasada después.
