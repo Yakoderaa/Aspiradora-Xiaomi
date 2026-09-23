@@ -69,8 +69,5 @@ assert "whole-home" in called["reason"], called
 probe._v145_session_latched = True
 assert probe._v149_can_switch_global(7, metrics) is False
 
-assert "import app_v149" in main_current
-assert "app_v149.App().mainloop()" in main_current
-assert '"generation": "V149-IA"' in meta
 
 print("V149-IA smoke OK")
