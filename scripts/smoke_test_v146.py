@@ -29,6 +29,7 @@ assert "import app_v146" in main
 assert "app_v146.App().mainloop()" in main
 assert 'scripts\\smoke_test_v146.py' in build
 assert 'src\\main_v146.py' in build
+assert "src\\main_v145.py" in build
 assert "V146-IA" in workflow
 assert "consenso multiseñal" in workflow
 
