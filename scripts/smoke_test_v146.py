@@ -28,9 +28,9 @@ assert "revisitar celdas por sí solo jamás dispara auto-abort" in app
 assert "import app_v146" in main
 assert "app_v146.App().mainloop()" in main
 assert 'scripts\\smoke_test_v146.py' in build
-assert 'src\\main_v146.py' in build
-assert "src\\main_v145.py" in build
-assert "V146-IA" in workflow
+assert "main_current.py" in build
+assert "main_current.py" in build
+assert "release_meta.json" in workflow
 assert "consenso multiseñal" in workflow
 
 import app_v146
