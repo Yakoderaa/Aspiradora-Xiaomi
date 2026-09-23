@@ -332,12 +332,14 @@ class FreshRobotCore:
 
     def _monitor_until_terminal(self, session, mapping=False):
         idle_streak = 0
+        dock_requested = False
         while True:
             if session.cancel_action:
                 reason = self._perform_cancel(session)
                 if reason == "dock_requested":
-                    # Seguimos hasta carga o hasta idle estable.
-                    pass
+                    # Seguimos hasta carga, pero conservamos que fue cancelación
+                    # del usuario para no iniciar otra pasada después.
+                    dock_requested = True
                 else:
                     return reason
 
@@ -351,11 +353,11 @@ class FreshRobotCore:
                     pass
 
             if status == 4:
-                return "dock"
+                return "dock_requested" if dock_requested else "dock"
             if status in (0, 1, 2):
                 idle_streak += 1
                 if idle_streak >= 4:
-                    return "idle"
+                    return "dock_requested" if dock_requested else "idle"
             else:
                 idle_streak = 0
             time.sleep(0.75 if mapping else 1.0)
@@ -573,7 +575,7 @@ class FreshRobotCore:
                     })
                     diag["completed"] += 1
 
-                    if finish_reason in ("stop_requested",):
+                    if finish_reason in ("stop_requested", "dock_requested"):
                         break
                     if index < total:
                         # La siguiente pasada sólo comienza desde estado terminal.
