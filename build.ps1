@@ -24,6 +24,7 @@ Invoke-PythonChecked "scripts\fetch_e10_product_image.py"
 Invoke-PythonChecked "scripts\make_windows_version_info.py"
 
 Invoke-PythonChecked "-m" "compileall" "-q" "src" "scripts"
+Invoke-PythonChecked "scripts\smoke_test_release_contract.py"
 Invoke-PythonChecked "scripts\smoke_test.py"
 Invoke-PythonChecked "scripts\smoke_test_v24.py"
 Invoke-PythonChecked "scripts\smoke_test_v25.py"
@@ -183,7 +184,7 @@ pyinstaller --noconfirm --clean --windowed --onedir `
     --collect-all vacuum_map_parser_base `
     --collect-all vacuum_map_parser_xiaomi `
     --collect-all vacuum_map_parser_ijai `
-    src\main_v147.py
+    src\main_current.py
 if ($LASTEXITCODE -ne 0) { throw "PyInstaller falló con código $LASTEXITCODE." }
 
 Copy-Item "dist\Aspiradora Xiaomi Updater.exe" "dist\Aspiradora Xiaomi\Aspiradora Xiaomi Updater.exe" -Force
@@ -230,7 +231,7 @@ if ($probeProcess.ExitCode -ne 0) {
 $appProcess = Start-Process -FilePath $appExe -ArgumentList "--tray" -PassThru
 Start-Sleep -Seconds 6
 $appProcess.Refresh()
-if ($appProcess.HasExited) { throw "La aplicación V147-IA se cerró durante el smoke test de arranque. Código: $($appProcess.ExitCode)" }
+if ($appProcess.HasExited) { throw "La aplicación actual se cerró durante el smoke test de arranque. Código: $($appProcess.ExitCode)" }
 Stop-Process -Id $appProcess.Id -Force -ErrorAction SilentlyContinue
 
 $schedulerExe = (Resolve-Path "dist\Aspiradora Xiaomi\Aspiradora Xiaomi Scheduler.exe").Path
