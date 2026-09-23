@@ -10,8 +10,6 @@ def text(path):
 
 
 app = text("src/app_v149.py")
-main_current = text("src/main_current.py")
-meta = text("release_meta.json")
 build = text("build.ps1")
 
 assert "class App(app_v148.App)" in app
