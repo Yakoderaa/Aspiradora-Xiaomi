@@ -57,3 +57,5 @@ assert q["pattern"] != "oscillation_corridor", q
 print("V147-IA smoke OK")
 
 # Trigger final V147 tras actualizar workflow/release.
+
+# Trigger final V147 CI compat.
