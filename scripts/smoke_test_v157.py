@@ -12,10 +12,8 @@ meta = (ROOT / "release_meta.json").read_text(encoding="utf-8")
 build = (ROOT / "build.ps1").read_text(encoding="utf-8")
 installer = (ROOT / "installer" / "AspiradoraXiaomi.iss").read_text(encoding="utf-8")
 
-assert "import app_v157" in main
-assert "app_v157.App()" in main
-assert '"generation": "V157-IA"' in meta
-assert '"entry_module": "app_v157"' in meta
+# La versión activa se verifica dinámicamente en smoke_test_release_contract.py.
+# Este test preserva el comportamiento histórico de V157.
 
 # Una sola acción de vivienda en GUI, botón heredado y programaciones.
 assert 'text="Limpiar vivienda"' in app

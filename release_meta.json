@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generation": "V157-IA",
-  "entry_module": "app_v157",
-  "notes": "V157 unifica toda limpieza global en una única acción: el botón azul Limpiar vivienda de Espacios, cualquier Iniciar limpieza heredado, Ejecutar ahora de una rutina de vivienda y el Scheduler de Windows usan la misma ruta física segura, precheck de sólo lectura + un único START 2/1. Limpiar vivienda pasa a ser la fuente principal de aprendizaje de la guía general; habitaciones y zonas guardan aprendizaje secundario por objetivo. Se agregan rutinas por habitación usando IDs estables, por lo que renombrar una habitación no rompe sus horarios, y se agrega Renombrar habitación en Espacios. El Scheduler vuelve a estar habilitado con un ciclo liviano de 60 s y se registra al iniciar Windows. La app conserva el mapeo V156, unwrap 0/255 y diagnóstico corto, pero baja aún más el polling/render para reducir CPU/RAM sin quitar funciones. Las limpiezas dirigidas usan las rutas MIoT de zona 9/8 o 9/2+9/3 y nunca 2/3. 2/3, 7/3, EDGE, remoto y recoveries automáticos siguen fuera de la limpieza global."
+  "generation": "V158-IA",
+  "entry_module": "app_v158",
+  "notes": "V158 recupera el diagnóstico completo con telemetría LAN, auditoría de transporte, guía/IA, mapas, errores y secciones históricas identificadas como tales. Descarga y guarda la geometría Xiaomi al detectar el robot en la base, con cinco consultas espaciadas y sin acciones de movimiento ni solicitudes de subida al robot. Descarta respuestas de otro mapa, robot o ciclo y conserva el mapa anterior si Cloud falla. Mantiene el START 2/1, recorridos, ritmos de UI y programador de V157. La disponibilidad y actualidad del archivo dependen de Xiaomi Cloud; el diagnóstico indica el resultado de cada captura."
 }

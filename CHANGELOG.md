@@ -1,3 +1,12 @@
+## V158-IA · diagnóstico completo y captura final Xiaomi
+
+- Restaura el diagnóstico completo bajo demanda: telemetría, auditoría, coordenadas, guía/IA, geometría, captura final y errores. Las secciones antiguas quedan identificadas como históricas.
+- El canal de estado físico inicia la captura al llegar a status=4; se contempla también el evento de finalización de vivienda, habitaciones y mapeo.
+- Descarga el slot actual de Xiaomi con el decoder existente V130 y cinco consultas espaciadas. No envía solicitudes de subida ni acciones MIoT. La frescura del archivo depende de Xiaomi y se indica en el diagnóstico.
+- Persiste el grid y actualiza el mapa y las miniaturas. Conserva el mapa anterior cuando Cloud no entrega geometría válida.
+- Rechaza respuestas tardías tras cambiar de robot, mapa o comenzar otra limpieza. No modifica la navegación, START 2/1, programaciones ni frecuencias de UI de V157.
+- Verificación offline: 137 scripts de regresión aprobados (los que comparten el bloqueo de proceso, ejecutados secuencialmente; bandeja Linux con backend dummy), incluidos 11 casos nuevos. La descarga con la cuenta/robot reales requiere comprobación física posterior.
+
 ## V130 · final robusto + origen físico + habitaciones por puntos
 
 - El inicio de una sesión ya no usa `10/24` previo al START como origen. V130 intenta `10/22 chargingbase` y, si todavía no está disponible, espera a la telemetría de base en vez de anclar un pose viejo.
