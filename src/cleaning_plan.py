@@ -12,7 +12,7 @@ class CleaningPlanStore:
     snapshot_all() se usa para backups y para el agente de programaciones.
     """
 
-    VERSION = 3
+    VERSION = 4
 
     def __init__(self, app_folder: Path):
         self.folder = Path(app_folder)
@@ -81,6 +81,14 @@ class CleaningPlanStore:
                             item.setdefault("room_id", None)
                 data["version"] = 3
 
+            if version < 4:
+                # V157: una rutina puede apuntar a habitaciones estables por ID.
+                # El nombre visible puede cambiar sin romper la programación.
+                for item in data.get("schedules", []) or []:
+                    if isinstance(item, dict):
+                        item.setdefault("room_ids", [])
+                data["version"] = 4
+
             defaults = self._defaults()
             defaults.update(data)
             defaults["version"] = self.VERSION
@@ -92,6 +100,8 @@ class CleaningPlanStore:
                         item.setdefault("map_id", defaults["active_map_id"])
                         if key in ("zones", "no_go"):
                             item.setdefault("room_id", None)
+                        if key == "schedules":
+                            item.setdefault("room_ids", [])
             defaults["device_origins"] = dict(defaults.get("device_origins") or {})
             defaults["virtual_walls_managed_maps"] = dict(defaults.get("virtual_walls_managed_maps") or {})
             defaults["last_runs"] = dict(defaults.get("last_runs") or {})
@@ -282,15 +292,20 @@ class CleaningPlanStore:
             )
         ]
 
-        if removed_zone_ids:
-            for schedule in data.get("schedules", []):
-                if str(schedule.get("map_id")) != map_id:
-                    continue
+        for schedule in data.get("schedules", []):
+            if str(schedule.get("map_id")) != map_id:
+                continue
+            if removed_zone_ids:
                 schedule["zone_ids"] = [
                     zone_id
                     for zone_id in schedule.get("zone_ids", [])
                     if str(zone_id) not in removed_zone_ids
                 ]
+            schedule["room_ids"] = [
+                value
+                for value in schedule.get("room_ids", [])
+                if str(value) != room_id
+            ]
 
         if removed_no_go_ids:
             data["virtual_walls_managed_maps"][map_id] = True
@@ -332,6 +347,7 @@ class CleaningPlanStore:
         item.setdefault("map_id", str(data.get("active_map_id") or "legacy"))
         item.setdefault("enabled", True)
         item.setdefault("zone_ids", [])
+        item.setdefault("room_ids", [])
         item.setdefault("days", [])
         data["schedules"].append(item)
         self._write(data)
