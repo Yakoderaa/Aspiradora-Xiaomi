@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generation": "V160-IA",
-  "entry_module": "app_v160",
-  "notes": "V160 une el mapa final Xiaomi con un aprendizaje persistente de geometría. Cada limpieza, mapeo o limpieza dirigida terminada abre una sesión de aprendizaje; los reintentos de la misma captura reemplazan su muestra en vez de sumar votos falsos. El mapa actual siempre se conserva y sólo se reincorpora geometría histórica cuando aparece con consenso en varias sesiones recientes, usando una ventana máxima de ocho sesiones y filtrado de componentes desconectados. El aprendizaje ocurre fuera del hilo Tk y no cambia ninguna orden física del robot: se mantienen la UI rápida V159, START 2/1 para vivienda, 9/8 o 9/2+9/3 para objetivos y todas las protecciones de V158/V159."
+  "generation": "V161-IA",
+  "entry_module": "app_v161",
+  "notes": "V161 elimina los picos periódicos de CPU sin quitar el aprendizaje V160 ni la respuesta inmediata de controles. Diagnóstico deja de reconstruir cada 1,5 s miles de puntos, auditorías e historial completo: usa un snapshot compacto cada 15 s. La captura Cloud final sólo se habilita tras una sesión física finalizada, nunca por arrancar la app estando en base, y se cierra con el primer mapa válido; si Xiaomi aún no lo tiene, queda un solo retry. Polling LAN y render de fondo se relajan sin volver síncronos los botones. Navegación física permanece intacta."
 }
