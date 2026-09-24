@@ -208,6 +208,12 @@ def execute_schedule(schedule, plan):
 
 
 def main():
+    import sys
+    if "--smoke-test" in sys.argv:
+        # El smoke de empaquetado sólo valida imports/arranque. No conecta,
+        # no crea timers y no ejecuta ninguna limpieza.
+        return 0
+
     if not acquire_single_instance():
         return 0
 
