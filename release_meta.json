@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generation": "V159-IA",
-  "entry_module": "app_v159",
-  "notes": "V159 reduce la latencia percibida sin cambiar la navegación física segura de V158. La cola de eventos de Tk pasa de hasta 250 ms de espera ociosa a 25 ms, el mapa vuelve a sondear con una cadencia responsiva y el render pesado se difiere hasta después de mostrar la pantalla. Diagnóstico abre de inmediato desde una caché caliente y reconstruye el informe completo en segundo plano. Limpiar vivienda, habitaciones y zonas ya no ejecutan prechecks de red en el hilo gráfico: el clic confirma al instante y la validación física ocurre en un worker. Se conservan START 2/1, rutas dirigidas 9/8 o 9/2+9/3, captura final Xiaomi de V158 y todas las protecciones de navegación."
+  "generation": "V160-IA",
+  "entry_module": "app_v160",
+  "notes": "V160 une el mapa final Xiaomi con un aprendizaje persistente de geometría. Cada limpieza, mapeo o limpieza dirigida terminada abre una sesión de aprendizaje; los reintentos de la misma captura reemplazan su muestra en vez de sumar votos falsos. El mapa actual siempre se conserva y sólo se reincorpora geometría histórica cuando aparece con consenso en varias sesiones recientes, usando una ventana máxima de ocho sesiones y filtrado de componentes desconectados. El aprendizaje ocurre fuera del hilo Tk y no cambia ninguna orden física del robot: se mantienen la UI rápida V159, START 2/1 para vivienda, 9/8 o 9/2+9/3 para objetivos y todas las protecciones de V158/V159."
 }
