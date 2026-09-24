@@ -269,14 +269,16 @@ if ($appProcess.HasExited) { throw "La aplicación actual se cerró durante el s
 Stop-Process -Id $appProcess.Id -Force -ErrorAction SilentlyContinue
 
 $schedulerExe = (Resolve-Path "dist\Aspiradora Xiaomi\Aspiradora Xiaomi Scheduler.exe").Path
-$schedulerProcess = Start-Process -FilePath $schedulerExe -PassThru
-$schedulerExited = $schedulerProcess.WaitForExit(5000)
+# V157 vuelve a habilitar programaciones reales. El smoke no debe dejar el
+# agente de 60 s corriendo ni intentar conectar al robot durante CI.
+$schedulerProcess = Start-Process -FilePath $schedulerExe -ArgumentList "--smoke-test" -PassThru
+$schedulerExited = $schedulerProcess.WaitForExit(10000)
 if (-not $schedulerExited) {
     Stop-Process -Id $schedulerProcess.Id -Force -ErrorAction SilentlyContinue
-    throw "El Scheduler V153 debía estar deshabilitado y finalizar solo."
+    throw "El Scheduler V157 no terminó su smoke-test en 10 s."
 }
 if ($schedulerProcess.ExitCode -ne 0) {
-    throw "El Scheduler deshabilitado terminó con código $($schedulerProcess.ExitCode)."
+    throw "El smoke-test del Scheduler V157 terminó con código $($schedulerProcess.ExitCode)."
 }
 
 $pf86 = ${env:ProgramFiles(x86)}
