@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generation": "V153-IA",
-  "entry_module": "app_safe_baseline",
-  "notes": "V153 Safe Baseline para Windows 10/11 x64. Creada después de comprobar que el factory reset y Mi Home restauran navegación normal. Esta release preserva la UI y telemetría, pero convierte la conexión en sólo lectura e instala el proxy de bloqueo antes de propagar callbacks heredados. La única prueba física habilitada es aspirado normal: lectura/precheck del estado limpio y un único START estándar A2/3, sin escribir mode, sweep-type, repeat, suction, water, twice-clean, punto, zona, remoto, 7/3 ni build-map. Si mode/sweep/repeat no están en 0, aborta sin escribir. STOP y Volver a base sólo salen por acción explícita del usuario. Mapeo, habitaciones/zonas, paredes, control manual, cambios de succión/agua, locate y programaciones quedan temporalmente bloqueados. El Scheduler empaquetado es inerte, el instalador elimina autoarranques anteriores y no abre ni la app ni el Scheduler al finalizar."
+  "generation": "V154-IA",
+  "entry_module": "app_native_start",
+  "notes": "V154 Native Start para Windows 10/11 x64. Resultado experimental que corrige la hipótesis de arranque: en el E10 B112 la acción Vacuum 2/1 es start-sweep y 2/3 es start-only-sweep. Después de observar que un factory reset + Mi Home restaura navegación normal y que un único 2/3 reproduce el patrón lineal, V154 mantiene exactamente el aislamiento de V153 pero reemplaza la única acción de inicio por A2/1. Conectar y abrir siguen siendo sólo lectura; no se escriben mode, sweep-type, repeat, suction, water, twice-clean, punto, zona, remoto, 7/3 ni build-map. Si mode/sweep/repeat no están en 0, aborta sin escribir. Mapeo, dirigidas, paredes, manual, locate y Scheduler siguen bloqueados. El instalador no abre la app ni el Scheduler al finalizar."
 }
