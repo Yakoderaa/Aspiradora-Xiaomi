@@ -31,10 +31,10 @@ class App(app_v156.App):
     """V157: una sola limpieza de vivienda + aprendizaje principal + rutinas."""
 
     # Más liviano sin quitar telemetría necesaria.
-    LOCAL_ACTIVE_POLL_MS = 3500
-    LOCAL_IDLE_POLL_MS = 15000
-    LOCAL_BUSY_RETRY_MS = 1500
-    RENDER_MIN_INTERVAL_SECONDS = 4.0
+    LOCAL_ACTIVE_POLL_MS = 5000
+    LOCAL_IDLE_POLL_MS = 30000
+    LOCAL_BUSY_RETRY_MS = 2000
+    RENDER_MIN_INTERVAL_SECONDS = 5.0
     UI_EVENT_BUDGET = 80
 
     def __init__(self):
