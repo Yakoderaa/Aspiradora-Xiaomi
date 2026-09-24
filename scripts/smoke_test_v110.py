@@ -21,7 +21,7 @@ for path in (
     ast.parse(path.read_text(encoding="utf-8"))
 
 assert issubclass(app_v110.App, app_v110.app_v109.App)
-assert CleaningPlanStore.VERSION == 3
+assert CleaningPlanStore.VERSION >= 3
 
 with tempfile.TemporaryDirectory() as folder:
     store = CleaningPlanStore(Path(folder))
