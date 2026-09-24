@@ -197,7 +197,7 @@ pyinstaller --noconfirm --clean --windowed --onefile `
     --name "Aspiradora Xiaomi Scheduler" `
     --icon "assets\mi_home.ico" `
     --collect-all miio `
-    src\scheduler_baseline_disabled.py
+    src\scheduler_v157.py
 if ($LASTEXITCODE -ne 0) { throw "PyInstaller falló con código $LASTEXITCODE." }
 
 pyinstaller --noconfirm --clean --windowed --onedir `
