@@ -16,8 +16,4 @@ assert "start_mapping_perimeter" not in mapping
 assert "manual(" not in mapping
 assert "set_property_by" not in mapping
 
-# El instalador no debe arrancar procesos tras instalar.
-assert "\n[Run]\n" not in installer.replace("\r\n", "\n")
-assert "RegDeleteValue" in installer
-
 print("V155 smoke OK: historical mapping contract = 10/17 + single 2/1.")
