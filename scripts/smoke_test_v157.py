@@ -59,9 +59,9 @@ assert 'ValueName: "AspiradoraXiaomiScheduler"' in installer
 assert "\n[Run]\n" in installer.replace("\r\n", "\n")
 
 # V157 sigue heredando el pipeline Lite de V156 y baja aún más la frecuencia.
-assert "LOCAL_ACTIVE_POLL_MS = 3500" in app
-assert "LOCAL_IDLE_POLL_MS = 15000" in app
-assert "RENDER_MIN_INTERVAL_SECONDS = 4.0" in app
+assert "LOCAL_ACTIVE_POLL_MS = 5000" in app
+assert "LOCAL_IDLE_POLL_MS = 30000" in app
+assert "RENDER_MIN_INTERVAL_SECONDS = 5.0" in app
 assert "super()._diagnostic_text()" not in app.split("def _diagnostic_text", 1)[1]
 
 print("V157 smoke OK: unified whole-home + learning + rooms scheduler + lite.")
