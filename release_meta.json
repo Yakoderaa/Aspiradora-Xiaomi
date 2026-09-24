@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generation": "V158-IA",
-  "entry_module": "app_v158",
-  "notes": "V158 recupera el diagnóstico completo con telemetría LAN, auditoría de transporte, guía/IA, mapas, errores y secciones históricas identificadas como tales. Descarga y guarda la geometría Xiaomi al detectar el robot en la base, con cinco consultas espaciadas y sin acciones de movimiento ni solicitudes de subida al robot. Descarta respuestas de otro mapa, robot o ciclo y conserva el mapa anterior si Cloud falla. Mantiene el START 2/1, recorridos, ritmos de UI y programador de V157. La disponibilidad y actualidad del archivo dependen de Xiaomi Cloud; el diagnóstico indica el resultado de cada captura."
+  "generation": "V159-IA",
+  "entry_module": "app_v159",
+  "notes": "V159 reduce la latencia percibida sin cambiar la navegación física segura de V158. La cola de eventos de Tk pasa de hasta 250 ms de espera ociosa a 25 ms, el mapa vuelve a sondear con una cadencia responsiva y el render pesado se difiere hasta después de mostrar la pantalla. Diagnóstico abre de inmediato desde una caché caliente y reconstruye el informe completo en segundo plano. Limpiar vivienda, habitaciones y zonas ya no ejecutan prechecks de red en el hilo gráfico: el clic confirma al instante y la validación física ocurre en un worker. Se conservan START 2/1, rutas dirigidas 9/8 o 9/2+9/3, captura final Xiaomi de V158 y todas las protecciones de navegación."
 }
