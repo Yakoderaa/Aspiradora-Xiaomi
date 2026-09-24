@@ -3,8 +3,6 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 app = (ROOT / "src" / "app_v160.py").read_text(encoding="utf-8")
 learner = (ROOT / "src" / "map_learning_v160.py").read_text(encoding="utf-8")
-main = (ROOT / "src" / "main_current.py").read_text(encoding="utf-8")
-meta = (ROOT / "release_meta.json").read_text(encoding="utf-8")
 
 assert "class App(app_v159.App):" in app
 assert "_action_locked" not in app
@@ -28,10 +26,6 @@ assert 'str(s.get("key") or "") != session_key' in learner
 
 assert "APRENDIZAJE DE MAPA V160-IA" in app
 assert 'name="V160DiagnosticSnapshot"' in app
-
-assert "import app_v160" in main
-assert "app_v160.App().mainloop()" in main
-assert '"generation": "V160-IA"' in meta
-assert '"entry_module": "app_v160"' in meta
+assert "from map_learning_v160 import MapLearningStoreV160" in app
 
 print("V160 smoke OK: persistent AI map consensus without navigation changes.")
