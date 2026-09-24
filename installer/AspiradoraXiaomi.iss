@@ -55,7 +55,8 @@ function PrepareToInstall(var NeedsRestart: Boolean): String;
 var
   ResultCode: Integer;
 begin
-  { V153 debe poder instalarse sin dejar ningún proceso que toque el robot. }
+  { Cierra procesos viejos antes de reemplazar archivos. V157 vuelve a registrar
+    únicamente el Scheduler liviano después de instalar. }
   Exec(
     ExpandConstant('{sys}\\taskkill.exe'),
     '/IM "{#MySchedulerExeName}" /F',
@@ -73,7 +74,7 @@ begin
     ResultCode
   );
 
-  { El baseline no permite tareas automáticas al arrancar Windows. }
+  { Se limpia primero cualquier registro viejo; [Registry] instala el nuevo. }
   RegDeleteValue(
     HKCU,
     'Software\\Microsoft\\Windows\\CurrentVersion\\Run',
@@ -88,8 +89,13 @@ begin
   Result := '';
 end;
 
-{ V153 no tiene sección [Run]: instalar no abre la app ni el Scheduler. }
+[Registry]
+Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "AspiradoraXiaomiScheduler"; ValueData: """{app}\{#MySchedulerExeName}"""; Flags: uninsdeletevalue
+
+[Run]
+Filename: "{app}\{#MySchedulerExeName}"; Description: "Iniciar programador de Aspiradora Xiaomi"; Flags: nowait runhidden
 
 [UninstallRun]
 Filename: "{sys}\taskkill.exe"; Parameters: "/IM ""{#MySchedulerExeName}"" /F"; Flags: runhidden; RunOnceId: "StopScheduler"
 Filename: "{sys}\reg.exe"; Parameters: "delete ""HKCU\Software\Microsoft\Windows\CurrentVersion\Run"" /v ""Aspiradora Xiaomi"" /f"; Flags: runhidden; RunOnceId: "RemoveAppAutostart"
+Filename: "{sys}\reg.exe"; Parameters: "delete ""HKCU\Software\Microsoft\Windows\CurrentVersion\Run"" /v ""AspiradoraXiaomiScheduler"" /f"; Flags: runhidden; RunOnceId: "RemoveSchedulerAutostart"
