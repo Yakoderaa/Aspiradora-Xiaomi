@@ -134,6 +134,7 @@ class TargetedRunnerV157:
 
         core = self.core
         session = None
+        configured = False
         diag = {
             "purpose": "targeted-v157",
             "source": self.source,
@@ -154,6 +155,7 @@ class TargetedRunnerV157:
                 self._set_locked(2, 4, mode_id, "target mode")
                 self._set_locked(7, 5, suction_value, "target suction")
                 self._set_locked(7, 6, water_value, "target water")
+                configured = True
 
             total = len(rects)
             for index, rect in enumerate(rects, start=1):
@@ -186,13 +188,14 @@ class TargetedRunnerV157:
         finally:
             # Devolvemos sólo los selectores de navegación al estado baseline.
             # Se ejecuta después del ciclo dirigido, nunca durante movimiento.
-            try:
-                with core.arbiter._io_lock:
-                    self._set_locked(2, 4, 0, "restore mode")
-                    self._set_locked(2, 8, 0, "restore sweep")
-                    self._set_locked(7, 1, 0, "restore repeat")
-            except Exception as exc:
-                diag.setdefault("restore_error", str(exc).strip() or type(exc).__name__)
+            if configured:
+                try:
+                    with core.arbiter._io_lock:
+                        self._set_locked(2, 4, 0, "restore mode")
+                        self._set_locked(2, 8, 0, "restore sweep")
+                        self._set_locked(7, 1, 0, "restore repeat")
+                except Exception as exc:
+                    diag.setdefault("restore_error", str(exc).strip() or type(exc).__name__)
 
             if session is not None:
                 core.arbiter.finish(
