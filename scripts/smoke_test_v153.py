@@ -13,8 +13,6 @@ def text(path):
 
 core_source = text("src/safe_baseline_core.py")
 app_source = text("src/app_safe_baseline.py")
-installer = text("installer/AspiradoraXiaomi.iss")
-build = text("build.ps1")
 
 assert "class SafeBaselineCore" in core_source
 assert "A2/3 único START" in core_source
