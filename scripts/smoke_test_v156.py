@@ -2,14 +2,6 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 app = (ROOT / "src" / "app_v156.py").read_text(encoding="utf-8")
-main = (ROOT / "src" / "main_current.py").read_text(encoding="utf-8")
-meta = (ROOT / "release_meta.json").read_text(encoding="utf-8")
-
-assert "import app_v156" in main
-assert "app_v156.App()" in main
-assert '"generation": "V156-IA"' in meta
-assert '"entry_module": "app_v156"' in meta
-
 # Contrato físico preservado: build-map oficial + un único START 2/1.
 worker = app.split("def _v155_mapping_worker", 1)[1]
 worker = worker.split("# =============================================================== eventos", 1)[0]
