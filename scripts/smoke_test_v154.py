@@ -13,8 +13,6 @@ def text(path):
 
 core_source = text("src/native_start_core.py")
 app_source = text("src/app_native_start.py")
-installer = text("installer/AspiradoraXiaomi.iss")
-build = text("build.ps1")
 
 assert "class NativeStartCore" in core_source
 assert "\"native start-sweep 2/1\"" in core_source
