@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generation": "V155-IA",
-  "entry_module": "app_v155",
-  "notes": "V155 Mapeo Firme consolida el comportamiento físico validado tras factory reset. El aspirado normal conserva un único START Vacuum 2/1, que ya completó la vivienda y regresó solo por batería baja. Mapear vivienda queda habilitado con una ruta mínima: precheck de sólo lectura, una única acción oficial 10/17 build-map-ii(mode=1) y un único START 2/1. No usa 2/3, 7/3, EDGE, control remoto, escapes, auto-restarts ni neutralizaciones. La navegación queda en manos del firmware E10; una pérdida temporal de LAN sólo se registra y no genera órdenes físicas. El proxy read-mostly sigue bloqueando escrituras heredadas. Scheduler permanece inerte y el instalador no abre la app al finalizar."
+  "generation": "V156-IA",
+  "entry_module": "app_v156",
+  "notes": "V156 Lean + Guía conserva la ruta física segura validada (10/17 build-map-ii + un único START 2/1) y ataca los dos problemas medidos en V155: deriva de coordenadas y lentitud extrema. La trayectoria LAN 10/24 se procesa con unwrap módulo 256 para que los cruces 0/255 no creen saltos falsos de ~25,5 m; el recorrido se simplifica, se guarda como guía local y se usa para medir cobertura/desvíos futuros sin tomar control manual de las ruedas. V156 reduce el polling LAN, limita renders, desacelera el loop de eventos y desactiva durante el recorrido las consultas Cloud que en V155 generaron miles de llamadas sin aportar geometría. El diagnóstico F12 vuelve a ser corto. Además, status 0/1 por batería baja ya no cierra el mapeo: la sesión espera el regreso físico a status=4 para confirmar y guardar la guía. 2/3, 7/3, EDGE, remoto, recoveries y Scheduler continúan bloqueados."
 }
