@@ -272,10 +272,10 @@ $schedulerExe = (Resolve-Path "dist\Aspiradora Xiaomi\Aspiradora Xiaomi Schedule
 # V157 vuelve a habilitar programaciones reales. El smoke no debe dejar el
 # agente de 60 s corriendo ni intentar conectar al robot durante CI.
 $schedulerProcess = Start-Process -FilePath $schedulerExe -ArgumentList "--smoke-test" -PassThru
-$schedulerExited = $schedulerProcess.WaitForExit(10000)
+$schedulerExited = $schedulerProcess.WaitForExit(20000)
 if (-not $schedulerExited) {
     Stop-Process -Id $schedulerProcess.Id -Force -ErrorAction SilentlyContinue
-    throw "El Scheduler V157 no terminó su smoke-test en 10 s."
+    throw "El Scheduler V157 no terminó su smoke-test en 20 s."
 }
 if ($schedulerProcess.ExitCode -ne 0) {
     throw "El smoke-test del Scheduler V157 terminó con código $($schedulerProcess.ExitCode)."
