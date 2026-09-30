@@ -56,35 +56,55 @@ class TargetedRunnerV157:
         )
 
     def _start_zone_locked(self, rect):
+        """Carga el objetivo y DESPUÉS envía el START dirigido.
+
+        V157 tenía una regresión: si 9/8 devolvía ACK, retornaba enseguida y
+        nunca ejecutaba 9/3. En este B112 9/8 prepara el objetivo; 9/3 es el
+        disparador físico. El camino histórico probado usa 9/8->9/3 y, si
+        9/8 es rechazado, 9/2->9/3.
+        """
         value = self._zone_value(rect)
+        target_route = "9/8"
+        target_response = None
+        first_error = None
+
         try:
-            response = self.core.raw_device.call_action_by(9, 8, [value])
-            code = self.core._explicit_code(response)
+            target_response = self.core.raw_device.call_action_by(9, 8, [value])
+            code = self.core._explicit_code(target_response)
             if code is not None and code != 0:
                 raise RuntimeError(f"9/8 code={code}")
-            self.core.arbiter.record("v157_target_action", {
-                "route": "9/8",
-                "zone": value,
-                "response": repr(response)[:220],
-            })
-            return "9/8", response
         except Exception as first:
-            self._set_locked(9, 2, value, "target zone 9/2")
-            response = self.core.raw_device.call_action_by(9, 3)
-            code = self.core._explicit_code(response)
-            if code is not None and code != 0:
-                raise RuntimeError(
-                    f"No se pudo iniciar zona: 9/8={first}; 9/3 code={code}"
-                )
-            self.core.arbiter.record("v157_target_action", {
-                "route": "9/2+9/3",
-                "zone": value,
-                "response": repr(response)[:220],
-            })
-            return "9/2+9/3", response
+            first_error = first
+            target_route = "9/2"
+            target_response = self._set_locked(
+                9, 2, value, "target zone 9/2"
+            )
+
+        # Importante: tanto 9/8 como 9/2 sólo dejan seleccionado el objetivo.
+        # El movimiento se inicia siempre con 9/3.
+        response = self.core.raw_device.call_action_by(9, 3)
+        code = self.core._explicit_code(response)
+        if code is not None and code != 0:
+            detail = (
+                f"; 9/8={first_error}"
+                if first_error is not None
+                else ""
+            )
+            raise RuntimeError(
+                f"No se pudo iniciar zona: {target_route}+9/3 code={code}{detail}"
+            )
+
+        route = f"{target_route}+9/3"
+        self.core.arbiter.record("v162_target_action", {
+            "route": route,
+            "zone": value,
+            "target_response": repr(target_response)[:220],
+            "start_response": repr(response)[:220],
+        })
+        return route, response
 
     def _wait_cycle(self, on_state=None, timeout=3 * 60 * 60):
-        start_deadline = time.monotonic() + 35.0
+        start_deadline = time.monotonic() + 20.0
         started = False
         last = None
         while time.monotonic() < start_deadline:

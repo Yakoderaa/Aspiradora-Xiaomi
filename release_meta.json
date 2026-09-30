@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generation": "V161-IA",
-  "entry_module": "app_v161",
-  "notes": "V161 elimina los picos periódicos de CPU sin quitar el aprendizaje V160 ni la respuesta inmediata de controles. Diagnóstico deja de reconstruir cada 1,5 s miles de puntos, auditorías e historial completo: usa un snapshot compacto cada 15 s. La captura Cloud final sólo se habilita tras una sesión física finalizada, nunca por arrancar la app estando en base, y se cierra con el primer mapa válido; si Xiaomi aún no lo tiene, queda un solo retry. Polling LAN y render de fondo se relajan sin volver síncronos los botones. Navegación física permanece intacta."
+  "generation": "V162-IA",
+  "entry_module": "app_v162",
+  "notes": "V162 corrige la limpieza por habitación y zona. La regresión V157 trataba 9/8 como si también iniciara movimiento y omitía el START 9/3 cuando Xiaomi respondía OK. Se restaura la secuencia probada del B112: 9/8 para cargar objetivo y luego 9/3 para iniciar; si 9/8 falla, 9/2 y luego 9/3. El timeout inicial baja a 20 s y el diagnóstico compacto muestra la última ruta dirigida. Limpieza completa, aprendizaje V160 y política CPU-safe V161 permanecen sin cambios."
 }

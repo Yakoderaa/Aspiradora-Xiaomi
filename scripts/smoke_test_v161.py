@@ -38,9 +38,5 @@ assert "self.after(8 if pending else 60, self._drain_ui_events)" in app
 for forbidden in ("_action_locked(", "set_property(", "start_sweep(", "start_mapping_perimeter("):
     assert forbidden not in app
 
-assert "import app_v161" in main
-assert "app_v161.App().mainloop()" in main
-assert '"generation": "V161-IA"' in meta
-assert '"entry_module": "app_v161"' in meta
-
+# La versión activa se verifica en smoke_test_release_contract.py.\n# V161 queda como contrato histórico y puede ser heredada por generaciones nuevas.\n
 print("V161 smoke OK: compact diagnostics + single-success final capture + lower background cadence.")
